@@ -1,4 +1,3 @@
-
 import { Room, StaffMember, HotelService, Transaction, DashboardStat } from "@/types";
 import { Hotel, Users, Bed, Utensils, CreditCard, DollarSign, Calendar } from "lucide-react";
 
@@ -16,6 +15,8 @@ export const mockRooms: Room[] = [
     features: ["WiFi", "TV", "Mini-Bar"],
     notes: "",
     lastCleaned: new Date(),
+    maintenanceStatus: false,
+    cleaningStatus: false
   },
   {
     id: "2",
@@ -30,6 +31,8 @@ export const mockRooms: Room[] = [
     notes: "Client a demandé des oreillers supplémentaires",
     lastCleaned: new Date(Date.now() - 86400000),
     currentGuest: "Jean Dupont",
+    maintenanceStatus: false,
+    cleaningStatus: false
   },
   {
     id: "3",
@@ -43,6 +46,8 @@ export const mockRooms: Room[] = [
     features: ["WiFi", "TV", "Mini-Bar", "Jacuzzi"],
     notes: "",
     lastCleaned: new Date(Date.now() - 172800000),
+    maintenanceStatus: false,
+    cleaningStatus: true
   },
   {
     id: "4",
@@ -56,6 +61,8 @@ export const mockRooms: Room[] = [
     features: ["WiFi", "TV", "Mini-Bar", "Jacuzzi", "Balcon"],
     notes: "Problème de climatisation",
     lastCleaned: new Date(Date.now() - 259200000),
+    maintenanceStatus: true,
+    cleaningStatus: false
   },
   {
     id: "5",
@@ -69,6 +76,8 @@ export const mockRooms: Room[] = [
     features: ["WiFi", "TV", "Mini-Bar", "Jacuzzi", "Balcon"],
     notes: "",
     lastCleaned: new Date(),
+    maintenanceStatus: false,
+    cleaningStatus: false
   },
   {
     id: "6",
@@ -83,6 +92,8 @@ export const mockRooms: Room[] = [
     notes: "VIP - PDG de XYZ Corp",
     lastCleaned: new Date(Date.now() - 86400000),
     currentGuest: "Marcel Richard",
+    maintenanceStatus: false,
+    cleaningStatus: false
   },
 ];
 
