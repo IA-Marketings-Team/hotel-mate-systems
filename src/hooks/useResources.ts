@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { BookingResource, BookingType } from "@/types/bookings";
 import { toast } from "sonner";
 
@@ -15,46 +14,16 @@ export const useResources = (type: BookingType) => {
       setError(null);
       
       try {
-        let query = supabase.from('resources').select('*');
-        
-        // Filter by type if provided
-        if (type) {
-          query = query.eq('type', type);
-        }
-        
-        const { data, error } = await query;
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (!data || data.length === 0) {
-          // If no resources found, create some demo resources
-          const demoResources = await createDemoResources(type);
-          setResources(demoResources);
-        } else {
-          const mappedResources: BookingResource[] = data.map(item => ({
-            id: item.id,
-            name: item.name,
-            type: item.type,
-            capacity: item.capacity,
-            pricePerNight: item.price_per_night,
-            pricePerHour: item.price_per_hour,
-            features: item.features,
-            status: item.status,
-            imageUrl: item.image_url,
-            description: item.description
-          }));
-          
-          setResources(mappedResources);
-        }
+        // Create demo resources for now
+        const demoResources = createDemoResources(type);
+        setResources(demoResources);
       } catch (err: any) {
         setError(err.message);
         toast.error(`Erreur lors du chargement des ressources: ${err.message}`);
         console.error("Error fetching resources:", err);
         
         // Create demo resources in case of error
-        const demoResources = await createDemoResources(type);
+        const demoResources = createDemoResources(type);
         setResources(demoResources);
       } finally {
         setLoading(false);
@@ -65,7 +34,7 @@ export const useResources = (type: BookingType) => {
   }, [type]);
 
   // Function to create demo resources if none exist
-  const createDemoResources = async (type: BookingType): Promise<BookingResource[]> => {
+  const createDemoResources = (type: BookingType): BookingResource[] => {
     const demoData: Partial<BookingResource>[] = [];
     
     switch (type) {
@@ -78,9 +47,9 @@ export const useResources = (type: BookingType) => {
         break;
       case 'car':
         demoData.push(
-          { name: 'Berline de luxe', type, capacity: 4, pricePerDay: 120, status: 'available', features: ['climatisation', 'GPS'] },
-          { name: 'SUV familial', type, capacity: 7, pricePerDay: 150, status: 'available', features: ['toit ouvrant', 'GPS'] },
-          { name: 'Cabriolet sport', type, capacity: 2, pricePerDay: 180, status: 'available', features: ['décapotable', 'cuir'] }
+          { name: 'Berline de luxe', type, capacity: 4, pricePerNight: 120, status: 'available', features: ['climatisation', 'GPS'] },
+          { name: 'SUV familial', type, capacity: 7, pricePerNight: 150, status: 'available', features: ['toit ouvrant', 'GPS'] },
+          { name: 'Cabriolet sport', type, capacity: 2, pricePerNight: 180, status: 'available', features: ['décapotable', 'cuir'] }
         );
         break;
       case 'terrace':
@@ -107,7 +76,7 @@ export const useResources = (type: BookingType) => {
       name: item.name!,
       type: type,
       capacity: item.capacity!,
-      pricePerNight: type === 'room' ? 100 : undefined,
+      pricePerNight: type === 'car' ? item.pricePerNight : undefined,
       pricePerHour: ['meeting', 'terrace', 'restaurant'].includes(type) ? (item.pricePerHour || 50) : undefined,
       features: item.features || [],
       status: 'available',
