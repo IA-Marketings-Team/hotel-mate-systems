@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -153,11 +154,7 @@ const ClientDetails = () => {
             
             <ClientActionsMenu
               clientId={client.id}
-              onNewTransaction={() => setIsTransactionDialogOpen(true)}
               onExportHistory={handleExportHistory}
-              onRestaurantOrder={handleServiceAction}
-              onBarOrder={handleServiceAction}
-              onPokerTokens={handleServiceAction}
             />
           </div>
         </div>

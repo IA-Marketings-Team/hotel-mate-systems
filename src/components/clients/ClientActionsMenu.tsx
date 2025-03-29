@@ -4,12 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
   PlusCircle, 
-  Receipt, 
-  Download, 
-  Utensils, 
-  Wine,
-  CircleDollarSign,
-  ListTodo
+  ListTodo,
+  Download
 } from "lucide-react";
 import {
   DropdownMenu,
