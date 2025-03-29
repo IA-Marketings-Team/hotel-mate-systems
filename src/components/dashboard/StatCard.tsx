@@ -6,7 +6,7 @@ import { ArrowUp, ArrowDown, LucideIcon } from "lucide-react";
 
 interface StatCardProps {
   stat: Omit<DashboardStat, 'icon'> & {
-    icon: LucideIcon | string | React.FC<{ className?: string }>;
+    icon: LucideIcon | React.FC<{ className?: string }>;
   };
   className?: string;
 }
@@ -21,7 +21,7 @@ export function StatCard({ stat, className }: StatCardProps) {
       return <span className={iconClassName}>{stat.icon}</span>;
     } else {
       // Handle Lucide or React component icons
-      const Icon = stat.icon as LucideIcon | React.FC<{ className?: string }>;
+      const Icon = stat.icon;
       return <Icon className={iconClassName} />;
     }
   };

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { 
   Hotel, 
@@ -80,7 +81,7 @@ const Dashboard = () => {
             key={stat.title}
             stat={{
               ...stat,
-              icon: getIcon(stat.icon),
+              icon: typeof stat.icon === 'string' ? getIcon(stat.icon) : stat.icon,
             }}
           />
         ))}
