@@ -54,7 +54,7 @@ export function TransactionTable({
       </TableHeader>
       <TableBody>
         {transactions.map((transaction) => (
-          <TableRow key={transaction.id}>
+          <TableRow key={transaction.id} className="cursor-pointer hover:bg-muted/80" onClick={() => onViewDetails(transaction)}>
             <TableCell>{format(new Date(transaction.date), "dd/MM/yyyy HH:mm")}</TableCell>
             <TableCell className="font-medium">{transaction.description}</TableCell>
             <TableCell>
@@ -74,7 +74,7 @@ export function TransactionTable({
               {transaction.type === "payment" ? "+" : "-"}
               {transaction.amount} €
             </TableCell>
-            <TableCell>
+            <TableCell onClick={(e) => e.stopPropagation()}>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">

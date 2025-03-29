@@ -11,6 +11,7 @@ import Services from "./pages/Services";
 import Bookings from "./pages/Bookings";
 import Blueprint from "./pages/Blueprint";
 import NotFound from "./pages/NotFound";
+import TransactionDetails from "./pages/TransactionDetails";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Registers />
           </AppLayout>
         } />
+        <Route path="/transaction/:id" element={<TransactionDetails />} />
         <Route path="/services" element={
           <AppLayout>
             <Services />

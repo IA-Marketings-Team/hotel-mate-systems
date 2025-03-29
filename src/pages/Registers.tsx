@@ -5,19 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Transaction, RegisterType } from "@/types";
 import { useTransactions } from "@/hooks/useTransactions";
 import { NewTransactionDialog } from "@/components/transactions/NewTransactionDialog";
-import { TransactionDetailsSheet } from "@/components/transactions/TransactionDetailsSheet";
 import { useToast } from "@/hooks/use-toast";
 import { RegisterTabs } from "@/components/registers/RegisterTabs";
 import { RegisterSearch } from "@/components/registers/RegisterSearch";
 import { RegisterContent } from "@/components/registers/RegisterContent";
+import { useNavigate } from "react-router-dom";
 
 const Registers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<RegisterType>("hotel");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { data: transactions, isLoading, refetch } = useTransactions(activeTab);
 
@@ -35,9 +34,8 @@ const Registers = () => {
     toast.success(`La transaction a été ajoutée avec succès à la caisse ${activeTab}`);
   };
 
-  const openTransactionDetails = (transaction: Transaction) => {
-    setSelectedTransaction(transaction);
-    setIsDetailsOpen(true);
+  const navigateToTransactionDetails = (transaction: Transaction) => {
+    navigate(`/transaction/${transaction.id}`);
   };
 
   const handleTabChange = (value: RegisterType) => {
@@ -64,7 +62,7 @@ const Registers = () => {
             registerType="hotel"
             transactions={filteredTransactions} 
             isLoading={isLoading} 
-            onViewDetails={openTransactionDetails}
+            onViewDetails={navigateToTransactionDetails}
           />
         </TabsContent>
 
@@ -73,7 +71,7 @@ const Registers = () => {
             registerType="restaurant"
             transactions={filteredTransactions} 
             isLoading={isLoading} 
-            onViewDetails={openTransactionDetails}
+            onViewDetails={navigateToTransactionDetails}
           />
         </TabsContent>
 
@@ -82,7 +80,7 @@ const Registers = () => {
             registerType="poker"
             transactions={filteredTransactions} 
             isLoading={isLoading} 
-            onViewDetails={openTransactionDetails}
+            onViewDetails={navigateToTransactionDetails}
           />
         </TabsContent>
 
@@ -91,7 +89,7 @@ const Registers = () => {
             registerType="rooftop"
             transactions={filteredTransactions} 
             isLoading={isLoading} 
-            onViewDetails={openTransactionDetails}
+            onViewDetails={navigateToTransactionDetails}
           />
         </TabsContent>
       </Tabs>
@@ -101,12 +99,6 @@ const Registers = () => {
         onOpenChange={setIsDialogOpen} 
         registerType={activeTab}
         onSuccess={handleTransactionSuccess}
-      />
-
-      <TransactionDetailsSheet
-        transaction={selectedTransaction}
-        open={isDetailsOpen}
-        onOpenChange={setIsDetailsOpen}
       />
     </div>
   );
