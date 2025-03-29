@@ -75,6 +75,16 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
 
   const createTransaction = useMutation({
     mutationFn: async (payload: CreateTransactionPayload) => {
+      // S'assurer que payload.clientId et payload.staffId ne sont pas vides
+      const clientId = payload.clientId === "none" ? null : payload.clientId;
+      const staffId = payload.staffId === "none" ? null : payload.staffId;
+      
+      console.log("Creating transaction with data:", {
+        ...payload,
+        client_id: clientId,
+        staff_id: staffId
+      });
+      
       const { data, error } = await supabase
         .from('transactions')
         .insert({
@@ -85,8 +95,8 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
           register_type: payload.registerType,
           category: payload.category,
           subcategory: payload.subcategory,
-          client_id: payload.clientId,
-          staff_id: payload.staffId,
+          client_id: clientId,
+          staff_id: staffId,
           date: new Date().toISOString()
         })
         .select()

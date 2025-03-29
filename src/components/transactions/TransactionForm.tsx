@@ -46,14 +46,25 @@ export function TransactionForm({
   const [amount, setAmount] = useState(initialAmount ? initialAmount.toString() : "");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory || null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(initialSubcategory || null);
-  const [clientId, setClientId] = useState(initialClientId || "");
-  const [staffId, setStaffId] = useState("");
+  const [clientId, setClientId] = useState(initialClientId || "none");
+  const [staffId, setStaffId] = useState("none");
 
   const { data: staff, isLoading: isStaffLoading } = useStaff();
   const { data: clients, isLoading: isClientsLoading } = useClients();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form data:", {
+      description,
+      amount,
+      type,
+      method,
+      category: selectedCategory,
+      subcategory: selectedSubcategory,
+      clientId: clientId,
+      staffId: staffId,
+    });
+    
     onSubmit({
       description,
       amount,
@@ -61,8 +72,8 @@ export function TransactionForm({
       method,
       category: selectedCategory,
       subcategory: selectedSubcategory,
-      clientId: clientId || null,
-      staffId: staffId || null,
+      clientId: clientId === "none" ? null : clientId,
+      staffId: staffId === "none" ? null : staffId,
     });
   };
 

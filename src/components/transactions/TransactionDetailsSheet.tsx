@@ -33,14 +33,14 @@ export function TransactionDetailsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-md overflow-y-auto bg-white">
         <SheetHeader className="pb-4">
-          <SheetTitle>Détails de la Transaction</SheetTitle>
+          <SheetTitle className="text-gray-900">Détails de la Transaction</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Informations générales</h3>
+            <h3 className="text-lg font-medium text-gray-800">Informations générales</h3>
             <Button variant="outline" size="sm" onClick={generateInvoice} className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Télécharger la facture
@@ -49,24 +49,26 @@ export function TransactionDetailsSheet({
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">ID</p>
-              <p className="font-medium">{transaction.id}</p>
+              <p className="text-sm text-gray-600">ID</p>
+              <p className="font-medium text-gray-900">{transaction.id}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Date</p>
-              <p className="font-medium">{format(new Date(transaction.date), "dd/MM/yyyy HH:mm")}</p>
+              <p className="text-sm text-gray-600">Date</p>
+              <p className="font-medium text-gray-900">{format(new Date(transaction.date), "dd/MM/yyyy HH:mm")}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Type</p>
+              <p className="text-sm text-gray-600">Type</p>
               <p className={`font-medium ${
-                transaction.type === "payment" ? "text-green-600" : "text-red-600"
+                transaction.type === "payment" ? "text-green-600" : 
+                transaction.type === "pending" ? "text-amber-500" : "text-red-600"
               }`}>
-                {transaction.type === "payment" ? "Paiement" : "Remboursement"}
+                {transaction.type === "payment" ? "Paiement" : 
+                 transaction.type === "pending" ? "En attente" : "Remboursement"}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Méthode</p>
-              <p className="font-medium capitalize">
+              <p className="text-sm text-gray-600">Méthode</p>
+              <p className="font-medium text-gray-900 capitalize">
                 {transaction.method === "cash" ? "Espèces" : 
                  transaction.method === "card" ? "Carte" : "Virement"}
               </p>
@@ -74,24 +76,24 @@ export function TransactionDetailsSheet({
           </div>
 
           <div className="border-t pt-4">
-            <h3 className="text-lg font-medium mb-2">Personnes</h3>
+            <h3 className="text-lg font-medium text-gray-800 mb-2">Personnes</h3>
             <div className="space-y-3">
               {transaction.clientName && (
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2 bg-gray-50 p-2 rounded-md">
                   <UserIcon className="h-4 w-4 mt-0.5 text-blue-500" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Client</p>
-                    <p className="font-medium">{transaction.clientName}</p>
+                    <p className="text-sm text-gray-600">Client</p>
+                    <p className="font-medium text-gray-900">{transaction.clientName}</p>
                   </div>
                 </div>
               )}
               
               {transaction.staffName && (
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2 bg-gray-50 p-2 rounded-md">
                   <UserCheck className="h-4 w-4 mt-0.5 text-green-500" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Personnel</p>
-                    <p className="font-medium">{transaction.staffName}</p>
+                    <p className="text-sm text-gray-600">Personnel</p>
+                    <p className="font-medium text-gray-900">{transaction.staffName}</p>
                   </div>
                 </div>
               )}
@@ -99,28 +101,29 @@ export function TransactionDetailsSheet({
           </div>
 
           <div className="border-t pt-4">
-            <h3 className="text-lg font-medium mb-2">Détails</h3>
+            <h3 className="text-lg font-medium text-gray-800 mb-2">Détails</h3>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-muted-foreground">Description</p>
-                <p className="font-medium">{transaction.description}</p>
+                <p className="text-sm text-gray-600">Description</p>
+                <p className="font-medium text-gray-900">{transaction.description}</p>
               </div>
               {transaction.category && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Catégorie</p>
-                  <p className="font-medium">{transaction.category}</p>
+                  <p className="text-sm text-gray-600">Catégorie</p>
+                  <p className="font-medium text-gray-900">{transaction.category}</p>
                 </div>
               )}
               {transaction.subcategory && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Sous-catégorie</p>
-                  <p className="font-medium">{transaction.subcategory}</p>
+                  <p className="text-sm text-gray-600">Sous-catégorie</p>
+                  <p className="font-medium text-gray-900">{transaction.subcategory}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground">Montant</p>
+                <p className="text-sm text-gray-600">Montant</p>
                 <p className={`font-medium text-xl ${
-                  transaction.type === "payment" ? "text-green-600" : "text-red-600"
+                  transaction.type === "payment" ? "text-green-600" : 
+                  transaction.type === "pending" ? "text-amber-500" : "text-red-600"
                 }`}>
                   {transaction.type === "payment" ? "+" : "-"}
                   {formatCurrency(transaction.amount)}

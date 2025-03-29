@@ -62,7 +62,7 @@ const InvoiceDetails = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "paid":
-        return <Badge className="bg-green-500">Payée</Badge>;
+        return <Badge className="bg-green-500 text-white">Payée</Badge>;
       case "pending":
         return <Badge variant="outline" className="text-amber-500 border-amber-500">En attente</Badge>;
       case "overdue":
@@ -130,11 +130,11 @@ const InvoiceDetails = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 space-y-8">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 space-y-8 border">
           <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-6">
             <div>
               <h1 className="text-3xl font-bold flex items-center">
-                <FileText className="mr-2 h-6 w-6" />
+                <FileText className="mr-2 h-6 w-6 text-blue-500" />
                 {invoice.invoiceNumber}
               </h1>
               <div className="flex items-center mt-2">
@@ -151,20 +151,20 @@ const InvoiceDetails = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Détails</h3>
+              <h3 className="text-lg font-medium text-gray-800">Détails</h3>
               
-              <div className="border rounded-md p-4 space-y-2">
+              <div className="border rounded-md p-4 space-y-2 bg-gray-50">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">ID de transaction</span>
+                  <span className="text-gray-600">ID de transaction</span>
                   <span className="font-mono">{invoice.transactionId}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Date de facture</span>
+                  <span className="text-gray-600">Date de facture</span>
                   <span>{format(new Date(invoice.date), "dd/MM/yyyy", { locale: fr })}</span>
                 </div>
                 {invoice.dueDate && invoice.status === "pending" && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Date d'échéance</span>
+                    <span className="text-gray-600">Date d'échéance</span>
                     <div className="flex items-center">
                       <CalendarClock className="h-4 w-4 mr-1 text-amber-500" />
                       <span>{format(new Date(invoice.dueDate), "dd/MM/yyyy", { locale: fr })}</span>
@@ -175,8 +175,8 @@ const InvoiceDetails = () => {
 
               {invoice.clientName && (
                 <div>
-                  <h3 className="text-lg font-medium mb-2">Client</h3>
-                  <div className="border rounded-md p-4">
+                  <h3 className="text-lg font-medium text-gray-800 mb-2">Client</h3>
+                  <div className="border rounded-md p-4 bg-gray-50">
                     <div className="flex items-center">
                       <User className="h-5 w-5 mr-2 text-blue-500" />
                       <span className="font-medium">{invoice.clientName}</span>
@@ -187,12 +187,12 @@ const InvoiceDetails = () => {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Montant</h3>
+              <h3 className="text-lg font-medium text-gray-800">Montant</h3>
               
-              <div className="border rounded-md p-6 flex flex-col items-center justify-center">
-                <span className="text-4xl font-bold">{formatCurrency(invoice.amount)}</span>
+              <div className="border rounded-md p-6 flex flex-col items-center justify-center bg-gray-50">
+                <span className="text-4xl font-bold text-gray-900">{formatCurrency(invoice.amount)}</span>
                 {invoice.status === "pending" && (
-                  <span className="text-sm text-muted-foreground mt-2">En attente de paiement</span>
+                  <span className="text-sm text-amber-500 mt-2">En attente de paiement</span>
                 )}
                 {invoice.status === "paid" && (
                   <span className="text-sm text-green-500 mt-2">Payé</span>
