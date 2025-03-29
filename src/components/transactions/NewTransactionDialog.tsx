@@ -72,6 +72,7 @@ export function NewTransactionDialog({
         </DialogHeader>
         <TransactionForm
           onSubmit={handleSubmit}
+          onCancel={() => onOpenChange(false)}
           isSubmitting={isSubmitting}
           registerType={registerType}
           clientId={clientId}
