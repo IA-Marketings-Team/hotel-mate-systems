@@ -101,8 +101,8 @@ const getIcon = (iconName: string) => {
 
 export function Sidebar() {
   return (
-    <aside className="w-64 hidden md:flex flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border shrink-0">
-      <div className="p-4 border-b border-sidebar-border">
+    <aside className="w-64 hidden md:flex flex-col bg-sidebar-gradient text-white border-r border-white/10 shrink-0">
+      <div className="p-4 border-b border-white/10">
         <h1 className="text-xl font-bold">HotelMate</h1>
       </div>
       <nav className="flex-1 overflow-y-auto py-4">
@@ -115,8 +115,8 @@ export function Sidebar() {
                   cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
                     isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                      ? "bg-white/20 text-white font-medium"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
                   )
                 }
               >
@@ -127,14 +127,14 @@ export function Sidebar() {
           ))}
         </ul>
       </nav>
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3">
-          <div className="size-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-accent-foreground">
+          <div className="size-8 rounded-full bg-white/10 flex items-center justify-center text-white">
             <UserCircle className="size-6" />
           </div>
           <div>
             <p className="text-sm font-medium">Admin</p>
-            <p className="text-xs text-sidebar-foreground/70">Connecté</p>
+            <p className="text-xs text-white/70">Connecté</p>
           </div>
         </div>
       </div>

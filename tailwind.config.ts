@@ -53,6 +53,10 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
         },
+        sidebar: {
+          from: 'hsl(var(--sidebar-gradient-from))',
+          to: 'hsl(var(--sidebar-gradient-to))',
+        },
         success: {
           DEFAULT: 'hsl(142, 76%, 36%)',
           light: 'hsl(141, 84%, 93%)'
@@ -92,6 +96,9 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+      backgroundImage: {
+        'sidebar-gradient': 'linear-gradient(to bottom, hsl(var(--sidebar-gradient-from)), hsl(var(--sidebar-gradient-to)))',
       },
     },
   },

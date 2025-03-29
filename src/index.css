@@ -25,6 +25,8 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221 83% 53%;
     --radius: 0.75rem;
+    --sidebar-gradient-from: 221 83% 40%;
+    --sidebar-gradient-to: 222 47% 20%;
   }
 
   * {
@@ -38,6 +40,11 @@
 
   .glass {
     @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl;
+  }
+
+  /* Sidebar gradient styles */
+  .sidebar-gradient {
+    @apply bg-gradient-to-b from-[hsl(var(--sidebar-gradient-from))] to-[hsl(var(--sidebar-gradient-to))];
   }
 
   /* Hospitality-specific styles */
