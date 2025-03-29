@@ -8,18 +8,23 @@ import { toast } from "sonner";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InvoiceTable } from "@/components/invoices/InvoiceTable";
+import { InvoicePaymentDialog } from "@/components/invoices/InvoicePaymentDialog";
 import { useClients } from "@/hooks/useClients";
 import { Search, Download, FileText, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { InvoicePaymentData } from "@/types/invoice";
 
 const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState<string | undefined>(undefined);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   
   const navigate = useNavigate();
   
-  const { data: invoices, isLoading, generateAndDownloadInvoice, markAsPaid } = useInvoices({ 
+  const { data: invoices, isLoading, generateAndDownloadInvoice, processPayment } = useInvoices({ 
     status: statusFilter !== "all" ? statusFilter : undefined,
     clientId: clientFilter !== "all" ? clientFilter : undefined
   });
@@ -42,13 +47,27 @@ const Invoices = () => {
     }
   };
 
-  const handleMarkAsPaid = async (invoice: Invoice) => {
+  const handleOpenPaymentDialog = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setIsPaymentDialogOpen(true);
+  };
+
+  const handleProcessPayment = async (paymentData: InvoicePaymentData) => {
+    setIsSubmittingPayment(true);
     try {
-      await markAsPaid.mutateAsync(invoice.id);
-      toast.success("Facture marquée comme payée");
+      await processPayment.mutateAsync(paymentData);
+      
+      const paymentMessage = paymentData.amount >= (selectedInvoice?.remainingAmount || selectedInvoice?.amount || 0)
+        ? "Facture marquée comme entièrement payée"
+        : "Paiement partiel enregistré";
+      
+      toast.success(paymentMessage);
+      setIsPaymentDialogOpen(false);
     } catch (error) {
-      console.error("Error marking invoice as paid:", error);
-      toast.error("Erreur lors du paiement de la facture");
+      console.error("Error processing payment:", error);
+      toast.error("Erreur lors du traitement du paiement");
+    } finally {
+      setIsSubmittingPayment(false);
     }
   };
 
@@ -92,7 +111,8 @@ const Invoices = () => {
           <SelectContent>
             <SelectItem value="all">Tous les statuts</SelectItem>
             <SelectItem value="pending">En attente</SelectItem>
-            <SelectItem value="paid">Payée</SelectItem>
+            <SelectItem value="partially_paid">Partiellement payées</SelectItem>
+            <SelectItem value="paid">Payées</SelectItem>
           </SelectContent>
         </Select>
         <Select
@@ -123,9 +143,10 @@ const Invoices = () => {
       </div>
 
       <Tabs defaultValue="all">
-        <TabsList className="grid grid-cols-3 max-w-md">
+        <TabsList className="grid grid-cols-4 max-w-md">
           <TabsTrigger value="all">Toutes</TabsTrigger>
           <TabsTrigger value="pending">En attente</TabsTrigger>
+          <TabsTrigger value="partially_paid">Partielles</TabsTrigger>
           <TabsTrigger value="paid">Payées</TabsTrigger>
         </TabsList>
 
@@ -135,7 +156,7 @@ const Invoices = () => {
               invoices={filteredInvoices} 
               isLoading={isLoading} 
               onDownload={handleGenerateInvoice}
-              onPay={handleMarkAsPaid}
+              onPay={handleOpenPaymentDialog}
               onViewDetails={viewTransactionDetails}
             />
           </DashboardCard>
@@ -147,7 +168,19 @@ const Invoices = () => {
               invoices={filteredInvoices.filter(inv => inv.status === 'pending')}
               isLoading={isLoading} 
               onDownload={handleGenerateInvoice}
-              onPay={handleMarkAsPaid}
+              onPay={handleOpenPaymentDialog}
+              onViewDetails={viewTransactionDetails}
+            />
+          </DashboardCard>
+        </TabsContent>
+
+        <TabsContent value="partially_paid">
+          <DashboardCard title="Factures partiellement payées">
+            <InvoiceTable 
+              invoices={filteredInvoices.filter(inv => inv.status === 'partially_paid')}
+              isLoading={isLoading} 
+              onDownload={handleGenerateInvoice}
+              onPay={handleOpenPaymentDialog}
               onViewDetails={viewTransactionDetails}
             />
           </DashboardCard>
@@ -164,6 +197,14 @@ const Invoices = () => {
           </DashboardCard>
         </TabsContent>
       </Tabs>
+
+      <InvoicePaymentDialog
+        open={isPaymentDialogOpen}
+        onOpenChange={setIsPaymentDialogOpen}
+        invoice={selectedInvoice}
+        onSubmit={handleProcessPayment}
+        isSubmitting={isSubmittingPayment}
+      />
     </div>
   );
 };

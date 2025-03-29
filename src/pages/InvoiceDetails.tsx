@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useInvoices, Invoice } from "@/hooks/useInvoices";
@@ -9,12 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download, CreditCard, FileText, User, CalendarDays, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { InvoicePaymentDialog } from "@/components/invoices/InvoicePaymentDialog";
+import { InvoicePaymentData } from "@/types/invoice";
 
 const InvoiceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: invoices, isLoading, generateAndDownloadInvoice, markAsPaid, cancelInvoice } = useInvoices();
+  const { data: invoices, isLoading, generateAndDownloadInvoice, processPayment, cancelInvoice } = useInvoices();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
 
   useEffect(() => {
     if (invoices && id) {
@@ -34,15 +39,22 @@ const InvoiceDetails = () => {
     }
   };
 
-  const handleMarkAsPaid = async () => {
-    if (invoice) {
-      try {
-        await markAsPaid.mutateAsync(invoice.id);
-        toast.success("Facture marquée comme payée");
-      } catch (error) {
-        console.error("Error marking invoice as paid:", error);
-        toast.error("Erreur lors du paiement de la facture");
-      }
+  const handleProcessPayment = async (paymentData: InvoicePaymentData) => {
+    setIsSubmittingPayment(true);
+    try {
+      await processPayment.mutateAsync(paymentData);
+      
+      const paymentMessage = paymentData.amount >= (invoice?.remainingAmount || invoice?.amount || 0)
+        ? "Facture marquée comme entièrement payée"
+        : "Paiement partiel enregistré";
+      
+      toast.success(paymentMessage);
+      setIsPaymentDialogOpen(false);
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      toast.error("Erreur lors du traitement du paiement");
+    } finally {
+      setIsSubmittingPayment(false);
     }
   };
 
@@ -64,6 +76,8 @@ const InvoiceDetails = () => {
         return <Badge className="bg-green-500 text-white">Payée</Badge>;
       case "pending":
         return <Badge variant="outline" className="text-amber-500 border-amber-500">En attente</Badge>;
+      case "partially_paid":
+        return <Badge variant="outline" className="text-blue-500 border-blue-500">Partiellement payée</Badge>;
       case "overdue":
         return <Badge variant="destructive">En retard</Badge>;
       case "cancelled":
@@ -115,11 +129,11 @@ const InvoiceDetails = () => {
               <Download className="mr-2 h-4 w-4" />
               Télécharger
             </Button>
-            {invoice.status === "pending" && (
+            {(invoice.status === "pending" || invoice.status === "partially_paid") && (
               <>
-                <Button onClick={handleMarkAsPaid}>
+                <Button onClick={() => setIsPaymentDialogOpen(true)}>
                   <CreditCard className="mr-2 h-4 w-4" />
-                  Marquer comme payée
+                  {invoice.status === "partially_paid" ? "Compléter le paiement" : "Enregistrer le paiement"}
                 </Button>
                 <Button variant="destructive" onClick={handleCancel}>
                   Annuler
@@ -161,7 +175,7 @@ const InvoiceDetails = () => {
                   <span className="text-gray-600">Date de facture</span>
                   <span>{format(new Date(invoice.date), "dd/MM/yyyy", { locale: fr })}</span>
                 </div>
-                {invoice.dueDate && invoice.status === "pending" && (
+                {invoice.dueDate && (invoice.status === "pending" || invoice.status === "partially_paid") && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Date d'échéance</span>
                     <div className="flex items-center">
@@ -190,6 +204,20 @@ const InvoiceDetails = () => {
               
               <div className="border rounded-md p-6 flex flex-col items-center justify-center bg-white">
                 <span className="text-4xl font-bold text-gray-900">{formatCurrency(invoice.amount)}</span>
+                
+                {invoice.status === "partially_paid" && (
+                  <div className="mt-2 w-full space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Payé:</span>
+                      <span className="font-medium text-green-600">{formatCurrency(invoice.paidAmount || 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Reste à payer:</span>
+                      <span className="font-medium text-amber-600">{formatCurrency(invoice.remainingAmount || 0)}</span>
+                    </div>
+                  </div>
+                )}
+                
                 {invoice.status === "pending" && (
                   <span className="text-sm text-amber-500 mt-2">En attente de paiement</span>
                 )}
@@ -198,11 +226,11 @@ const InvoiceDetails = () => {
                 )}
               </div>
 
-              {invoice.status === "pending" && (
+              {(invoice.status === "pending" || invoice.status === "partially_paid") && (
                 <div className="mt-6">
-                  <Button className="w-full" onClick={handleMarkAsPaid}>
+                  <Button className="w-full" onClick={() => setIsPaymentDialogOpen(true)}>
                     <CreditCard className="mr-2 h-4 w-4" />
-                    Enregistrer le paiement
+                    {invoice.status === "partially_paid" ? "Compléter le paiement" : "Enregistrer le paiement"}
                   </Button>
                 </div>
               )}
@@ -210,6 +238,14 @@ const InvoiceDetails = () => {
           </div>
         </div>
       </div>
+      
+      <InvoicePaymentDialog
+        open={isPaymentDialogOpen}
+        onOpenChange={setIsPaymentDialogOpen}
+        invoice={invoice}
+        onSubmit={handleProcessPayment}
+        isSubmitting={isSubmittingPayment}
+      />
     </AppLayout>
   );
 };

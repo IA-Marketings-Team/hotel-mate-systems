@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { generateInvoicePDF } from "@/lib/pdfUtils";
 import { toast } from "sonner";
-import { Invoice } from "@/types/invoice";
+import { Invoice, InvoicePaymentData } from "@/types/invoice";
 import { Transaction, RegisterType } from "@/types";
 
 export const useInvoiceActions = () => {
@@ -30,7 +30,7 @@ export const useInvoiceActions = () => {
         id: data.id,
         date: data.date,
         amount: data.amount,
-        type: data.type as 'payment' | 'refund' | 'pending',
+        type: data.type as 'payment' | 'refund' | 'pending' | 'partial',
         method: data.method as 'cash' | 'card' | 'transfer',
         registerType: data.register_type as RegisterType,
         description: data.description,
@@ -39,7 +39,9 @@ export const useInvoiceActions = () => {
         clientId: data.client_id,
         clientName: data.client?.name,
         category: data.category,
-        subcategory: data.subcategory
+        subcategory: data.subcategory,
+        paidAmount: data.paid_amount,
+        remainingAmount: data.remaining_amount
       };
 
       const filename = generateInvoicePDF(transaction);
@@ -52,18 +54,57 @@ export const useInvoiceActions = () => {
     }
   };
 
-  const markAsPaid = useMutation({
-    mutationFn: async (invoiceId: string) => {
+  const processPayment = useMutation({
+    mutationFn: async (paymentData: InvoicePaymentData) => {
+      // First get the current invoice data
+      const { data: invoice, error: fetchError } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('id', paymentData.invoiceId)
+        .single();
+
+      if (fetchError) {
+        throw new Error(`Error fetching invoice: ${fetchError.message}`);
+      }
+
+      // Calculate paid and remaining amounts
+      const currentPaidAmount = invoice.paid_amount || 0;
+      const newPaidAmount = currentPaidAmount + paymentData.amount;
+      const newRemainingAmount = invoice.amount - newPaidAmount;
+      
+      // Determine invoice status based on payment
+      let newStatus: 'payment' | 'partial' | 'pending' = 'pending';
+      
+      if (newPaidAmount >= invoice.amount) {
+        // Fully paid
+        newStatus = 'payment';
+      } else if (newPaidAmount > 0) {
+        // Partially paid
+        newStatus = 'partial';
+      }
+      
+      // Update the invoice
       const { error } = await supabase
         .from('transactions')
-        .update({ type: 'payment' as "payment" | "refund" | "pending" })
-        .eq('id', invoiceId);
+        .update({
+          type: newStatus,
+          method: paymentData.method,
+          paid_amount: newPaidAmount,
+          remaining_amount: newRemainingAmount,
+          last_payment_date: new Date().toISOString()
+        })
+        .eq('id', paymentData.invoiceId);
       
       if (error) {
         throw new Error(`Error updating invoice: ${error.message}`);
       }
       
-      return true;
+      return {
+        invoiceId: paymentData.invoiceId,
+        paidAmount: newPaidAmount,
+        remainingAmount: newRemainingAmount,
+        status: newStatus
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
@@ -75,7 +116,7 @@ export const useInvoiceActions = () => {
     mutationFn: async (invoiceId: string) => {
       const { error } = await supabase
         .from('transactions')
-        .update({ type: 'refund' as "payment" | "refund" | "pending" })
+        .update({ type: 'refund' as "payment" | "refund" | "pending" | "partial" })
         .eq('id', invoiceId);
       
       if (error) {
@@ -92,7 +133,7 @@ export const useInvoiceActions = () => {
 
   return {
     generateAndDownloadInvoice,
-    markAsPaid,
+    processPayment,
     cancelInvoice
   };
 };

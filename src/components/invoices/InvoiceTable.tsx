@@ -42,6 +42,8 @@ export function InvoiceTable({ invoices, isLoading, onDownload, onPay }: Invoice
         return <Badge className="bg-green-500">Payée</Badge>;
       case "pending":
         return <Badge variant="outline" className="text-amber-500 border-amber-500">En attente</Badge>;
+      case "partially_paid":
+        return <Badge variant="outline" className="text-blue-500 border-blue-500">Partiellement payée</Badge>;
       case "overdue":
         return <Badge variant="destructive">En retard</Badge>;
       case "cancelled":
@@ -70,7 +72,17 @@ export function InvoiceTable({ invoices, isLoading, onDownload, onPay }: Invoice
               <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
               <TableCell>{format(new Date(invoice.date), "dd MMM yyyy", { locale: fr })}</TableCell>
               <TableCell>{invoice.clientName || "—"}</TableCell>
-              <TableCell>{formatCurrency(invoice.amount)}</TableCell>
+              <TableCell>
+                <div className="flex flex-col">
+                  <span>{formatCurrency(invoice.amount)}</span>
+                  {invoice.status === "partially_paid" && (
+                    <span className="text-xs text-blue-500">
+                      Payé: {formatCurrency(invoice.paidAmount || 0)} | 
+                      Reste: {formatCurrency(invoice.remainingAmount || 0)}
+                    </span>
+                  )}
+                </div>
+              </TableCell>
               <TableCell>{getStatusBadge(invoice.status)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
@@ -82,7 +94,7 @@ export function InvoiceTable({ invoices, isLoading, onDownload, onPay }: Invoice
                   <Button variant="ghost" size="icon" onClick={() => onDownload(invoice)}>
                     <Download className="h-4 w-4" />
                   </Button>
-                  {invoice.status === "pending" && onPay && (
+                  {(invoice.status === "pending" || invoice.status === "partially_paid") && onPay && (
                     <Button variant="ghost" size="icon" onClick={() => onPay(invoice)}>
                       <CreditCard className="h-4 w-4" />
                     </Button>
