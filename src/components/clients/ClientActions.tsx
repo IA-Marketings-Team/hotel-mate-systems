@@ -13,11 +13,13 @@ import {
 interface ClientActionsProps {
   clientId: string;
   clientName: string;
+  onTransactionSuccess?: () => void;
 }
 
 export const ClientActions = ({
   clientId,
   clientName,
+  onTransactionSuccess,
 }: ClientActionsProps) => {
   const navigate = useNavigate();
 
