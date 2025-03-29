@@ -1,4 +1,3 @@
-
 // Room Types
 export type RoomStatus = 'available' | 'occupied';
 
@@ -92,4 +91,18 @@ export interface NavItem {
   href: string;
   icon: string;
   children?: NavItem[];
+}
+
+export interface Booking {
+  id: string;
+  room_id: string;
+  guest_name: string;
+  client_id?: string;
+  check_in: Date;
+  check_out: Date;
+  amount: number;
+  status: 'confirmed' | 'canceled' | 'completed';
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const RoomDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -129,11 +130,39 @@ const RoomDetails = () => {
     }
   };
 
-  const handleBookRoom = async (guestName: string) => {
+  const handleBookRoom = async (guestName: string, clientId?: string) => {
     if (!room) return;
     
     try {
-      await bookRoom(room.id, guestName);
+      const updatedRoom = await bookRoom(room.id, guestName);
+      
+      if (updatedRoom) {
+        try {
+          const currentUser = "Admin";
+          
+          const { data, error } = await supabase
+            .from('bookings')
+            .insert({
+              room_id: room.id,
+              guest_name: guestName,
+              client_id: clientId || null,
+              check_in: new Date().toISOString(),
+              check_out: new Date(Date.now() + 86400000).toISOString(),
+              amount: room.pricePerNight,
+              status: 'confirmed',
+              created_by: currentUser
+            });
+          
+          if (error) {
+            throw error;
+          }
+          
+          toast.success("Chambre réservée et enregistrement créé");
+        } catch (err: any) {
+          console.error("Error creating booking record:", err);
+          toast.error(`Erreur lors de l'enregistrement de la réservation: ${err.message}`);
+        }
+      }
     } catch (err) {
       console.error("Error booking room:", err);
     }
