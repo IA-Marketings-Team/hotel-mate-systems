@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Room, RoomStatus } from "@/types";
-import { Search, CheckCircle, Clock, AlertCircle, Plus, Moon, Brush, ArrowRight, User } from "lucide-react";
+import { Search, CheckCircle, Plus, ArrowRight, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useRooms } from "@/hooks/useRooms";
 import RoomDialog, { RoomFormValues } from "@/components/rooms/RoomDialog";
@@ -46,12 +46,6 @@ const Rooms = () => {
         return <CheckCircle className="size-4 text-green-500" />;
       case "occupied":
         return <User className="size-4 text-blue-500" />;
-      case "cleaning":
-        return <Brush className="size-4 text-yellow-500" />;
-      case "cleaning_pending":
-        return <Clock className="size-4 text-orange-500" />;
-      case "maintenance":
-        return <AlertCircle className="size-4 text-red-500" />;
     }
   };
 
@@ -61,12 +55,6 @@ const Rooms = () => {
         return "Disponible";
       case "occupied":
         return "Occupée";
-      case "cleaning":
-        return "Nettoyage en cours";
-      case "cleaning_pending":
-        return "Nettoyage requis";
-      case "maintenance":
-        return "Maintenance";
     }
   };
 
@@ -130,7 +118,7 @@ const Rooms = () => {
             onClick={() => setBatchActionDialogOpen(true)}
             className="flex items-center gap-1"
           >
-            <Moon className="size-4" /> Nettoyage de nuit
+            <User className="size-4" /> Libérer toutes les chambres
           </Button>
           <Button onClick={handleOpenAddRoom} className="flex items-center gap-1">
             <Plus className="size-4" /> Ajouter une chambre
@@ -159,9 +147,6 @@ const Rooms = () => {
             <SelectItem value="all">Tous les statuts</SelectItem>
             <SelectItem value="available">Disponible</SelectItem>
             <SelectItem value="occupied">Occupée</SelectItem>
-            <SelectItem value="cleaning">Nettoyage en cours</SelectItem>
-            <SelectItem value="cleaning_pending">Nettoyage requis</SelectItem>
-            <SelectItem value="maintenance">Maintenance</SelectItem>
           </SelectContent>
         </Select>
         <Select
@@ -188,7 +173,7 @@ const Rooms = () => {
       ) : (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredRooms.map((room) => (
-            <div key={room.id} className="hotel-card hover:shadow-lg">
+            <div key={room.id} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold">Chambre {room.number}</h3>
                 <div className="flex items-center gap-1">
@@ -250,10 +235,9 @@ const Rooms = () => {
       <Dialog open={batchActionDialogOpen} onOpenChange={setBatchActionDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nettoyage de nuit</DialogTitle>
+            <DialogTitle>Libérer toutes les chambres</DialogTitle>
             <DialogDescription>
-              Cette action marquera toutes les chambres actuellement occupées comme "en attente de nettoyage". 
-              Normalement, cela se fait automatiquement à minuit.
+              Cette action marquera toutes les chambres actuellement occupées comme disponibles.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

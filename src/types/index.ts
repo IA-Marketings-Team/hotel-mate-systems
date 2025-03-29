@@ -1,6 +1,6 @@
 
 // Room Types
-export type RoomStatus = 'available' | 'occupied' | 'cleaning' | 'cleaning_pending' | 'maintenance';
+export type RoomStatus = 'available' | 'occupied';
 
 export interface Room {
   id: string;
@@ -10,7 +10,7 @@ export interface Room {
   pricePerNight: number;
   floor: number;
   view: 'garden' | 'pool' | 'sea' | 'mountain' | 'city';
-  status: RoomStatus; // État principal
+  status: RoomStatus; // État principal (uniquement disponible ou occupé)
   maintenanceStatus: boolean; // Indique si la chambre est en maintenance
   cleaningStatus: boolean; // Indique si la chambre est en nettoyage ou à nettoyer
   features: string[];

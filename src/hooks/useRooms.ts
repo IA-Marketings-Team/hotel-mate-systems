@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +30,7 @@ export const useRooms = () => {
         notes: room.notes || "",
         pricePerNight: room.price_per_night,
         type: room.type as "standard" | "deluxe" | "suite" | "presidential",
-        status: room.status as RoomStatus,
+        status: room.status === "occupied" ? "occupied" : "available" as RoomStatus,
         maintenanceStatus: room.maintenance_status === true,
         cleaningStatus: room.cleaning_status === true,
         view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
@@ -126,6 +127,11 @@ export const useRooms = () => {
         delete dbData.cleaningStatus;
       }
 
+      // Simplify status to only available or occupied
+      if (roomData.status) {
+        dbData.status = roomData.status === "occupied" ? "occupied" : "available";
+      }
+
       const { data, error } = await supabase
         .from('rooms')
         .update(dbData)
@@ -141,7 +147,7 @@ export const useRooms = () => {
         ...data,
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
-        status: data.status as RoomStatus,
+        status: data.status === "occupied" ? "occupied" : "available" as RoomStatus,
         maintenanceStatus: data.maintenance_status === true,
         cleaningStatus: data.cleaning_status === true,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
@@ -296,7 +302,7 @@ export const useRooms = () => {
         ...data,
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
-        status: data.status as RoomStatus,
+        status: "occupied" as RoomStatus,
         maintenanceStatus: data.maintenance_status === true,
         cleaningStatus: data.cleaning_status === true,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
@@ -338,7 +344,7 @@ export const useRooms = () => {
         ...data,
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
-        status: data.status as RoomStatus,
+        status: "available" as RoomStatus,
         maintenanceStatus: data.maintenance_status === true,
         cleaningStatus: data.cleaning_status === true,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
@@ -357,11 +363,12 @@ export const useRooms = () => {
     }
   };
 
+  // Simplifier cette fonction pour ne mettre à jour que les chambres occupées
   const setAllOccupiedToPendingCleaning = async () => {
     try {
       const { data, error } = await supabase
         .from('rooms')
-        .update({ status: 'cleaning_pending' })
+        .update({ status: 'available' })
         .eq('status', 'occupied')
         .select('*');
 
@@ -376,7 +383,7 @@ export const useRooms = () => {
         notes: room.notes || "",
         pricePerNight: room.price_per_night,
         type: room.type as "standard" | "deluxe" | "suite" | "presidential",
-        status: room.status as RoomStatus,
+        status: "available" as RoomStatus,
         maintenanceStatus: room.maintenance_status === true,
         cleaningStatus: room.cleaning_status === true,
         view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
@@ -391,7 +398,7 @@ export const useRooms = () => {
         })
       );
 
-      toast.success(`Toutes les chambres occupées sont maintenant en attente de nettoyage`);
+      toast.success(`Toutes les chambres occupées sont maintenant disponibles`);
       return updatedRooms;
     } catch (err: any) {
       toast.error(`Erreur lors de la mise à jour des statuts: ${err.message}`);

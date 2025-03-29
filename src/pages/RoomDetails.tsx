@@ -10,8 +10,6 @@ import { Room, RoomStatus } from "@/types";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { 
   CheckCircle, 
-  Clock, 
-  AlertCircle, 
   Pencil, 
   Trash2, 
   ChevronLeft,
@@ -66,12 +64,6 @@ const RoomDetails = () => {
         return <CheckCircle className="size-4 text-green-500" />;
       case "occupied":
         return <User className="size-4 text-blue-500" />;
-      case "cleaning":
-        return <Brush className="size-4 text-yellow-500" />;
-      case "cleaning_pending":
-        return <Clock className="size-4 text-orange-500" />;
-      case "maintenance":
-        return <AlertCircle className="size-4 text-red-500" />;
     }
   };
 
@@ -81,12 +73,6 @@ const RoomDetails = () => {
         return "Disponible";
       case "occupied":
         return "Occupée";
-      case "cleaning":
-        return "Nettoyage en cours";
-      case "cleaning_pending":
-        return "Nettoyage requis";
-      case "maintenance":
-        return "Maintenance";
     }
   };
 

@@ -48,7 +48,7 @@ const roomFormSchema = z.object({
   pricePerNight: z.coerce.number().min(0, "Le prix doit être positif"),
   floor: z.coerce.number().min(0, "L'étage doit être positif"),
   view: z.enum(["garden", "pool", "sea", "mountain", "city"]),
-  status: z.enum(["available", "occupied", "cleaning", "cleaning_pending", "maintenance"]),
+  status: z.enum(["available", "occupied"]),
   maintenanceStatus: z.boolean().default(false),
   cleaningStatus: z.boolean().default(false),
   notes: z.string().optional(),
@@ -122,9 +122,6 @@ const RoomDialog: React.FC<RoomDialogProps> = ({
     switch (status) {
       case "available": return "Disponible";
       case "occupied": return "Occupée";
-      case "cleaning": return "Nettoyage";
-      case "cleaning_pending": return "En attente de nettoyage";
-      case "maintenance": return "Maintenance";
       default: return status;
     }
   };
@@ -283,9 +280,6 @@ const RoomDialog: React.FC<RoomDialogProps> = ({
                       <SelectContent>
                         <SelectItem value="available">Disponible</SelectItem>
                         <SelectItem value="occupied">Occupée</SelectItem>
-                        <SelectItem value="cleaning">Nettoyage</SelectItem>
-                        <SelectItem value="cleaning_pending">En attente de nettoyage</SelectItem>
-                        <SelectItem value="maintenance">Maintenance</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
