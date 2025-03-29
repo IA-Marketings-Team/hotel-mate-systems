@@ -107,18 +107,16 @@ export function EditTransactionForm({
           </div>
 
           <CategorySelector 
-            categories={categories} 
             selectedCategory={selectedCategory} 
             onCategoryChange={setSelectedCategory}
-            isLoading={isCategoriesLoading}
+            registerType={transaction.registerType}
           />
 
           {selectedCategory && (
             <SubcategorySelector 
-              subcategories={subcategories} 
+              selectedCategory={selectedCategory}
               selectedSubcategory={selectedSubcategory}
               onSubcategoryChange={setSelectedSubcategory}
-              isLoading={isSubcategoriesLoading}
             />
           )}
 
