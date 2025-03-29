@@ -4,8 +4,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface TransactionTypeSelectorProps {
-  type: "payment" | "refund" | "pending";
-  onTypeChange: (type: "payment" | "refund" | "pending") => void;
+  type: "payment" | "refund" | "pending" | "partial";
+  onTypeChange: (type: "payment" | "refund" | "pending" | "partial") => void;
   disablePending?: boolean;
 }
 
@@ -19,7 +19,7 @@ export function TransactionTypeSelector({
       <Label>Type de transaction</Label>
       <RadioGroup
         value={type}
-        onValueChange={(value) => onTypeChange(value as "payment" | "refund" | "pending")}
+        onValueChange={(value) => onTypeChange(value as "payment" | "refund" | "pending" | "partial")}
         className="flex flex-col space-y-1"
       >
         <div className="flex items-center space-x-2">
@@ -36,6 +36,10 @@ export function TransactionTypeSelector({
             <Label htmlFor="pending" className="font-normal">En attente</Label>
           </div>
         )}
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="partial" id="partial" />
+          <Label htmlFor="partial" className="font-normal">Paiement partiel</Label>
+        </div>
       </RadioGroup>
     </div>
   );

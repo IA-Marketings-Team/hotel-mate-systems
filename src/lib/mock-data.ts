@@ -1,4 +1,3 @@
-
 import { Room, StaffMember, HotelService, Transaction, DashboardStat } from "@/types";
 import { Hotel, Users, Bed, Utensils, CreditCard, DollarSign, Calendar } from "lucide-react";
 
@@ -43,12 +42,12 @@ export const mockRooms: Room[] = [
     pricePerNight: 180,
     floor: 1,
     view: "pool",
-    status: "available", // Changed from "cleaning" to "available"
+    status: "available",
     features: ["WiFi", "TV", "Mini-Bar", "Jacuzzi"],
     notes: "",
     lastCleaned: new Date(Date.now() - 172800000),
     maintenanceStatus: false,
-    cleaningStatus: true // Set to true to indicate it needs cleaning
+    cleaningStatus: true
   },
   {
     id: "4",
@@ -58,11 +57,11 @@ export const mockRooms: Room[] = [
     pricePerNight: 250,
     floor: 2,
     view: "sea",
-    status: "available", // Changed from "maintenance" to "available"
+    status: "available",
     features: ["WiFi", "TV", "Mini-Bar", "Jacuzzi", "Balcon"],
     notes: "Problème de climatisation",
     lastCleaned: new Date(Date.now() - 259200000),
-    maintenanceStatus: true, // Set to true to indicate it's in maintenance
+    maintenanceStatus: true,
     cleaningStatus: false
   },
   {
@@ -252,7 +251,14 @@ export const mockTransactions: Transaction[] = [
     registerType: "hotel",
     description: "Chambre 202 - 1 nuit",
     staffId: "2",
+    staffName: "Thomas Bernard",
     clientId: "client1",
+    clientName: "Jean Dupont",
+    category: "Hébergement",
+    subcategory: "Chambres",
+    paidAmount: 250,
+    remainingAmount: 0,
+    lastPaymentDate: new Date().toISOString()
   },
   {
     id: "2",
@@ -263,7 +269,14 @@ export const mockTransactions: Transaction[] = [
     registerType: "restaurant",
     description: "Dîner - Table 5",
     staffId: "7",
+    staffName: "Marie Moreau",
     clientId: "client2",
+    clientName: "Marie Laurent",
+    category: "Restaurant",
+    subcategory: "Dîner",
+    paidAmount: 80,
+    remainingAmount: 0,
+    lastPaymentDate: new Date(Date.now() - 86400000).toISOString()
   },
   {
     id: "3",
@@ -274,7 +287,14 @@ export const mockTransactions: Transaction[] = [
     registerType: "poker",
     description: "Achat de jetons",
     staffId: "8",
+    staffName: "Lucas Fournier",
     clientId: "client3",
+    clientName: "Bernard Michel",
+    category: "Jeux",
+    subcategory: "Poker",
+    paidAmount: 100,
+    remainingAmount: 0,
+    lastPaymentDate: new Date(Date.now() - 172800000).toISOString()
   },
   {
     id: "4",
@@ -285,7 +305,14 @@ export const mockTransactions: Transaction[] = [
     registerType: "hotel",
     description: "Remboursement minibar non utilisé",
     staffId: "2",
+    staffName: "Thomas Bernard",
     clientId: "client4",
+    clientName: "Sophie Petit",
+    category: "Hébergement",
+    subcategory: "Extras",
+    paidAmount: 0,
+    remainingAmount: 0,
+    lastPaymentDate: null
   },
   {
     id: "5",
@@ -296,7 +323,14 @@ export const mockTransactions: Transaction[] = [
     registerType: "hotel",
     description: "Excursion montagne",
     staffId: "2",
+    staffName: "Thomas Bernard",
     clientId: "client5",
+    clientName: "Pierre Martin",
+    category: "Activités",
+    subcategory: "Excursions",
+    paidAmount: 45,
+    remainingAmount: 0,
+    lastPaymentDate: new Date(Date.now() - 345600000).toISOString()
   },
 ];
 
