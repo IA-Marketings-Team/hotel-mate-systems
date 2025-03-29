@@ -30,6 +30,8 @@ interface TransactionFormProps {
   initialType?: "payment" | "refund";
   initialDescription?: string;
   initialAmount?: number;
+  initialCategory?: string;
+  initialSubcategory?: string;
 }
 
 export function TransactionForm({ 
@@ -39,7 +41,9 @@ export function TransactionForm({
   clientId,
   initialType = "payment",
   initialDescription = "",
-  initialAmount
+  initialAmount,
+  initialCategory,
+  initialSubcategory
 }: TransactionFormProps) {
   const [description, setDescription] = useState(initialDescription);
   const [amount, setAmount] = useState(initialAmount ? initialAmount.toString() : "");
@@ -53,8 +57,32 @@ export function TransactionForm({
   const { data: subcategories, isLoading: isSubcategoriesLoading } = useSubcategories(selectedCategory);
   const { data: clients, isLoading: isClientsLoading } = useClients();
 
+  // Set initial values for category and subcategory based on names
   useEffect(() => {
-    setSelectedSubcategory(null);
+    if (categories && initialCategory) {
+      const category = categories.find(cat => cat.name === initialCategory);
+      if (category) {
+        setSelectedCategory(category.id);
+      }
+    }
+  }, [categories, initialCategory]);
+
+  useEffect(() => {
+    if (subcategories && initialSubcategory && selectedCategory) {
+      const subcategory = subcategories.find(subcat => subcat.name === initialSubcategory);
+      if (subcategory) {
+        setSelectedSubcategory(subcategory.id);
+      }
+    }
+  }, [subcategories, initialSubcategory, selectedCategory]);
+
+  useEffect(() => {
+    if (selectedCategory !== null) {
+      // Only reset subcategory when category changes and it's not the initial load
+      if (!initialSubcategory || selectedSubcategory !== null) {
+        setSelectedSubcategory(null);
+      }
+    }
   }, [selectedCategory]);
 
   useEffect(() => {
@@ -82,6 +110,7 @@ export function TransactionForm({
 
     try {
       const selectedCategoryObj = categories?.find(cat => cat.id === selectedCategory);
+      const selectedSubcategoryObj = subcategories?.find(subcat => subcat.id === selectedSubcategory);
       
       // Get user information for staff_id
       const { data: { user } } = await supabase.auth.getUser();
@@ -93,8 +122,8 @@ export function TransactionForm({
         method,
         register_type: registerType,
         category: selectedCategoryObj?.name || null,
-        subcategory: subcategories?.find(subcat => subcat.id === selectedSubcategory)?.name || null,
-        client_id: selectedClientId || null,
+        subcategory: selectedSubcategoryObj?.name || null,
+        client_id: selectedClientId === "no-client" ? null : selectedClientId || null,
         staff_id: user?.id || null,
         date: new Date().toISOString()
       });

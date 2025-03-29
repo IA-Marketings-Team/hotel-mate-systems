@@ -31,13 +31,15 @@ import { useClients } from "@/hooks/useClients";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { RoomExtrasSelector, RoomExtra } from "./RoomExtrasSelector";
+import { Separator } from "@/components/ui/separator";
 
-type BookingDialogProps = {
+export type BookingDialogProps = {
   roomNumber: string;
   roomPrice: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (guestName: string, clientId?: string) => Promise<void> | void;
+  onConfirm: (guestName: string, clientId?: string, extras?: RoomExtra[]) => Promise<void> | void;
 };
 
 const bookingFormSchema = z.object({
@@ -56,6 +58,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
   const { data: clients, isLoading: clientsLoading } = useClients();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedExtras, setSelectedExtras] = useState<RoomExtra[]>([]);
   
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
@@ -64,12 +67,19 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
     },
   });
 
+  // Calculate total price including extras
+  const calculateTotalPrice = () => {
+    const extrasTotal = selectedExtras.reduce((sum, extra) => sum + (extra.price * extra.quantity), 0);
+    return roomPrice + extrasTotal;
+  };
+
   // Reset form when dialog opens
   useEffect(() => {
     if (open) {
       form.reset({
         clientId: "",
       });
+      setSelectedExtras([]);
     }
   }, [open, form]);
 
@@ -78,12 +88,18 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
     if (selectedClient) {
       setIsSubmitting(true);
       try {
-        await onConfirm(selectedClient.name, selectedClient.id);
+        await onConfirm(selectedClient.name, selectedClient.id, selectedExtras);
         form.reset();
         
         toast.success(`Chambre ${roomNumber} réservée pour ${selectedClient.name}`, {
           description: "Veuillez procéder au paiement à la caisse."
         });
+        
+        // Build extras description for the payment
+        const extrasDescription = selectedExtras
+          .filter(extra => extra.quantity > 0)
+          .map(extra => `${extra.quantity}x ${extra.name}`)
+          .join(", ");
         
         // Navigate to register page for payment
         setTimeout(() => {
@@ -92,8 +108,10 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
               pendingPayment: {
                 clientId: selectedClient.id,
                 clientName: selectedClient.name,
-                description: `Réservation Chambre ${roomNumber}`,
-                amount: roomPrice
+                description: `Réservation Chambre ${roomNumber}${extrasDescription ? ` (${extrasDescription})` : ""}`,
+                amount: calculateTotalPrice(),
+                category: "Chambres",
+                subcategory: "Réservations"
               } 
             } 
           });
@@ -110,11 +128,11 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Réserver la chambre {roomNumber}</DialogTitle>
           <DialogDescription>
-            Sélectionnez un client pour cette réservation. Un paiement sera demandé à la caisse.
+            Sélectionnez un client pour cette réservation et ajoutez des extras si nécessaire.
           </DialogDescription>
         </DialogHeader>
 
@@ -152,10 +170,33 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
               )}
             />
 
+            <Separator />
+            
+            <RoomExtrasSelector 
+              extras={selectedExtras} 
+              onChange={setSelectedExtras} 
+            />
+
             <div className="border-t pt-3">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Prix de la chambre:</span>
-                <span className="font-bold">{roomPrice} €</span>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span>Prix de la chambre:</span>
+                  <span>{roomPrice} €</span>
+                </div>
+                
+                {selectedExtras.filter(e => e.quantity > 0).map(extra => (
+                  <div key={extra.id} className="flex items-center justify-between">
+                    <span>{extra.name} (x{extra.quantity}):</span>
+                    <span>{extra.price * extra.quantity} €</span>
+                  </div>
+                ))}
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between font-bold">
+                  <span>Total:</span>
+                  <span>{calculateTotalPrice()} €</span>
+                </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
                 Le paiement sera à effectuer à la caisse après confirmation.

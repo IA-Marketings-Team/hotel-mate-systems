@@ -16,6 +16,8 @@ interface PendingPayment {
   clientName: string;
   description: string;
   amount: number;
+  category?: string;
+  subcategory?: string;
 }
 
 const Registers = () => {
@@ -124,6 +126,8 @@ const Registers = () => {
         clientId={pendingPayment?.clientId}
         initialDescription={pendingPayment?.description}
         initialAmount={pendingPayment?.amount}
+        initialCategory={pendingPayment?.category}
+        initialSubcategory={pendingPayment?.subcategory}
       />
     </div>
   );

@@ -2,10 +2,11 @@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Room } from "@/types";
+import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
 
 export const useRoomOperations = () => {
   // Function to handle room booking
-  const bookRoom = async (id: string, guestName: string, clientId?: string) => {
+  const bookRoom = async (id: string, guestName: string, clientId?: string, extras?: RoomExtra[]) => {
     try {
       const { data, error } = await supabase
         .from('rooms')
@@ -27,6 +28,24 @@ export const useRoomOperations = () => {
       try {
         const currentUser = "Admin"; // This would be replaced with actual user info
         
+        // Calculate total amount including extras
+        let totalAmount = updatedRoom.pricePerNight;
+        if (extras && extras.length > 0) {
+          const extrasAmount = extras
+            .filter(extra => extra.quantity > 0)
+            .reduce((sum, extra) => sum + (extra.price * extra.quantity), 0);
+          totalAmount += extrasAmount;
+        }
+        
+        // Format extras for storage
+        const extrasData = extras 
+          ? extras.filter(e => e.quantity > 0).map(e => ({
+              name: e.name,
+              price: e.price,
+              quantity: e.quantity
+            }))
+          : [];
+        
         const { error: bookingError } = await supabase
           .from('bookings')
           .insert({
@@ -35,9 +54,10 @@ export const useRoomOperations = () => {
             client_id: clientId || null,
             check_in: new Date().toISOString(),
             check_out: new Date(Date.now() + 86400000).toISOString(), // Default to 1 day
-            amount: updatedRoom.pricePerNight,
+            amount: totalAmount,
             status: 'confirmed',
-            created_by: currentUser
+            created_by: currentUser,
+            extras: extrasData.length > 0 ? extrasData : null
           });
         
         if (bookingError) {

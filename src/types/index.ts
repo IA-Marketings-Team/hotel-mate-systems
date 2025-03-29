@@ -1,3 +1,4 @@
+
 // Room Types
 export type RoomStatus = 'available' | 'occupied';
 
@@ -44,6 +45,13 @@ export interface Client {
   notes?: string;
   createdAt: Date | string;
   updatedAt: Date | string;
+}
+
+// Room Extra
+export interface BookingExtra {
+  name: string;
+  price: number;
+  quantity: number;
 }
 
 // Service Types
@@ -105,4 +113,5 @@ export interface Booking {
   created_at: Date;
   updated_at: Date;
   created_by: string;
+  extras?: BookingExtra[];
 }

@@ -9,6 +9,7 @@ import RoomInfoCard from "@/components/rooms/RoomInfoCard";
 import RoomStatusManager from "@/components/rooms/RoomStatusManager";
 import { Room } from "@/types";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
 import { 
   Pencil, 
   Trash2, 
@@ -106,11 +107,11 @@ const RoomDetails = () => {
     }
   };
 
-  const handleBookRoom = async (guestName: string, clientId?: string) => {
+  const handleBookRoom = async (guestName: string, clientId?: string, extras?: RoomExtra[]) => {
     if (!room) return;
     
     try {
-      await bookRoom(room.id, guestName, clientId);
+      await bookRoom(room.id, guestName, clientId, extras);
     } catch (err) {
       console.error("Error booking room:", err);
     }
@@ -213,7 +214,7 @@ const RoomDetails = () => {
 
       <BookingDialog
         roomNumber={room.number}
-        roomPrice={room.pricePerNight} // Add this missing prop
+        roomPrice={room.pricePerNight}
         open={bookingDialogOpen}
         onOpenChange={setBookingDialogOpen}
         onConfirm={handleBookRoom}
