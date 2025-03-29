@@ -29,7 +29,7 @@ export const useTransactionDetails = (id: string | undefined) => {
         id: data.id,
         date: data.date,
         amount: data.amount,
-        type: data.type as 'payment' | 'refund',
+        type: data.type as 'payment' | 'refund' | 'pending',
         method: data.method as 'cash' | 'card' | 'transfer',
         registerType: data.register_type as 'hotel' | 'restaurant' | 'poker' | 'rooftop',
         description: data.description,

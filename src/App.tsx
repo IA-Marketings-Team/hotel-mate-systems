@@ -20,6 +20,7 @@ import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
 import NewClient from "./pages/NewClient";
 import ClientActionsPage from "./pages/ClientActionsPage";
+import Invoices from "./pages/Invoices";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,11 @@ const App = () => (
               </AppLayout>
             } />
             <Route path="/transaction/:id" element={<TransactionDetails />} />
+            <Route path="/invoices" element={
+              <AppLayout>
+                <Invoices />
+              </AppLayout>
+            } />
             <Route path="/services" element={
               <AppLayout>
                 <Services />
