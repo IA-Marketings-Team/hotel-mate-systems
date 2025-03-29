@@ -37,7 +37,7 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
   onOpenChange
 }) => {
   const { data: clients } = useClients();
-  const { rooms } = useRooms();
+  const { rooms, loading: roomsLoading } = useRooms();
   const { resources } = useResources(bookingType);
   const { createBooking } = useBookings();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -139,12 +139,10 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
 
   const getResourceOptions = () => {
     if (bookingType === 'room') {
-      return rooms
-        .filter(room => room.status === 'available' && !room.maintenanceStatus)
-        .map(room => ({
-          value: room.id,
-          label: `Chambre ${room.number} (${room.type}) - ${room.pricePerNight}€/nuit`
-        }));
+      return rooms.filter(room => room.status === 'available').map(room => ({
+        value: room.id,
+        label: `Chambre ${room.number} (${room.type}) - ${room.pricePerNight}€/nuit`
+      }));
     }
     
     // For other resource types

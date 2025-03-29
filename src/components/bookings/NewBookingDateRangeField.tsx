@@ -12,7 +12,7 @@ import { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { format, addHours, setHours, setMinutes } from "date-fns";
+import { format, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,34 +35,19 @@ export const NewBookingDateRangeField: React.FC<NewBookingDateRangeFieldProps> =
 }) => {
   const today = new Date();
   
-  const getInitialDates = () => {
-    const from = today;
-    let to;
-    
-    if (bookingType === 'room' || bookingType === 'car') {
-      // For rooms and cars, set initial time range for a day
-      to = new Date(from);
-      to.setDate(to.getDate() + 1);
-    } else {
-      // For other resources, set initial time range for 2 hours
-      to = addHours(from, 2);
-    }
-    
-    return { from, to };
-  };
-  
   const handleRangeChange = (range: DateRange) => {
     if (range.from && !range.to) {
-      // When only start date is selected, set end date based on booking type
+      // Quand seulement la date de début est sélectionnée, 
+      // ajoutons automatiquement 1 jour ou 2 heures pour la date de fin
       let toDate;
       
       if (bookingType === 'room' || bookingType === 'car') {
-        // For rooms and cars, set end date to the next day
-        toDate = new Date(range.from);
-        toDate.setDate(toDate.getDate() + 1);
+        // Pour les chambres et voitures, on ajoute 1 jour
+        toDate = addDays(range.from, 1);
       } else {
-        // For other resources, set end time to 2 hours later
-        toDate = addHours(range.from, 2);
+        // Pour les autres ressources, on ajoute 2 heures
+        toDate = new Date(range.from);
+        toDate.setHours(toDate.getHours() + 2);
       }
       
       setDateRange({
@@ -139,16 +124,17 @@ export const NewBookingDateRangeField: React.FC<NewBookingDateRangeFieldProps> =
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 z-50" align="start">
               <Calendar
                 initialFocus
                 mode="range"
                 defaultMonth={dateRange?.from}
                 selected={dateRange}
                 onSelect={handleRangeChange}
-                numberOfMonths={2}
+                numberOfMonths={1}
                 locale={fr}
                 fromDate={today}
+                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
