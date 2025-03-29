@@ -4,14 +4,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockTransactions } from "@/lib/mock-data";
 import { Transaction } from "@/types";
 import { Search, Plus, PlusCircle, Hotel, Utensils, CircleDollarSign } from "lucide-react";
 import { format } from "date-fns";
+import { useTransactions } from "@/hooks/useTransactions";
+import { NewTransactionDialog } from "@/components/transactions/NewTransactionDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const Registers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("hotel");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const { data: transactions, isLoading, refetch } = useTransactions(activeTab);
 
   const getTransactionIcon = (type: string) => {
     if (type === "payment") {
@@ -34,19 +40,28 @@ const Registers = () => {
     }
   };
 
-  const filteredTransactions = mockTransactions.filter((transaction) => {
+  const filteredTransactions = (transactions || []).filter((transaction) => {
     return (
-      transaction.registerType === activeTab &&
-      (transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.amount.toString().includes(searchTerm))
+      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.amount.toString().includes(searchTerm) ||
+      (transaction.category && transaction.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (transaction.subcategory && transaction.subcategory.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   });
+
+  const handleTransactionSuccess = () => {
+    refetch();
+    toast({
+      title: "Transaction ajoutée",
+      description: "La transaction a été ajoutée avec succès à la caisse " + activeTab
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Caisses</h1>
-        <Button>Nouvelle transaction</Button>
+        <Button onClick={() => setIsDialogOpen(true)}>Nouvelle transaction</Button>
       </div>
 
       <Tabs defaultValue="hotel" onValueChange={setActiveTab}>
@@ -77,133 +92,103 @@ const Registers = () => {
 
         <TabsContent value="hotel" className="space-y-4">
           <DashboardCard title="Caisse Hôtellerie">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground [&_th]:py-3 [&_th]:pr-4">
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Type</th>
-                    <th>Méthode</th>
-                    <th className="text-right">Montant</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-t border-muted [&_td]:py-3 [&_td]:pr-4">
-                      <td>{format(transaction.date, "dd/MM/yyyy HH:mm")}</td>
-                      <td className="font-medium">{transaction.description}</td>
-                      <td>
-                        <div className="flex items-center gap-1">
-                          {getTransactionIcon(transaction.type)}
-                          <span>{transaction.type === "payment" ? "Paiement" : "Remboursement"}</span>
-                        </div>
-                      </td>
-                      <td className="capitalize">{transaction.method}</td>
-                      <td className={`text-right font-medium ${
-                        transaction.type === "payment" ? "text-green-600" : "text-red-600"
-                      }`}>
-                        {transaction.type === "payment" ? "+" : "-"}
-                        {transaction.amount} €
-                      </td>
-                      <td>
-                        <Button variant="ghost" size="sm">Détails</Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <RegisterContent 
+              transactions={filteredTransactions} 
+              isLoading={isLoading} 
+              getTransactionIcon={getTransactionIcon} 
+            />
           </DashboardCard>
         </TabsContent>
 
         <TabsContent value="restaurant" className="space-y-4">
           <DashboardCard title="Caisse Restaurant">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground [&_th]:py-3 [&_th]:pr-4">
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Type</th>
-                    <th>Méthode</th>
-                    <th className="text-right">Montant</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-t border-muted [&_td]:py-3 [&_td]:pr-4">
-                      <td>{format(transaction.date, "dd/MM/yyyy HH:mm")}</td>
-                      <td className="font-medium">{transaction.description}</td>
-                      <td>
-                        <div className="flex items-center gap-1">
-                          {getTransactionIcon(transaction.type)}
-                          <span>{transaction.type === "payment" ? "Paiement" : "Remboursement"}</span>
-                        </div>
-                      </td>
-                      <td className="capitalize">{transaction.method}</td>
-                      <td className={`text-right font-medium ${
-                        transaction.type === "payment" ? "text-green-600" : "text-red-600"
-                      }`}>
-                        {transaction.type === "payment" ? "+" : "-"}
-                        {transaction.amount} €
-                      </td>
-                      <td>
-                        <Button variant="ghost" size="sm">Détails</Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <RegisterContent 
+              transactions={filteredTransactions} 
+              isLoading={isLoading} 
+              getTransactionIcon={getTransactionIcon} 
+            />
           </DashboardCard>
         </TabsContent>
 
         <TabsContent value="poker" className="space-y-4">
           <DashboardCard title="Caisse Poker">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground [&_th]:py-3 [&_th]:pr-4">
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Type</th>
-                    <th>Méthode</th>
-                    <th className="text-right">Montant</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-t border-muted [&_td]:py-3 [&_td]:pr-4">
-                      <td>{format(transaction.date, "dd/MM/yyyy HH:mm")}</td>
-                      <td className="font-medium">{transaction.description}</td>
-                      <td>
-                        <div className="flex items-center gap-1">
-                          {getTransactionIcon(transaction.type)}
-                          <span>{transaction.type === "payment" ? "Paiement" : "Remboursement"}</span>
-                        </div>
-                      </td>
-                      <td className="capitalize">{transaction.method}</td>
-                      <td className={`text-right font-medium ${
-                        transaction.type === "payment" ? "text-green-600" : "text-red-600"
-                      }`}>
-                        {transaction.type === "payment" ? "+" : "-"}
-                        {transaction.amount} €
-                      </td>
-                      <td>
-                        <Button variant="ghost" size="sm">Détails</Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <RegisterContent 
+              transactions={filteredTransactions} 
+              isLoading={isLoading} 
+              getTransactionIcon={getTransactionIcon} 
+            />
           </DashboardCard>
         </TabsContent>
       </Tabs>
+
+      <NewTransactionDialog 
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
+        registerType={activeTab}
+        onSuccess={handleTransactionSuccess}
+      />
+    </div>
+  );
+};
+
+interface RegisterContentProps {
+  transactions: Transaction[];
+  isLoading: boolean;
+  getTransactionIcon: (type: string) => JSX.Element;
+}
+
+const RegisterContent = ({ transactions, isLoading, getTransactionIcon }: RegisterContentProps) => {
+  if (isLoading) {
+    return <div className="text-center py-8">Chargement des transactions...</div>;
+  }
+
+  if (!transactions.length) {
+    return <div className="text-center py-8 text-muted-foreground">Aucune transaction trouvée</div>;
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left text-muted-foreground [&_th]:py-3 [&_th]:pr-4">
+            <th>Date</th>
+            <th>Description</th>
+            <th>Catégorie</th>
+            <th>Type</th>
+            <th>Méthode</th>
+            <th className="text-right">Montant</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((transaction) => (
+            <tr key={transaction.id} className="border-t border-muted [&_td]:py-3 [&_td]:pr-4">
+              <td>{format(new Date(transaction.date), "dd/MM/yyyy HH:mm")}</td>
+              <td className="font-medium">{transaction.description}</td>
+              <td>
+                {transaction.category} 
+                {transaction.subcategory && <span className="text-muted-foreground ml-1">/ {transaction.subcategory}</span>}
+              </td>
+              <td>
+                <div className="flex items-center gap-1">
+                  {getTransactionIcon(transaction.type)}
+                  <span>{transaction.type === "payment" ? "Paiement" : "Remboursement"}</span>
+                </div>
+              </td>
+              <td className="capitalize">{transaction.method}</td>
+              <td className={`text-right font-medium ${
+                transaction.type === "payment" ? "text-green-600" : "text-red-600"
+              }`}>
+                {transaction.type === "payment" ? "+" : "-"}
+                {transaction.amount} €
+              </td>
+              <td>
+                <Button variant="ghost" size="sm">Détails</Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

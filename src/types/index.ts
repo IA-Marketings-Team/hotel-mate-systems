@@ -1,4 +1,3 @@
-
 // Room Types
 export type RoomStatus = 'available' | 'occupied' | 'cleaning' | 'maintenance';
 
@@ -42,18 +41,20 @@ export interface HotelService {
 }
 
 // Register Types
-export type RegisterType = 'hotel' | 'restaurant' | 'poker';
+export type RegisterType = 'hotel' | 'restaurant' | 'poker' | 'rooftop';
 
 export interface Transaction {
   id: string;
-  date: Date;
+  date: string;
   amount: number;
   type: 'payment' | 'refund';
   method: 'cash' | 'card' | 'transfer';
   registerType: RegisterType;
   description: string;
-  staffId: string;
+  staffId?: string;
   clientId?: string;
+  category?: string;
+  subcategory?: string;
 }
 
 // Dashboard Types
