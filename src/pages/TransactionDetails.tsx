@@ -1,10 +1,6 @@
 
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Transaction } from "@/types";
-import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { toast } from "sonner";
@@ -13,39 +9,14 @@ import { TransactionGeneralInfo } from "@/components/transactions/TransactionGen
 import { TransactionDetailsInfo } from "@/components/transactions/TransactionDetailsInfo";
 import { TransactionActions } from "@/components/transactions/TransactionActions";
 import { generateInvoicePDF, generateTransactionCSV } from "@/lib/pdfUtils";
+import { useTransactionDetails } from "@/hooks/useTransactionDetails";
+import { TransactionLoading } from "@/components/transactions/TransactionLoading";
+import { TransactionError } from "@/components/transactions/TransactionError";
 
 const TransactionDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const { data: transaction, isLoading } = useQuery({
-    queryKey: ['transaction', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (error) {
-        throw new Error(`Error fetching transaction: ${error.message}`);
-      }
-      
-      return {
-        id: data.id,
-        date: data.date,
-        amount: data.amount,
-        type: data.type as 'payment' | 'refund',
-        method: data.method as 'cash' | 'card' | 'transfer',
-        registerType: data.register_type as 'hotel' | 'restaurant' | 'poker' | 'rooftop',
-        description: data.description,
-        staffId: data.staff_id,
-        clientId: data.client_id,
-        category: data.category,
-        subcategory: data.subcategory
-      } as Transaction;
-    }
-  });
+  const { data: transaction, isLoading, error } = useTransactionDetails(id);
 
   const goBack = () => {
     navigate("/registers");
@@ -76,21 +47,15 @@ const TransactionDetails = () => {
   };
 
   if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="p-8 text-center">Chargement des détails de la transaction...</div>
-      </AppLayout>
-    );
+    return <TransactionLoading />;
   }
 
-  if (!transaction) {
+  if (error || !transaction) {
     return (
-      <AppLayout>
-        <div className="p-8 text-center">
-          <p className="text-xl text-muted-foreground mb-4">Transaction non trouvée</p>
-          <Button onClick={goBack}>Retour aux caisses</Button>
-        </div>
-      </AppLayout>
+      <TransactionError 
+        message={error ? `Erreur: ${error.message}` : "Transaction non trouvée"} 
+        onGoBack={goBack}
+      />
     );
   }
 
