@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TransactionForm } from "./TransactionForm";
 import { useTransactions } from "@/hooks/useTransactions";
 import { RegisterType } from "@/types";
@@ -47,7 +47,12 @@ export function NewTransactionDialog({
         staffId: data.staffId,
       });
 
-      toast.success("Transaction créée avec succès");
+      let successMessage = "Transaction créée avec succès";
+      if (data.type === "pending") {
+        successMessage = "Transaction en attente de paiement créée avec succès";
+      }
+      
+      toast.success(successMessage);
       
       // Close the dialog after successful submission
       onOpenChange(false);
@@ -69,6 +74,9 @@ export function NewTransactionDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Nouvelle transaction</DialogTitle>
+          <DialogDescription>
+            Créez une nouvelle transaction ou enregistrez un paiement futur.
+          </DialogDescription>
         </DialogHeader>
         <TransactionForm
           onSubmit={handleSubmit}

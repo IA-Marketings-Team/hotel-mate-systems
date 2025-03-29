@@ -10,6 +10,8 @@ import { BookingType } from "@/types/bookings";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { toast } from "sonner";
 import { differenceInDays } from "date-fns";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const bookingSchema = z.object({
   clientId: z.string().min(1, "Veuillez sélectionner un client"),
@@ -20,6 +22,7 @@ const bookingSchema = z.object({
   }),
   amount: z.coerce.number().min(0, "Le montant doit être positif"),
   extras: z.array(z.any()).optional(),
+  paymentOption: z.enum(['immediate', 'later']),
 });
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
@@ -46,6 +49,7 @@ const NewBooking = () => {
       },
       amount: 0,
       extras: [],
+      paymentOption: 'immediate',
     },
   });
 
@@ -54,7 +58,7 @@ const NewBooking = () => {
   };
 
   const handleSuccess = (bookingData: any) => {
-    const { clientId, resourceId, dateRange, amount, extras, resourceName, clientName } = bookingData;
+    const { clientId, resourceId, dateRange, amount, extras, resourceName, clientName, paymentOption } = bookingData;
     
     // Calculate nights for the description
     const nights = differenceInDays(dateRange.to, dateRange.from) || 1;
@@ -74,10 +78,19 @@ const NewBooking = () => {
          bookingTypeParam === 'car' ? 'Voiture' : 
          bookingTypeParam === 'terrace' ? 'Terrasse' : 'Restaurant'} ${resourceName}`;
     
-    // Redirect to registers with payment info
-    toast.success(`Réservation créée pour ${clientName}`, {
-      description: "Procédez au paiement à la caisse."
-    });
+    // Determine transaction type based on payment option
+    const transactionType = paymentOption === 'immediate' ? 'payment' : 'pending';
+    
+    // Show appropriate toast message
+    if (paymentOption === 'immediate') {
+      toast.success(`Réservation créée pour ${clientName}`, {
+        description: "Procédez au paiement à la caisse."
+      });
+    } else {
+      toast.success(`Réservation créée pour ${clientName}`, {
+        description: "Le paiement sera effectué ultérieurement."
+      });
+    }
     
     // Navigate to register page with payment info
     navigate("/registers", {
@@ -91,7 +104,8 @@ const NewBooking = () => {
                     bookingTypeParam === 'meeting' ? "Salles de réunion" :
                     bookingTypeParam === 'car' ? "Location voitures" :
                     bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
-          subcategory: "Réservations"
+          subcategory: "Réservations",
+          transactionType
         }
       }
     });
@@ -113,6 +127,25 @@ const NewBooking = () => {
           <p className="text-muted-foreground mb-6">
             Créez une nouvelle réservation en remplissant le formulaire ci-dessous.
           </p>
+          
+          <div className="mb-6 border-b pb-4">
+            <h3 className="text-lg font-medium mb-3">Option de paiement</h3>
+            <RadioGroup
+              defaultValue={form.watch("paymentOption")}
+              onValueChange={(value) => form.setValue("paymentOption", value as 'immediate' | 'later')}
+              className="flex flex-col space-y-3"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="immediate" id="payment-immediate" />
+                <Label htmlFor="payment-immediate" className="font-normal">Paiement immédiat</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="later" id="payment-later" />
+                <Label htmlFor="payment-later" className="font-normal">Payer plus tard</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          
           <NewBookingForm 
             form={form} 
             dateRange={dateRange}

@@ -1,3 +1,4 @@
+
 // Room Types
 export type RoomStatus = 'available' | 'occupied';
 
@@ -92,7 +93,7 @@ export interface Transaction {
   id: string;
   date: Date | string;
   amount: number;
-  type: 'payment' | 'refund';
+  type: 'payment' | 'refund' | 'pending';
   method: 'cash' | 'card' | 'transfer';
   registerType: RegisterType;
   description: string;

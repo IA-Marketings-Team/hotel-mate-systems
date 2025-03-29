@@ -11,7 +11,7 @@ interface TransactionFilters {
 interface CreateTransactionPayload {
   description: string;
   amount: number;
-  type: 'payment' | 'refund';
+  type: 'payment' | 'refund' | 'pending';
   method: 'cash' | 'card' | 'transfer';
   registerType: RegisterType;
   category?: string;
@@ -59,7 +59,7 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
         id: item.id,
         date: item.date,
         amount: item.amount,
-        type: item.type as 'payment' | 'refund',
+        type: item.type as 'payment' | 'refund' | 'pending',
         method: item.method as 'cash' | 'card' | 'transfer',
         registerType: item.register_type as RegisterType,
         description: item.description,

@@ -2,6 +2,7 @@
 import React from "react";
 import { Transaction } from "@/types";
 import { formatCurrency } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface TransactionDetailsInfoProps {
   transaction: Transaction;
@@ -29,11 +30,27 @@ export const TransactionDetailsInfo: React.FC<TransactionDetailsInfoProps> = ({
         </div>
       )}
       <div>
+        <p className="text-sm text-muted-foreground">Statut</p>
+        {transaction.type === "pending" ? (
+          <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+            En attente de paiement
+          </Badge>
+        ) : (
+          <Badge variant={transaction.type === "payment" ? "default" : "destructive"}>
+            {transaction.type === "payment" ? "Payé" : "Remboursé"}
+          </Badge>
+        )}
+      </div>
+      <div>
         <p className="text-sm text-muted-foreground">Montant</p>
         <p className={`font-medium text-2xl ${
-          transaction.type === "payment" ? "text-green-600" : "text-red-600"
+          transaction.type === "payment" ? "text-green-600" : 
+          transaction.type === "refund" ? "text-red-600" :
+          "text-amber-600"
         }`}>
-          {transaction.type === "payment" ? "+" : "-"}
+          {transaction.type === "payment" ? "+" : 
+           transaction.type === "refund" ? "-" :
+           "⏱ "}
           {formatCurrency(transaction.amount)}
         </p>
       </div>

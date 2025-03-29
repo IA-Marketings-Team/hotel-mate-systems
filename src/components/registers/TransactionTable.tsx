@@ -2,7 +2,7 @@
 import React from "react";
 import { Transaction } from "@/types";
 import { format } from "date-fns";
-import { MoreHorizontal, Plus, PlusCircle, UserIcon, UserCheck } from "lucide-react";
+import { MoreHorizontal, Plus, PlusCircle, UserIcon, UserCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,8 +27,10 @@ export function TransactionTable({
   const getTransactionIcon = (type: string) => {
     if (type === "payment") {
       return <Plus className="size-4 text-green-500" />;
-    } else {
+    } else if (type === "refund") {
       return <PlusCircle className="size-4 text-red-500" />;
+    } else {
+      return <Clock className="size-4 text-amber-500" />;
     }
   };
 
@@ -57,7 +59,11 @@ export function TransactionTable({
       </TableHeader>
       <TableBody>
         {transactions.map((transaction) => (
-          <TableRow key={transaction.id} className="cursor-pointer hover:bg-muted/80" onClick={() => onViewDetails(transaction)}>
+          <TableRow 
+            key={transaction.id} 
+            className={`cursor-pointer hover:bg-muted/80 ${transaction.type === 'pending' ? 'bg-amber-50' : ''}`} 
+            onClick={() => onViewDetails(transaction)}
+          >
             <TableCell>{format(new Date(transaction.date), "dd/MM/yyyy HH:mm")}</TableCell>
             <TableCell className="font-medium">{transaction.description}</TableCell>
             <TableCell>
@@ -67,7 +73,11 @@ export function TransactionTable({
             <TableCell>
               <div className="flex items-center gap-1">
                 {getTransactionIcon(transaction.type)}
-                <span>{transaction.type === "payment" ? "Paiement" : "Remboursement"}</span>
+                <span>
+                  {transaction.type === "payment" ? "Paiement" : 
+                   transaction.type === "refund" ? "Remboursement" : 
+                   "À payer plus tard"}
+                </span>
               </div>
             </TableCell>
             <TableCell className="capitalize">
@@ -95,9 +105,13 @@ export function TransactionTable({
               )}
             </TableCell>
             <TableCell className={`text-right font-medium ${
-              transaction.type === "payment" ? "text-green-600" : "text-red-600"
+              transaction.type === "payment" ? "text-green-600" : 
+              transaction.type === "refund" ? "text-red-600" : 
+              "text-amber-600"
             }`}>
-              {transaction.type === "payment" ? "+" : "-"}
+              {transaction.type === "payment" ? "+" : 
+               transaction.type === "refund" ? "-" :
+               "⏱ "}
               {formatCurrency(transaction.amount)}
             </TableCell>
             <TableCell onClick={(e) => e.stopPropagation()}>

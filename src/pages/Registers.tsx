@@ -18,6 +18,7 @@ interface PendingPayment {
   amount: number;
   category?: string;
   subcategory?: string;
+  transactionType?: 'payment' | 'pending';
 }
 
 const Registers = () => {
