@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useInvoices, Invoice } from "@/hooks/useInvoices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,19 +9,41 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InvoiceTable } from "@/components/invoices/InvoiceTable";
 import { useClients } from "@/hooks/useClients";
-import { Search, Download, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Search, Download, FileText, Plus } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { NewTransactionDialog } from "@/components/transactions/NewTransactionDialog";
+import { RegisterType } from "@/types";
 
 const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState<string | undefined>(undefined);
-  const { data: invoices, isLoading, generateAndDownloadInvoice } = useInvoices({ 
+  const [isNewInvoiceDialogOpen, setIsNewInvoiceDialogOpen] = useState(false);
+  const [registerType, setRegisterType] = useState<RegisterType>("hotel");
+  
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const { data: invoices, isLoading, generateAndDownloadInvoice, markAsPaid } = useInvoices({ 
     status: statusFilter !== "all" ? statusFilter : undefined,
     clientId: clientFilter !== "all" ? clientFilter : undefined
   });
   const { data: clients, isLoading: isClientsLoading } = useClients();
-  const navigate = useNavigate();
+
+  // Check if we should open the invoice creation dialog from navigation state
+  useEffect(() => {
+    const state = location.state as { openCreateDialog?: boolean; registerType?: RegisterType } | null;
+    
+    if (state?.openCreateDialog) {
+      if (state.registerType) {
+        setRegisterType(state.registerType);
+      }
+      setIsNewInvoiceDialogOpen(true);
+      
+      // Clear the location state
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const filteredInvoices = (invoices || []).filter((invoice) => {
     const searchInvoice = 
@@ -40,8 +62,23 @@ const Invoices = () => {
     }
   };
 
+  const handleMarkAsPaid = async (invoice: Invoice) => {
+    try {
+      await markAsPaid.mutateAsync(invoice.id);
+      toast.success("Facture marquée comme payée");
+    } catch (error) {
+      console.error("Error marking invoice as paid:", error);
+      toast.error("Erreur lors du paiement de la facture");
+    }
+  };
+
   const viewTransactionDetails = (invoice: Invoice) => {
     navigate(`/transaction/${invoice.transactionId}`);
+  };
+
+  const handleNewInvoiceSuccess = () => {
+    setIsNewInvoiceDialogOpen(false);
+    toast.success("Facture créée avec succès");
   };
 
   return (
@@ -49,6 +86,10 @@ const Invoices = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Factures</h1>
         <div className="flex items-center gap-2">
+          <Button onClick={() => setIsNewInvoiceDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouvelle facture
+          </Button>
           <FileText className="h-5 w-5 text-muted-foreground" />
           <span className="text-muted-foreground">
             {filteredInvoices.length} facture{filteredInvoices.length !== 1 ? 's' : ''}
@@ -119,6 +160,7 @@ const Invoices = () => {
               invoices={filteredInvoices} 
               isLoading={isLoading} 
               onDownload={handleGenerateInvoice}
+              onPay={handleMarkAsPaid}
               onViewDetails={viewTransactionDetails}
             />
           </DashboardCard>
@@ -130,6 +172,7 @@ const Invoices = () => {
               invoices={filteredInvoices.filter(inv => inv.status === 'pending')}
               isLoading={isLoading} 
               onDownload={handleGenerateInvoice}
+              onPay={handleMarkAsPaid}
               onViewDetails={viewTransactionDetails}
             />
           </DashboardCard>
@@ -146,6 +189,14 @@ const Invoices = () => {
           </DashboardCard>
         </TabsContent>
       </Tabs>
+
+      <NewTransactionDialog 
+        open={isNewInvoiceDialogOpen} 
+        onOpenChange={setIsNewInvoiceDialogOpen} 
+        registerType={registerType}
+        onSuccess={handleNewInvoiceSuccess}
+        initialType="pending"
+      />
     </div>
   );
 };

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { differenceInDays } from "date-fns";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useInvoices } from "@/hooks/useInvoices";
 
 const bookingSchema = z.object({
   clientId: z.string().min(1, "Veuillez sélectionner un client"),
@@ -32,6 +33,7 @@ const NewBooking = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const bookingTypeParam = searchParams.get('type') as BookingType || 'room';
+  const { createInvoice } = useInvoices();
   
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(),
@@ -57,7 +59,7 @@ const NewBooking = () => {
     navigate("/bookings");
   };
 
-  const handleSuccess = (bookingData: any) => {
+  const handleSuccess = async (bookingData: any) => {
     const { clientId, resourceId, dateRange, amount, extras, resourceName, clientName, paymentOption } = bookingData;
     
     // Calculate nights for the description
@@ -78,37 +80,33 @@ const NewBooking = () => {
          bookingTypeParam === 'car' ? 'Voiture' : 
          bookingTypeParam === 'terrace' ? 'Terrasse' : 'Restaurant'} ${resourceName}`;
     
-    // Determine transaction type based on payment option
-    const transactionType = paymentOption === 'immediate' ? 'payment' : 'pending';
-    
-    // Show appropriate toast message
-    if (paymentOption === 'immediate') {
-      toast.success(`Réservation créée pour ${clientName}`, {
-        description: "Procédez au paiement à la caisse."
+    try {
+      // Create invoice first
+      await createInvoice.mutateAsync({
+        description: bookingDescription,
+        amount: amount,
+        clientId: clientId,
+        staffId: null, // This would be the logged-in staff in a real system
+        category: bookingTypeParam === 'room' ? "Chambres" : 
+                  bookingTypeParam === 'meeting' ? "Salles de réunion" :
+                  bookingTypeParam === 'car' ? "Location voitures" :
+                  bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
+        subcategory: "Réservations",
+        registerType: "hotel"
       });
-    } else {
+      
       toast.success(`Réservation créée pour ${clientName}`, {
-        description: "Le paiement sera effectué ultérieurement."
+        description: "Une facture a été créée. Vous pouvez effectuer le paiement ultérieurement."
       });
+      
+      // Navigate to invoices page
+      setTimeout(() => {
+        navigate("/invoices");
+      }, 1500);
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      toast.error("Erreur lors de la création de la facture");
     }
-    
-    // Navigate to register page with payment info
-    navigate("/registers", {
-      state: {
-        pendingPayment: {
-          clientId,
-          clientName,
-          description: bookingDescription,
-          amount,
-          category: bookingTypeParam === 'room' ? "Chambres" : 
-                    bookingTypeParam === 'meeting' ? "Salles de réunion" :
-                    bookingTypeParam === 'car' ? "Location voitures" :
-                    bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
-          subcategory: "Réservations",
-          transactionType
-        }
-      }
-    });
   };
 
   return (

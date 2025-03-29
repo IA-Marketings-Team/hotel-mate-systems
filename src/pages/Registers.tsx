@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Transaction, RegisterType } from "@/types";
@@ -9,40 +9,15 @@ import { toast } from "sonner";
 import { RegisterTabs } from "@/components/registers/RegisterTabs";
 import { RegisterSearch } from "@/components/registers/RegisterSearch";
 import { RegisterContent } from "@/components/registers/RegisterContent";
-import { useNavigate, useLocation } from "react-router-dom";
-
-interface PendingPayment {
-  clientId: string;
-  clientName: string;
-  description: string;
-  amount: number;
-  category?: string;
-  subcategory?: string;
-  transactionType?: 'payment' | 'pending';
-}
+import { useNavigate } from "react-router-dom";
 
 const Registers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<RegisterType>("hotel");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
 
   const { data: transactions, isLoading, refetch } = useTransactions(activeTab);
-
-  useEffect(() => {
-    // Check if there's a pending payment in the location state
-    const state = location.state as { pendingPayment?: PendingPayment } | null;
-    if (state?.pendingPayment) {
-      setPendingPayment(state.pendingPayment);
-      setActiveTab("hotel"); // Set to hotel register for room bookings
-      setIsDialogOpen(true);
-      
-      // Clear the location state to prevent showing the dialog on refresh
-      navigate(location.pathname, { replace: true });
-    }
-  }, [location, navigate]);
 
   const filteredTransactions = (transactions || []).filter((transaction) => {
     return (
@@ -55,7 +30,6 @@ const Registers = () => {
 
   const handleTransactionSuccess = () => {
     refetch();
-    setPendingPayment(null);
     toast.success(`La transaction a été ajoutée avec succès à la caisse ${activeTab}`);
   };
 
@@ -67,11 +41,19 @@ const Registers = () => {
     setActiveTab(value);
   };
 
+  const handleCreateInvoiceClick = () => {
+    // Navigate to the invoices page with a state parameter that will trigger the creation dialog
+    navigate("/invoices", { state: { openCreateDialog: true, registerType: activeTab } });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Caisses</h1>
-        <Button onClick={() => setIsDialogOpen(true)}>Nouvelle transaction</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleCreateInvoiceClick}>Créer une facture</Button>
+          <Button onClick={() => setIsDialogOpen(true)}>Nouvelle transaction</Button>
+        </div>
       </div>
 
       <Tabs defaultValue="hotel" value={activeTab} onValueChange={(value) => setActiveTab(value as RegisterType)}>
@@ -124,11 +106,6 @@ const Registers = () => {
         onOpenChange={setIsDialogOpen} 
         registerType={activeTab}
         onSuccess={handleTransactionSuccess}
-        clientId={pendingPayment?.clientId}
-        initialDescription={pendingPayment?.description}
-        initialAmount={pendingPayment?.amount}
-        initialCategory={pendingPayment?.category}
-        initialSubcategory={pendingPayment?.subcategory}
       />
     </div>
   );

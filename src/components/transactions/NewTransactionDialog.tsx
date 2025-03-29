@@ -16,6 +16,7 @@ interface NewTransactionDialogProps {
   initialAmount?: number;
   initialCategory?: string;
   initialSubcategory?: string;
+  initialType?: "payment" | "refund" | "pending";
 }
 
 export function NewTransactionDialog({
@@ -28,6 +29,7 @@ export function NewTransactionDialog({
   initialAmount,
   initialCategory,
   initialSubcategory,
+  initialType = "payment",
 }: NewTransactionDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createTransaction } = useTransactions();
@@ -88,6 +90,7 @@ export function NewTransactionDialog({
           initialAmount={initialAmount}
           initialCategory={initialCategory}
           initialSubcategory={initialSubcategory}
+          initialType={initialType}
         />
       </DialogContent>
     </Dialog>

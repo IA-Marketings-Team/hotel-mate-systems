@@ -14,6 +14,7 @@ import { ClientFormField } from "./ClientFormField";
 import { DateRangeFormField } from "./DateRangeFormField";
 import { RoomExtrasSelector } from "./RoomExtrasSelector";
 import { BookingDetails } from "./BookingDetails";
+import { useInvoices } from "@/hooks/useInvoices";
 
 interface BookingFormContainerProps {
   form: UseFormReturn<any>;
@@ -47,6 +48,7 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
   onConfirm
 }) => {
   const navigate = useNavigate();
+  const { createInvoice } = useInvoices();
 
   // Calculate nights based on date range
   const calculateNights = () => {
@@ -72,30 +74,33 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
         await onConfirm(selectedClient.name, selectedClient.id, selectedExtras, dateRange);
         form.reset();
         
-        toast.success(`Chambre ${roomNumber} réservée pour ${selectedClient.name}`, {
-          description: "Veuillez procéder au paiement à la caisse."
-        });
-        
-        // Build extras description for payment
+        // Build extras description for invoice
         const extrasDescription = selectedExtras
           .filter(extra => extra.quantity > 0)
           .map(extra => `${extra.quantity}x ${extra.name}`)
           .join(", ");
         
-        // Navigate to register page for payment
+        const description = `Réservation Chambre ${roomNumber} pour ${calculateNights()} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`;
+        const totalAmount = calculateTotalPrice();
+        
+        // Create invoice first
+        await createInvoice.mutateAsync({
+          description,
+          amount: totalAmount,
+          clientId: selectedClient.id,
+          staffId: null, // This would be the logged-in user in a real system
+          category: "Chambres",
+          subcategory: "Réservations",
+          registerType: "hotel"
+        });
+        
+        toast.success(`Chambre ${roomNumber} réservée pour ${selectedClient.name}`, {
+          description: "Une facture a été créée. Vous pouvez effectuer le paiement ultérieurement."
+        });
+        
+        // Navigate to invoices page
         setTimeout(() => {
-          navigate("/registers", { 
-            state: { 
-              pendingPayment: {
-                clientId: selectedClient.id,
-                clientName: selectedClient.name,
-                description: `Réservation Chambre ${roomNumber} pour ${calculateNights()} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`,
-                amount: calculateTotalPrice(),
-                category: "Chambres",
-                subcategory: "Réservations"
-              } 
-            } 
-          });
+          navigate("/invoices");
         }, 1500);
       } catch (error) {
         console.error("Error booking room:", error);

@@ -68,6 +68,44 @@ export const useInvoices = (filters?: { clientId?: string; status?: string }) =>
     queryFn: fetchInvoices
   });
 
+  const createInvoice = useMutation({
+    mutationFn: async (invoiceData: {
+      description: string;
+      amount: number;
+      clientId: string | null;
+      staffId: string | null;
+      category?: string;
+      subcategory?: string;
+      registerType: RegisterType;
+    }) => {
+      const { error } = await supabase
+        .from('transactions')
+        .insert({
+          description: invoiceData.description,
+          amount: invoiceData.amount,
+          type: 'pending',
+          method: 'card', // Default method, can be updated when payment is processed
+          register_type: invoiceData.registerType,
+          category: invoiceData.category || null,
+          subcategory: invoiceData.subcategory || null,
+          client_id: invoiceData.clientId,
+          staff_id: invoiceData.staffId,
+          date: new Date().toISOString()
+        });
+      
+      if (error) {
+        throw new Error(`Error creating invoice: ${error.message}`);
+      }
+      
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success("La facture a été créée avec succès");
+    }
+  });
+
   const generateAndDownloadInvoice = async (invoice: Invoice) => {
     try {
       // First get the full transaction data
@@ -151,6 +189,7 @@ export const useInvoices = (filters?: { clientId?: string; status?: string }) =>
 
   return {
     ...query,
+    createInvoice,
     generateAndDownloadInvoice,
     markAsPaid,
     cancelInvoice
