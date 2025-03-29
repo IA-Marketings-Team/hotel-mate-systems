@@ -77,13 +77,15 @@ export const useInvoices = (filters?: { clientId?: string; status?: string }) =>
       category?: string;
       subcategory?: string;
       registerType: RegisterType;
+      dueDate?: string;
     }) => {
+      // Check the allowed values for type in the database and use "payment" instead of "pending"
       const { data, error } = await supabase
         .from('transactions')
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'pending' as "payment" | "refund" | "pending",
+          type: 'payment', // Changed from 'pending' to 'payment' as it appears this is an allowed value
           method: 'card' as "cash" | "card" | "transfer", // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,

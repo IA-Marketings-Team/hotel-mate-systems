@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,9 +5,6 @@ import { ArrowLeft } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { TransactionMethodSelector } from "@/components/transactions/TransactionMethodSelector";
-import { CategorySelector } from "@/components/transactions/CategorySelector";
-import { SubcategorySelector } from "@/components/transactions/SubcategorySelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStaff } from "@/hooks/useStaff";
 import { useClients } from "@/hooks/useClients";
@@ -69,6 +65,7 @@ const NewInvoice = () => {
         category: selectedCategory,
         subcategory: selectedSubcategory,
         registerType,
+        dueDate: dueDate || undefined,
       });
 
       toast.success("Facture créée avec succès");
@@ -137,6 +134,16 @@ const NewInvoice = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="dueDate">Date d'échéance</Label>
+              <Input
+                id="dueDate"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
               />
             </div>
 
