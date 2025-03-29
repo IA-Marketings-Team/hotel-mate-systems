@@ -106,9 +106,10 @@ const Registers = () => {
         onOpenChange={setIsDialogOpen} 
         registerType={activeTab}
         onSuccess={handleTransactionSuccess}
+        disablePendingType={true}
       />
     </div>
   );
-};
+}
 
 export default Registers;

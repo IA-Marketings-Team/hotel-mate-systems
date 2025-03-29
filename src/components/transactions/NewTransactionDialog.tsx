@@ -5,6 +5,7 @@ import { TransactionForm } from "./TransactionForm";
 import { useTransactions } from "@/hooks/useTransactions";
 import { RegisterType } from "@/types";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface NewTransactionDialogProps {
   open: boolean;
@@ -17,6 +18,8 @@ interface NewTransactionDialogProps {
   initialCategory?: string;
   initialSubcategory?: string;
   initialType?: "payment" | "refund" | "pending";
+  redirectToInvoices?: boolean;
+  disablePendingType?: boolean;
 }
 
 export function NewTransactionDialog({
@@ -30,14 +33,17 @@ export function NewTransactionDialog({
   initialCategory,
   initialSubcategory,
   initialType = "payment",
+  redirectToInvoices = false,
+  disablePendingType = false,
 }: NewTransactionDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createTransaction } = useTransactions();
+  const navigate = useNavigate();
 
   const handleSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
-      await createTransaction.mutateAsync({
+      const result = await createTransaction.mutateAsync({
         description: data.description,
         amount: parseFloat(data.amount),
         type: data.type,
@@ -48,6 +54,19 @@ export function NewTransactionDialog({
         clientId: data.clientId,
         staffId: data.staffId,
       });
+
+      // If it's a pending transaction and we should redirect to invoices
+      if (data.type === "pending" && redirectToInvoices) {
+        onOpenChange(false);
+        navigate("/invoices", { 
+          state: { 
+            highlightInvoiceId: result.id,
+            openPaymentDialog: false
+          } 
+        });
+        toast.success("Facture créée avec succès");
+        return;
+      }
 
       let successMessage = "Transaction créée avec succès";
       if (data.type === "pending") {
@@ -91,6 +110,7 @@ export function NewTransactionDialog({
           initialCategory={initialCategory}
           initialSubcategory={initialSubcategory}
           initialType={initialType}
+          disablePendingType={disablePendingType}
         />
       </DialogContent>
     </Dialog>
