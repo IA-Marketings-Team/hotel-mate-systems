@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useInvoices, Invoice } from "@/hooks/useInvoices";
@@ -130,7 +129,7 @@ const InvoiceDetails = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 space-y-8 border">
+        <div className="bg-white rounded-lg shadow-md p-6 space-y-8 border">
           <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-6">
             <div>
               <h1 className="text-3xl font-bold flex items-center">
@@ -153,7 +152,7 @@ const InvoiceDetails = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-800">Détails</h3>
               
-              <div className="border rounded-md p-4 space-y-2 bg-gray-50">
+              <div className="border rounded-md p-4 space-y-2 bg-white">
                 <div className="flex justify-between">
                   <span className="text-gray-600">ID de transaction</span>
                   <span className="font-mono">{invoice.transactionId}</span>
@@ -189,7 +188,7 @@ const InvoiceDetails = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-800">Montant</h3>
               
-              <div className="border rounded-md p-6 flex flex-col items-center justify-center bg-gray-50">
+              <div className="border rounded-md p-6 flex flex-col items-center justify-center bg-white">
                 <span className="text-4xl font-bold text-gray-900">{formatCurrency(invoice.amount)}</span>
                 {invoice.status === "pending" && (
                   <span className="text-sm text-amber-500 mt-2">En attente de paiement</span>
