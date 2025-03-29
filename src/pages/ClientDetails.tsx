@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -14,6 +13,7 @@ import { ClientTransactionDialog } from "@/components/clients/ClientTransactionD
 import { ClientInfoCard } from "@/components/clients/ClientInfoCard";
 import { ClientTransactionHistory } from "@/components/clients/ClientTransactionHistory";
 import { ClientActionsMenu } from "@/components/clients/ClientActionsMenu";
+import { format } from "date-fns";
 
 const ClientDetails = () => {
   const { id } = useParams();

@@ -29,6 +29,7 @@ export const ClientTransactionDialog = ({
           <DialogTitle>Nouvelle transaction - {clientName}</DialogTitle>
         </DialogHeader>
         <TransactionForm 
+          registerType="hotel"
           clientId={clientId}
           onSuccess={() => {
             onSuccess();

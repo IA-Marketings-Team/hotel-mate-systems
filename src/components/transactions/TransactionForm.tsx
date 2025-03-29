@@ -18,12 +18,22 @@ interface TransactionFormProps {
   registerType: RegisterType;
   onSuccess: () => void;
   onCancel: () => void;
+  clientId?: string;
+  initialType?: "payment" | "refund";
+  initialDescription?: string;
 }
 
-export function TransactionForm({ registerType, onSuccess, onCancel }: TransactionFormProps) {
-  const [description, setDescription] = useState("");
+export function TransactionForm({ 
+  registerType, 
+  onSuccess, 
+  onCancel,
+  clientId,
+  initialType = "payment",
+  initialDescription = ""
+}: TransactionFormProps) {
+  const [description, setDescription] = useState(initialDescription);
   const [amount, setAmount] = useState("");
-  const [type, setType] = useState<"payment" | "refund">("payment");
+  const [type, setType] = useState<"payment" | "refund">(initialType);
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("cash");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
@@ -54,6 +64,7 @@ export function TransactionForm({ registerType, onSuccess, onCancel }: Transacti
         register_type: registerType,
         category: selectedCategoryObj?.name || null,
         subcategory: subcategories?.find(subcat => subcat.id === selectedSubcategory)?.name || null,
+        client_id: clientId || null,
         date: new Date().toISOString()
       });
 
@@ -116,6 +127,7 @@ export function TransactionForm({ registerType, onSuccess, onCancel }: Transacti
       </div>
 
       <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel} className="mr-2">Annuler</Button>
         <Button type="submit">Créer</Button>
       </DialogFooter>
     </form>
