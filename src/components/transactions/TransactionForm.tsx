@@ -123,7 +123,7 @@ export function TransactionForm({
             <SelectValue placeholder="Sélectionner un client (optionnel)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Aucun client</SelectItem>
+            <SelectItem value="none">Aucun client</SelectItem>
             {clients?.map((client) => (
               <SelectItem key={client.id} value={client.id}>
                 {client.name}
@@ -140,7 +140,7 @@ export function TransactionForm({
             <SelectValue placeholder="Sélectionner un membre du personnel (optionnel)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Aucun personnel</SelectItem>
+            <SelectItem value="none">Aucun personnel</SelectItem>
             {staff?.map((staffMember) => (
               <SelectItem key={staffMember.id} value={staffMember.id}>
                 {staffMember.name}
