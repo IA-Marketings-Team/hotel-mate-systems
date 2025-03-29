@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import Rooms from "./pages/Rooms";
+import RoomDetails from "./pages/RoomDetails";
 import Staff from "./pages/Staff";
 import Registers from "./pages/Registers";
 import Services from "./pages/Services";
@@ -30,6 +31,7 @@ const App = () => (
             <Rooms />
           </AppLayout>
         } />
+        <Route path="/room/:id" element={<RoomDetails />} />
         <Route path="/staff" element={
           <AppLayout>
             <Staff />

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { DashboardCard } from "@/components/dashboard/DashboardCard";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,29 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Room, RoomStatus } from "@/types";
-import { Search, CheckCircle, Clock, AlertCircle, Plus, Pencil, Trash2, MoreHorizontal, Moon, Brush } from "lucide-react";
+import { Search, CheckCircle, Clock, AlertCircle, Plus, Moon, Brush, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useRooms } from "@/hooks/useRooms";
 import RoomDialog, { RoomFormValues } from "@/components/rooms/RoomDialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -48,20 +29,15 @@ const Rooms = () => {
     rooms, 
     loading, 
     error, 
-    addRoom, 
-    updateRoom, 
-    deleteRoom, 
-    changeRoomStatus,
+    addRoom,
     setAllOccupiedToPendingCleaning 
   } = useRooms();
   
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | undefined>(undefined);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
   const [batchActionDialogOpen, setBatchActionDialogOpen] = useState(false);
 
   const getStatusIcon = (status: RoomStatus) => {
@@ -95,49 +71,14 @@ const Rooms = () => {
   };
 
   const handleOpenAddRoom = () => {
-    setSelectedRoom(undefined);
     setRoomDialogOpen(true);
-  };
-
-  const handleOpenEditRoom = (room: Room) => {
-    setSelectedRoom(room);
-    setRoomDialogOpen(true);
-  };
-
-  const handleOpenDeleteRoom = (room: Room) => {
-    setRoomToDelete(room);
-    setDeleteDialogOpen(true);
   };
 
   const handleSaveRoom = async (data: RoomFormValues) => {
     try {
-      if (selectedRoom) {
-        await updateRoom(selectedRoom.id, data);
-      } else {
-        await addRoom(data as Omit<Room, 'id'>);
-      }
+      await addRoom(data as Omit<Room, 'id'>);
     } catch (err) {
       console.error("Error saving room:", err);
-    }
-  };
-
-  const handleDeleteRoom = async () => {
-    if (!roomToDelete) return;
-    
-    try {
-      await deleteRoom(roomToDelete.id);
-      setDeleteDialogOpen(false);
-      setRoomToDelete(null);
-    } catch (err) {
-      console.error("Error deleting room:", err);
-    }
-  };
-
-  const handleChangeRoomStatus = async (room: Room, status: RoomStatus) => {
-    try {
-      await changeRoomStatus(room.id, status);
-    } catch (err) {
-      console.error("Error changing room status:", err);
     }
   };
 
@@ -268,88 +209,21 @@ const Rooms = () => {
                   <span className="text-sm text-muted-foreground">Prix:</span>
                   <span className="text-sm font-medium">{room.pricePerNight} € / nuit</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Vue:</span>
-                  <span className="text-sm font-medium capitalize">{room.view}</span>
-                </div>
-                {room.lastCleaned && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Dernier nettoyage:</span>
-                    <span className="text-sm font-medium">
-                      {new Date(room.lastCleaned).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
               </div>
-              <div className="flex flex-wrap gap-1 mb-3">
-                {room.features.map((feature, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {feature}
-                  </Badge>
-                ))}
-              </div>
+              
               {room.currentGuest && (
                 <div className="text-sm text-muted-foreground mt-3">
                   <span className="font-medium text-foreground">Client:</span>{" "}
                   {room.currentGuest}
                 </div>
               )}
-              {room.notes && (
-                <div className="text-sm text-muted-foreground mt-1">
-                  <span className="font-medium text-foreground">Notes:</span>{" "}
-                  {room.notes}
-                </div>
-              )}
-              <div className="flex justify-between gap-2 mt-4">
-                <div className="grid grid-cols-2 gap-2 w-full">
-                  <Button
-                    variant={room.status === 'available' ? 'default' : 'outline'} 
-                    size="sm"
-                    className={room.status === 'available' ? 'bg-green-500 hover:bg-green-600' : ''}
-                    onClick={() => handleChangeRoomStatus(room, 'available')}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" /> Disponible
-                  </Button>
-                  <Button
-                    variant={room.status === 'occupied' ? 'default' : 'outline'} 
-                    size="sm"
-                    className={room.status === 'occupied' ? 'bg-blue-500 hover:bg-blue-600' : ''}
-                    onClick={() => handleChangeRoomStatus(room, 'occupied')}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" /> Occupée
-                  </Button>
-                  <Button
-                    variant={room.status === 'cleaning_pending' ? 'default' : 'outline'} 
-                    size="sm"
-                    className={room.status === 'cleaning_pending' ? 'bg-orange-500 hover:bg-orange-600' : ''}
-                    onClick={() => handleChangeRoomStatus(room, 'cleaning_pending')}
-                  >
-                    <Clock className="h-4 w-4 mr-1" /> À nettoyer
-                  </Button>
-                  <Button
-                    variant={room.status === 'cleaning' ? 'default' : 'outline'} 
-                    size="sm"
-                    className={room.status === 'cleaning' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
-                    onClick={() => handleChangeRoomStatus(room, 'cleaning')}
-                  >
-                    <Brush className="h-4 w-4 mr-1" /> Nettoyage
-                  </Button>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 mt-2">
+              
+              <div className="flex justify-end mt-4">
                 <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleOpenEditRoom(room)}
+                  onClick={() => navigate(`/room/${room.id}`)} 
+                  className="w-full"
                 >
-                  <Pencil className="h-4 w-4 mr-1" /> Modifier
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={() => handleOpenDeleteRoom(room)}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" /> Supprimer
+                  Voir les détails <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -358,28 +232,10 @@ const Rooms = () => {
       )}
 
       <RoomDialog
-        room={selectedRoom}
         open={roomDialogOpen}
         onOpenChange={setRoomDialogOpen}
         onSave={handleSaveRoom}
       />
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer la chambre {roomToDelete?.number} ? Cette action ne peut pas être annulée.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteRoom} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={batchActionDialogOpen} onOpenChange={setBatchActionDialogOpen}>
         <DialogContent>
