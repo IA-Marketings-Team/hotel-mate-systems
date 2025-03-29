@@ -7,7 +7,8 @@ import {
   Receipt, 
   Utensils, 
   Wine,
-  CircleDollarSign
+  CircleDollarSign,
+  FileText
 } from "lucide-react";
 
 interface ClientActionsProps {
@@ -23,7 +24,7 @@ export const ClientActions = ({
 }: ClientActionsProps) => {
   const navigate = useNavigate();
 
-  const navigateToNewTransaction = (type: "general" | "restaurant" | "bar" | "poker") => {
+  const navigateToNewInvoice = (type: "general" | "restaurant" | "bar" | "poker") => {
     let initialDescription = "";
     let registerType = "hotel";
     
@@ -42,12 +43,11 @@ export const ClientActions = ({
         break;
     }
     
-    navigate("/transaction/new", { 
+    navigate("/invoice/new", { 
       state: { 
         clientId,
         initialDescription,
         registerType: registerType as any,
-        initialType: "payment"
       } 
     });
   };
@@ -56,15 +56,15 @@ export const ClientActions = ({
     <DashboardCard title="Actions Client">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-          <h3 className="font-medium text-lg mb-3">Transactions</h3>
+          <h3 className="font-medium text-lg mb-3">Facturation</h3>
           <div className="space-y-2">
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => navigateToNewTransaction("general")}
+              onClick={() => navigateToNewInvoice("general")}
             >
-              <Receipt className="h-4 w-4 mr-2" />
-              Nouvelle transaction
+              <FileText className="h-4 w-4 mr-2" />
+              Nouvelle facture
             </Button>
           </div>
         </div>
@@ -75,28 +75,28 @@ export const ClientActions = ({
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => navigateToNewTransaction("restaurant")}
+              onClick={() => navigateToNewInvoice("restaurant")}
             >
               <Utensils className="h-4 w-4 mr-2" />
-              Commande restaurant
+              Facture restaurant
             </Button>
             
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => navigateToNewTransaction("bar")}
+              onClick={() => navigateToNewInvoice("bar")}
             >
               <Wine className="h-4 w-4 mr-2" />
-              Commande bar
+              Facture bar
             </Button>
             
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => navigateToNewTransaction("poker")}
+              onClick={() => navigateToNewInvoice("poker")}
             >
               <CircleDollarSign className="h-4 w-4 mr-2" />
-              Achat jetons poker
+              Facture jetons poker
             </Button>
           </div>
         </div>

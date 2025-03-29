@@ -1,12 +1,11 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { TransactionTypeSelector } from "@/components/transactions/TransactionTypeSelector";
 import { TransactionMethodSelector } from "@/components/transactions/TransactionMethodSelector";
 import { CategorySelector } from "@/components/transactions/CategorySelector";
 import { SubcategorySelector } from "@/components/transactions/SubcategorySelector";
@@ -15,27 +14,41 @@ import { useStaff } from "@/hooks/useStaff";
 import { useClients } from "@/hooks/useClients";
 import { Label } from "@/components/ui/label";
 import { RegisterType } from "@/types";
-import { useTransactions } from "@/hooks/useTransactions";
+import { useInvoices } from "@/hooks/useInvoices";
 import { toast } from "sonner";
 
 const NewInvoice = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as { 
+    registerType?: RegisterType,
+    clientId?: string,
+    initialDescription?: string
+  } | null;
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createTransaction } = useTransactions();
+  const { createInvoice } = useInvoices();
   
   // Form state
-  const [type] = useState<"payment" | "refund" | "pending">("pending");
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("card");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(state?.initialDescription || "");
   const [amount, setAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [clientId, setClientId] = useState("none");
+  const [clientId, setClientId] = useState(state?.clientId || "none");
   const [staffId, setStaffId] = useState("none");
-  const [registerType, setRegisterType] = useState<RegisterType>("hotel");
+  const [registerType, setRegisterType] = useState<RegisterType>(state?.registerType || "hotel");
+  const [dueDate, setDueDate] = useState<string>("");
 
   const { data: staff, isLoading: isStaffLoading } = useStaff();
   const { data: clients, isLoading: isClientsLoading } = useClients();
+
+  // Set client from state if provided
+  useEffect(() => {
+    if (state?.clientId) {
+      setClientId(state.clientId);
+    }
+  }, [state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,16 +61,14 @@ const NewInvoice = () => {
     setIsSubmitting(true);
     
     try {
-      const result = await createTransaction.mutateAsync({
+      const result = await createInvoice.mutateAsync({
         description,
         amount: parseFloat(amount),
-        type,
-        method,
-        registerType,
-        category: selectedCategory,
-        subcategory: selectedSubcategory,
         clientId: clientId === "none" ? null : clientId,
         staffId: staffId === "none" ? null : staffId,
+        category: selectedCategory,
+        subcategory: selectedSubcategory,
+        registerType,
       });
 
       toast.success("Facture créée avec succès");
@@ -128,8 +139,6 @@ const NewInvoice = () => {
                 required
               />
             </div>
-
-            <TransactionMethodSelector method={method} onMethodChange={setMethod} />
 
             <CategorySelector 
               selectedCategory={selectedCategory}
