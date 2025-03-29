@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useClients } from "@/hooks/useClients";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,8 +38,7 @@ type BookingDialogProps = {
 };
 
 const bookingFormSchema = z.object({
-  guestName: z.string().min(1, "Le nom du client est requis"),
-  clientId: z.string().optional(),
+  clientId: z.string().min(1, "La sélection d'un client est requise"),
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
@@ -56,8 +54,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
-      guestName: "",
-      clientId: undefined,
+      clientId: "",
     },
   });
 
@@ -65,27 +62,18 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
   useEffect(() => {
     if (open) {
       form.reset({
-        guestName: "",
-        clientId: undefined,
+        clientId: "",
       });
     }
   }, [open, form]);
 
-  // Update guest name when client is selected
-  const watchClientId = form.watch("clientId");
-  useEffect(() => {
-    if (watchClientId) {
-      const selectedClient = clients?.find(client => client.id === watchClientId);
-      if (selectedClient) {
-        form.setValue("guestName", selectedClient.name);
-      }
-    }
-  }, [watchClientId, clients, form]);
-
   const handleSubmit = async (data: BookingFormValues) => {
-    await onConfirm(data.guestName, data.clientId);
-    form.reset();
-    onOpenChange(false);
+    const selectedClient = clients?.find(client => client.id === data.clientId);
+    if (selectedClient) {
+      await onConfirm(selectedClient.name, selectedClient.id);
+      form.reset();
+      onOpenChange(false);
+    }
   };
 
   return (
@@ -94,7 +82,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Réserver la chambre {roomNumber}</DialogTitle>
           <DialogDescription>
-            Sélectionnez un client existant ou entrez un nouveau nom pour cette réservation.
+            Sélectionnez un client pour cette réservation.
           </DialogDescription>
         </DialogHeader>
 
@@ -111,9 +99,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
                       <Skeleton className="h-10 w-full" />
                     ) : (
                       <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                        }}
+                        onValueChange={field.onChange}
                         value={field.value}
                       >
                         <SelectTrigger>
@@ -128,24 +114,6 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
                         </SelectContent>
                       </Select>
                     )}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="guestName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nom du client</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      autoFocus 
-                      placeholder="Nom du client" 
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
