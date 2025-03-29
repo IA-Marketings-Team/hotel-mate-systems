@@ -301,53 +301,56 @@ const Rooms = () => {
                 </div>
               )}
               <div className="flex justify-between gap-2 mt-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Statut <MoreHorizontal className="h-4 w-4 ml-1" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'available')}>
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Disponible
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'occupied')}>
-                      <CheckCircle className="h-4 w-4 mr-2 text-blue-500" />
-                      Occupée
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'cleaning')}>
-                      <Brush className="h-4 w-4 mr-2 text-yellow-500" />
-                      Nettoyage en cours
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'cleaning_pending')}>
-                      <Clock className="h-4 w-4 mr-2 text-orange-500" />
-                      Nettoyage requis
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'maintenance')}>
-                      <AlertCircle className="h-4 w-4 mr-2 text-red-500" />
-                      Maintenance
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                <div className="grid grid-cols-2 gap-2 w-full">
+                  <Button
+                    variant={room.status === 'available' ? 'default' : 'outline'} 
                     size="sm"
-                    onClick={() => handleOpenEditRoom(room)}
+                    className={room.status === 'available' ? 'bg-green-500 hover:bg-green-600' : ''}
+                    onClick={() => handleChangeRoomStatus(room, 'available')}
                   >
-                    <Pencil className="h-4 w-4 mr-1" /> Modifier
+                    <CheckCircle className="h-4 w-4 mr-1" /> Disponible
                   </Button>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant={room.status === 'occupied' ? 'default' : 'outline'} 
                     size="sm"
-                    onClick={() => handleOpenDeleteRoom(room)}
+                    className={room.status === 'occupied' ? 'bg-blue-500 hover:bg-blue-600' : ''}
+                    onClick={() => handleChangeRoomStatus(room, 'occupied')}
                   >
-                    <Trash2 className="h-4 w-4 mr-1" /> Supprimer
+                    <CheckCircle className="h-4 w-4 mr-1" /> Occupée
+                  </Button>
+                  <Button
+                    variant={room.status === 'cleaning_pending' ? 'default' : 'outline'} 
+                    size="sm"
+                    className={room.status === 'cleaning_pending' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                    onClick={() => handleChangeRoomStatus(room, 'cleaning_pending')}
+                  >
+                    <Clock className="h-4 w-4 mr-1" /> À nettoyer
+                  </Button>
+                  <Button
+                    variant={room.status === 'cleaning' ? 'default' : 'outline'} 
+                    size="sm"
+                    className={room.status === 'cleaning' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
+                    onClick={() => handleChangeRoomStatus(room, 'cleaning')}
+                  >
+                    <Brush className="h-4 w-4 mr-1" /> Nettoyage
                   </Button>
                 </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleOpenEditRoom(room)}
+                >
+                  <Pencil className="h-4 w-4 mr-1" /> Modifier
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={() => handleOpenDeleteRoom(room)}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" /> Supprimer
+                </Button>
               </div>
             </div>
           ))}
