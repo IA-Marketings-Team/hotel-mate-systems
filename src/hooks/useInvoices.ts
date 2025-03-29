@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Transaction } from "@/types";
+import { Transaction, RegisterType } from "@/types";
 import { generateInvoicePDF } from "@/lib/pdfUtils";
 import { toast } from "sonner";
 
@@ -89,9 +89,9 @@ export const useInvoices = (filters?: { clientId?: string; status?: string }) =>
         id: data.id,
         date: data.date,
         amount: data.amount,
-        type: data.type,
-        method: data.method,
-        registerType: data.register_type,
+        type: data.type as 'payment' | 'refund' | 'pending',
+        method: data.method as 'cash' | 'card' | 'transfer',
+        registerType: data.register_type as RegisterType,
         description: data.description,
         staffId: data.staff_id,
         staffName: data.staff?.name,

@@ -245,7 +245,7 @@ export const mockServices: HotelService[] = [
 export const mockTransactions: Transaction[] = [
   {
     id: "1",
-    date: new Date(),
+    date: new Date().toISOString(),
     amount: 250,
     type: "payment",
     method: "card",
@@ -256,7 +256,7 @@ export const mockTransactions: Transaction[] = [
   },
   {
     id: "2",
-    date: new Date(Date.now() - 86400000),
+    date: new Date(Date.now() - 86400000).toISOString(),
     amount: 80,
     type: "payment",
     method: "cash",
@@ -267,7 +267,7 @@ export const mockTransactions: Transaction[] = [
   },
   {
     id: "3",
-    date: new Date(Date.now() - 172800000),
+    date: new Date(Date.now() - 172800000).toISOString(),
     amount: 100,
     type: "payment",
     method: "card",
@@ -278,7 +278,7 @@ export const mockTransactions: Transaction[] = [
   },
   {
     id: "4",
-    date: new Date(Date.now() - 259200000),
+    date: new Date(Date.now() - 259200000).toISOString(),
     amount: 25,
     type: "refund",
     method: "cash",
@@ -289,7 +289,7 @@ export const mockTransactions: Transaction[] = [
   },
   {
     id: "5",
-    date: new Date(Date.now() - 345600000),
+    date: new Date(Date.now() - 345600000).toISOString(),
     amount: 45,
     type: "payment",
     method: "card",
