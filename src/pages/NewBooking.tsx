@@ -8,6 +8,8 @@ import { z } from "zod";
 import { DateRange } from "react-day-picker";
 import { BookingType } from "@/types/bookings";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { toast } from "sonner";
+import { differenceInDays } from "date-fns";
 
 const bookingSchema = z.object({
   clientId: z.string().min(1, "Veuillez sélectionner un client"),
@@ -51,6 +53,50 @@ const NewBooking = () => {
     navigate("/bookings");
   };
 
+  const handleSuccess = (bookingData: any) => {
+    const { clientId, resourceId, dateRange, amount, extras, resourceName, clientName } = bookingData;
+    
+    // Calculate nights for the description
+    const nights = differenceInDays(dateRange.to, dateRange.from) || 1;
+    
+    // Build extras description if available
+    const extrasDescription = extras && extras.length > 0
+      ? extras
+        .filter((extra: any) => extra.quantity > 0)
+        .map((extra: any) => `${extra.quantity}x ${extra.name}`)
+        .join(", ")
+      : "";
+    
+    // Prepare the booking description
+    const bookingDescription = bookingTypeParam === 'room'
+      ? `Réservation Chambre ${resourceName} pour ${nights} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`
+      : `Réservation ${bookingTypeParam === 'meeting' ? 'Salle' : 
+         bookingTypeParam === 'car' ? 'Voiture' : 
+         bookingTypeParam === 'terrace' ? 'Terrasse' : 'Restaurant'} ${resourceName}`;
+    
+    // Redirect to registers with payment info
+    toast.success(`Réservation créée pour ${clientName}`, {
+      description: "Procédez au paiement à la caisse."
+    });
+    
+    // Navigate to register page with payment info
+    navigate("/registers", {
+      state: {
+        pendingPayment: {
+          clientId,
+          clientName,
+          description: bookingDescription,
+          amount,
+          category: bookingTypeParam === 'room' ? "Chambres" : 
+                    bookingTypeParam === 'meeting' ? "Salles de réunion" :
+                    bookingTypeParam === 'car' ? "Location voitures" :
+                    bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
+          subcategory: "Réservations"
+        }
+      }
+    });
+  };
+
   return (
     <AppLayout>
       <div className="container mx-auto py-6">
@@ -73,6 +119,7 @@ const NewBooking = () => {
             setDateRange={setDateRange}
             bookingType={bookingTypeParam}
             onOpenChange={handleCancel}
+            onSuccess={handleSuccess}
           />
         </div>
       </div>

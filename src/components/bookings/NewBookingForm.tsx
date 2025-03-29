@@ -26,6 +26,7 @@ interface NewBookingFormProps {
   setDateRange: (range: DateRange) => void;
   bookingType: BookingType;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: (bookingData: any) => void;
 }
 
 export const NewBookingForm: React.FC<NewBookingFormProps> = ({
@@ -33,7 +34,8 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
   dateRange,
   setDateRange,
   bookingType,
-  onOpenChange
+  onOpenChange,
+  onSuccess
 }) => {
   const { data: clients } = useClients();
   const { rooms, loading: roomsLoading } = useRooms();
@@ -94,28 +96,33 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
     form
   ]);
 
-  // When client changes, get the client information
-  useEffect(() => {
-    const clientId = form.watch("clientId");
-    if (clientId) {
-      const selectedClient = clients?.find(client => client.id === clientId);
-      if (selectedClient) {
-        // Note: We don't need to set guestName anymore as we use the client name directly
-      }
-    }
-  }, [form.watch("clientId"), clients, form]);
-
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
       // Get the selected client's name for the guestName field
       const selectedClient = clients?.find(client => client.id === data.clientId);
-      const guestName = selectedClient ? selectedClient.name : "Client inconnu";
+      if (!selectedClient) {
+        toast.error("Client non trouvé");
+        setIsSubmitting(false);
+        return;
+      }
       
-      await createBooking({
+      const guestName = selectedClient.name;
+      
+      // Get the resource name for display purposes
+      let resourceName = "";
+      if (bookingType === "room") {
+        const room = rooms.find(r => r.id === data.resourceId);
+        resourceName = room ? `${room.number}` : "";
+      } else {
+        const resource = resources.find(r => r.id === data.resourceId);
+        resourceName = resource ? resource.name : "";
+      }
+      
+      const bookingResult = await createBooking({
         resourceId: data.resourceId,
         roomId: bookingType === 'room' ? data.resourceId : undefined,
-        guestName: guestName, // Use client's name directly
+        guestName: guestName,
         clientId: data.clientId,
         checkIn: data.dateRange.from,
         checkOut: data.dateRange.to,
@@ -126,8 +133,23 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
         extras: data.extras,
       });
       
-      onOpenChange(false);
-      toast.success("Réservation créée avec succès");
+      if (onSuccess) {
+        // Pass all relevant data to parent component for payment processing
+        onSuccess({
+          clientId: data.clientId,
+          clientName: guestName,
+          resourceId: data.resourceId,
+          resourceName,
+          dateRange: data.dateRange,
+          amount: data.amount,
+          extras: data.extras,
+          bookingId: bookingResult?.id
+        });
+      } else {
+        // Default success handling if no callback provided
+        onOpenChange(false);
+        toast.success("Réservation créée avec succès");
+      }
     } catch (error) {
       console.error("Error creating booking:", error);
       toast.error("Erreur lors de la création de la réservation");
