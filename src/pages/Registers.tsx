@@ -5,16 +5,25 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Transaction, RegisterType } from "@/types";
-import { Search, Plus, PlusCircle, Hotel, Utensils, CircleDollarSign, Umbrella } from "lucide-react";
+import { Search, Plus, PlusCircle, Hotel, Utensils, CircleDollarSign, Umbrella, MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
 import { useTransactions } from "@/hooks/useTransactions";
 import { NewTransactionDialog } from "@/components/transactions/NewTransactionDialog";
+import { TransactionDetailsSheet } from "@/components/transactions/TransactionDetailsSheet";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 const Registers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<RegisterType>("hotel");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: transactions, isLoading, refetch } = useTransactions(activeTab);
@@ -59,6 +68,11 @@ const Registers = () => {
     });
   };
 
+  const openTransactionDetails = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsDetailsOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -101,7 +115,8 @@ const Registers = () => {
             <RegisterContent 
               transactions={filteredTransactions} 
               isLoading={isLoading} 
-              getTransactionIcon={getTransactionIcon} 
+              getTransactionIcon={getTransactionIcon}
+              onViewDetails={openTransactionDetails}
             />
           </DashboardCard>
         </TabsContent>
@@ -111,7 +126,8 @@ const Registers = () => {
             <RegisterContent 
               transactions={filteredTransactions} 
               isLoading={isLoading} 
-              getTransactionIcon={getTransactionIcon} 
+              getTransactionIcon={getTransactionIcon}
+              onViewDetails={openTransactionDetails}
             />
           </DashboardCard>
         </TabsContent>
@@ -121,7 +137,8 @@ const Registers = () => {
             <RegisterContent 
               transactions={filteredTransactions} 
               isLoading={isLoading} 
-              getTransactionIcon={getTransactionIcon} 
+              getTransactionIcon={getTransactionIcon}
+              onViewDetails={openTransactionDetails}
             />
           </DashboardCard>
         </TabsContent>
@@ -131,7 +148,8 @@ const Registers = () => {
             <RegisterContent 
               transactions={filteredTransactions} 
               isLoading={isLoading} 
-              getTransactionIcon={getTransactionIcon} 
+              getTransactionIcon={getTransactionIcon}
+              onViewDetails={openTransactionDetails}
             />
           </DashboardCard>
         </TabsContent>
@@ -143,6 +161,12 @@ const Registers = () => {
         registerType={activeTab}
         onSuccess={handleTransactionSuccess}
       />
+
+      <TransactionDetailsSheet
+        transaction={selectedTransaction}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+      />
     </div>
   );
 };
@@ -151,9 +175,15 @@ interface RegisterContentProps {
   transactions: Transaction[];
   isLoading: boolean;
   getTransactionIcon: (type: string) => JSX.Element;
+  onViewDetails: (transaction: Transaction) => void;
 }
 
-const RegisterContent = ({ transactions, isLoading, getTransactionIcon }: RegisterContentProps) => {
+const RegisterContent = ({ 
+  transactions, 
+  isLoading, 
+  getTransactionIcon,
+  onViewDetails 
+}: RegisterContentProps) => {
   if (isLoading) {
     return <div className="text-center py-8">Chargement des transactions...</div>;
   }
@@ -199,7 +229,18 @@ const RegisterContent = ({ transactions, isLoading, getTransactionIcon }: Regist
                 {transaction.amount} €
               </td>
               <td>
-                <Button variant="ghost" size="sm">Détails</Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onViewDetails(transaction)}>
+                      Voir les détails
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </td>
             </tr>
           ))}
