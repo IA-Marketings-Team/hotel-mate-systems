@@ -120,7 +120,7 @@ export function TransactionForm({
               <SelectItem value="loading" disabled>Chargement des clients...</SelectItem>
             ) : clients && clients.length > 0 ? (
               <>
-                <SelectItem value="">Aucun client</SelectItem>
+                <SelectItem value="no-client">Aucun client</SelectItem>
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
                     {client.name}
