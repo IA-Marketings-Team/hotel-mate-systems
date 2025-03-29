@@ -14,7 +14,9 @@ export type Database = {
           amount: number
           check_in: string
           check_out: string
+          client_id: string | null
           created_at: string
+          created_by: string
           guest_name: string
           id: string
           room_id: string
@@ -25,7 +27,9 @@ export type Database = {
           amount: number
           check_in: string
           check_out: string
+          client_id?: string | null
           created_at?: string
+          created_by?: string
           guest_name: string
           id?: string
           room_id: string
@@ -36,7 +40,9 @@ export type Database = {
           amount?: number
           check_in?: string
           check_out?: string
+          client_id?: string | null
           created_at?: string
+          created_by?: string
           guest_name?: string
           id?: string
           room_id?: string
@@ -44,6 +50,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_room_id_fkey"
             columns: ["room_id"]
