@@ -42,8 +42,8 @@ export interface BookingResource {
   description?: string;
 }
 
-// Helper function to validate and convert Json to RoomExtra[]
-export function isRoomExtrasArray(data: Json | null | undefined): data is RoomExtra[] {
+// Helper function to validate if Json data can be safely treated as RoomExtra[] 
+export function isRoomExtrasArray(data: Json | null | undefined): boolean {
   if (!data || !Array.isArray(data)) {
     return false;
   }
@@ -62,7 +62,7 @@ export function isRoomExtrasArray(data: Json | null | undefined): data is RoomEx
 // Helper function to safely convert Json to RoomExtra[]
 export function parseRoomExtras(data: Json | null | undefined): RoomExtra[] | undefined {
   if (isRoomExtrasArray(data)) {
-    return data;
+    return data as RoomExtra[];
   }
   return undefined;
 }
