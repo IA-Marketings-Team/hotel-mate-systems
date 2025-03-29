@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { format } from "date-fns";
 import { Transaction } from "@/types";
@@ -143,5 +142,104 @@ export const generateTransactionCSV = (transaction: Transaction): string => {
   } catch (error) {
     console.error("Error generating CSV:", error);
     throw new Error("Failed to generate transaction CSV");
+  }
+};
+
+export const generatePDF = (docDefinition: {
+  title: string;
+  headers: string[];
+  data: any[][];
+  client?: {
+    name: string;
+    email: string;
+    phone: string;
+    address?: string;
+    city?: string;
+    postalCode?: string;
+    country?: string;
+  };
+}): string => {
+  try {
+    const { title, headers, data, client } = docDefinition;
+    const doc = new jsPDF();
+    
+    // Set document properties
+    doc.setProperties({
+      title: title,
+      subject: title,
+      author: 'Système de Gestion Hôtelière',
+      keywords: 'client, historique, hôtel',
+      creator: 'Hotel Management System'
+    });
+    
+    // Add header
+    doc.setFontSize(20);
+    doc.text(title, 105, 20, { align: "center" });
+    
+    // Add hotel info
+    doc.setFontSize(10);
+    doc.text("Hôtel Paradis", 20, 30);
+    doc.text("123 Avenue des Palmiers", 20, 35);
+    doc.text("06400 Cannes, France", 20, 40);
+    doc.text("Tel: +33 4 93 XX XX XX", 20, 45);
+    
+    // Add date
+    const currentDate = format(new Date(), "dd/MM/yyyy");
+    doc.text(`Date: ${currentDate}`, 170, 30, { align: "right" });
+    
+    // Add client information if available
+    if (client) {
+      doc.setFontSize(12);
+      doc.text("Informations client:", 20, 60);
+      doc.setFontSize(10);
+      doc.text(`Nom: ${client.name}`, 20, 65);
+      doc.text(`Email: ${client.email}`, 20, 70);
+      doc.text(`Téléphone: ${client.phone}`, 20, 75);
+      
+      if (client.address) {
+        let yPos = 80;
+        doc.text(`Adresse: ${client.address}`, 20, yPos);
+        
+        if (client.city && client.postalCode) {
+          yPos += 5;
+          doc.text(`${client.postalCode} ${client.city}`, 20, yPos);
+        }
+        
+        if (client.country) {
+          yPos += 5;
+          doc.text(`${client.country}`, 20, yPos);
+        }
+      }
+    }
+    
+    // Add transaction table
+    doc.autoTable({
+      head: [headers],
+      body: data,
+      startY: client ? 100 : 60,
+      theme: 'grid',
+      styles: {
+        fontSize: 9,
+        cellPadding: 3
+      },
+      headStyles: {
+        fillColor: [66, 66, 66]
+      }
+    });
+    
+    const finalY = (doc as any).lastAutoTable.finalY || 130;
+    
+    // Add footer
+    doc.setFontSize(8);
+    doc.text("Ce document a été généré automatiquement et ne nécessite pas de signature.", 105, finalY + 20, { align: "center" });
+    doc.text("© Hôtel Paradis - SIRET: 123 456 789 00015", 105, finalY + 25, { align: "center" });
+    
+    const filename = `${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`;
+    doc.save(filename);
+    
+    return filename;
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    throw new Error("Failed to generate PDF");
   }
 };

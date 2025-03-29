@@ -1,68 +1,44 @@
 
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
-import { useClient } from "@/hooks/useClients";
-import { useTransactions } from "@/hooks/useTransactions";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
-import { TransactionTable } from "@/components/registers/TransactionTable";
-import { ArrowLeft, Edit, Trash } from "lucide-react";
 import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog";
+  ArrowLeft, 
+  Download, 
+  Edit, 
+  Mail, 
+  Phone, 
+  Trash, 
+  User, 
+  MapPin,
+  Globe
+} from "lucide-react";
+import { useClients } from "@/hooks/useClients";
+import { useTransactions } from "@/hooks/useTransactions";
+import { format } from "date-fns";
+import { ClientForm } from "@/components/clients/ClientForm";
+import { Transaction } from "@/types";
+import { TransactionTable } from "@/components/registers/TransactionTable";
+import { TransactionDetailsSheet } from "@/components/transactions/TransactionDetailsSheet";
 import { toast } from "sonner";
+import { generatePDF } from "@/lib/pdfUtils";
 
 const ClientDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { data: client, isLoading, error, deleteClient } = useClient(id);
-  const { data: transactions } = useTransactions();
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
-
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="p-6">Chargement des informations client...</div>
-      </AppLayout>
-    );
-  }
-
-  if (error || !client) {
-    return (
-      <AppLayout>
-        <div className="p-6 text-red-500">
-          Une erreur est survenue: {(error as Error)?.message || "Client introuvable"}
-        </div>
-      </AppLayout>
-    );
-  }
-
-  // Filter transactions for this client
-  const clientTransactions = transactions?.filter(t => t.clientId === id) || [];
-  
-  // Filter by type based on active tab
-  const filteredTransactions = clientTransactions.filter(transaction => {
-    if (activeTab === "all") return true;
-    if (activeTab === "hotel") return transaction.registerType === "hotel";
-    if (activeTab === "restaurant") return transaction.registerType === "restaurant";
-    if (activeTab === "bookings") return transaction.category === "reservation";
-    return true;
-  });
+  const { data: client, isLoading, error, mutations } = useClients(id);
+  const { data: transactions } = useTransactions({ clientId: id });
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isTransactionSheetOpen, setIsTransactionSheetOpen] = useState(false);
 
   const handleDelete = async () => {
+    if (!client) return;
+    
     try {
-      await deleteClient.mutateAsync(id);
+      await mutations.deleteClient.mutateAsync(client.id);
       toast.success("Client supprimé avec succès");
       navigate("/clients");
     } catch (err) {
@@ -70,122 +46,221 @@ const ClientDetails = () => {
     }
   };
 
+  const handleUpdate = async (data: any) => {
+    if (!client) return;
+    
+    try {
+      await mutations.updateClient.mutateAsync({ id: client.id, ...data });
+      setIsEditing(false);
+      toast.success("Client mis à jour avec succès");
+    } catch (err) {
+      toast.error(`Erreur lors de la mise à jour: ${(err as Error).message}`);
+    }
+  };
+
+  const handleExportHistory = () => {
+    if (!client || !transactions) return;
+    
+    if (transactions.length === 0) {
+      toast.info("Aucune transaction à exporter pour ce client");
+      return;
+    }
+
+    const tableData = transactions.map(t => [
+      format(new Date(t.date), "dd/MM/yyyy"),
+      t.registerType,
+      t.type === "payment" ? "Paiement" : "Remboursement",
+      t.description,
+      t.amount.toFixed(2) + " €"
+    ]);
+
+    const docDefinition = {
+      title: `Historique des transactions - ${client.name}`,
+      headers: ["Date", "Service", "Type", "Description", "Montant"],
+      data: tableData,
+      client: {
+        name: client.name,
+        email: client.email,
+        phone: client.phone,
+        address: client.address,
+        city: client.city,
+        postalCode: client.postalCode,
+        country: client.country
+      }
+    };
+
+    try {
+      generatePDF(docDefinition);
+      toast.success("Historique exporté avec succès");
+    } catch (err) {
+      toast.error(`Erreur lors de l'exportation: ${(err as Error).message}`);
+    }
+  };
+
+  const handleViewTransactionDetails = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsTransactionSheetOpen(true);
+  };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-pulse text-xl">Chargement...</div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (error || !client) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center h-full gap-4">
+          <div className="text-xl text-red-500">
+            {error ? `Erreur: ${(error as Error).message}` : "Client non trouvé"}
+          </div>
+          <Button onClick={() => navigate("/clients")}>
+            Retour à la liste des clients
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={() => navigate("/clients")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h1 className="text-2xl font-bold">{client.name}</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline"
-              onClick={() => navigate(`/client/edit/${id}`)}
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              Modifier
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={() => setConfirmDeleteOpen(true)}
-            >
-              <Trash className="h-4 w-4 mr-2" />
-              Supprimer
-            </Button>
-          </div>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => navigate("/clients")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">Détails du Client</h1>
         </div>
 
-        <DashboardCard title="Informations Client">
-          <div className="p-4 grid md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-medium text-lg mb-4">Coordonnées</h3>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-muted-foreground">Email:</span>{" "}
-                  <span>{client.email}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Téléphone:</span>{" "}
-                  <span>{client.phone}</span>
-                </div>
-                {client.address && (
+        <DashboardCard 
+          title="Informations Client"
+          action={
+            !isEditing && (
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Edit className="h-3.5 w-3.5 mr-1" />
+                  Modifier
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleDelete}
+                >
+                  <Trash className="h-3.5 w-3.5 mr-1" />
+                  Supprimer
+                </Button>
+              </div>
+            )
+          }
+        >
+          <div className="p-4">
+            {isEditing ? (
+              <ClientForm 
+                onSubmit={handleUpdate} 
+                defaultValues={client}
+                onCancel={() => setIsEditing(false)}
+              />
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center">
+                    <User className="h-8 w-8 text-muted-foreground" />
+                  </div>
                   <div>
-                    <span className="text-muted-foreground">Adresse:</span>{" "}
-                    <div className="pl-4 mt-1">
-                      <div>{client.address}</div>
-                      {client.postalCode && client.city && (
-                        <div>{client.postalCode} {client.city}</div>
-                      )}
-                      {client.country && <div>{client.country}</div>}
+                    <h2 className="text-xl font-semibold">{client.name}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Client depuis {client.createdAt ? format(new Date(client.createdAt), "MMMM yyyy") : "récemment"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span>{client.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>{client.phone}</span>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-            <div>
-              <h3 className="font-medium text-lg mb-4">Informations supplémentaires</h3>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-muted-foreground">Date de création:</span>{" "}
-                  <span>{client.createdAt && format(new Date(client.createdAt), "dd/MM/yyyy")}</span>
+
+                  {(client.address || client.city || client.postalCode || client.country) && (
+                    <div className="space-y-1.5">
+                      {client.address && (
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                          <div>
+                            <div>{client.address}</div>
+                            {client.city && client.postalCode && (
+                              <div>{client.postalCode} {client.city}</div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {client.country && (
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                          <span>{client.country}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {client.notes && (
-                  <div>
-                    <span className="text-muted-foreground">Notes:</span>{" "}
-                    <div className="pl-4 mt-1">{client.notes}</div>
-                  </div>
-                )}
               </div>
-            </div>
+            )}
           </div>
         </DashboardCard>
 
-        <DashboardCard title="Historique des Transactions">
+        <DashboardCard 
+          title="Historique des Transactions"
+          action={
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExportHistory}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Exporter l'historique
+            </Button>
+          }
+        >
           <div className="p-4">
-            <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">Toutes</TabsTrigger>
-                <TabsTrigger value="hotel">Hôtel</TabsTrigger>
-                <TabsTrigger value="restaurant">Restaurant</TabsTrigger>
-                <TabsTrigger value="bookings">Réservations</TabsTrigger>
-              </TabsList>
-              <TabsContent value={activeTab} className="mt-0">
-                {filteredTransactions.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground">
-                    Aucune transaction trouvée
-                  </div>
-                ) : (
-                  <TransactionTable transactions={filteredTransactions} />
-                )}
-              </TabsContent>
-            </Tabs>
+            {!transactions || transactions.length === 0 ? (
+              <div className="text-center p-8 text-muted-foreground">
+                Aucune transaction enregistrée pour ce client
+              </div>
+            ) : (
+              <TransactionTable 
+                transactions={transactions} 
+                isLoading={false}
+                onViewDetails={handleViewTransactionDetails}
+              />
+            )}
           </div>
         </DashboardCard>
       </div>
 
-      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action ne peut pas être annulée. Ce client sera définitivement supprimé de notre base de données.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <TransactionDetailsSheet
+        transaction={selectedTransaction}
+        open={isTransactionSheetOpen}
+        onOpenChange={setIsTransactionSheetOpen}
+      />
     </AppLayout>
   );
 };
