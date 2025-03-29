@@ -2,6 +2,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { Transaction } from "@/types";
+import { UserIcon, UserCheck } from "lucide-react";
 
 interface TransactionGeneralInfoProps {
   transaction: Transaction;
@@ -37,6 +38,26 @@ export const TransactionGeneralInfo: React.FC<TransactionGeneralInfoProps> = ({
             transaction.method === "card" ? "Carte" : "Virement"}
         </p>
       </div>
+      
+      {transaction.clientName && (
+        <div className="col-span-1 md:col-span-2">
+          <div className="flex items-center gap-2">
+            <UserIcon className="h-4 w-4 text-blue-500" />
+            <p className="text-sm text-muted-foreground">Client</p>
+          </div>
+          <p className="font-medium">{transaction.clientName}</p>
+        </div>
+      )}
+      
+      {transaction.staffName && (
+        <div className="col-span-1 md:col-span-2">
+          <div className="flex items-center gap-2">
+            <UserCheck className="h-4 w-4 text-green-500" />
+            <p className="text-sm text-muted-foreground">Personnel</p>
+          </div>
+          <p className="font-medium">{transaction.staffName}</p>
+        </div>
+      )}
     </div>
   );
 };

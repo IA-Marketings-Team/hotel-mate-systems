@@ -13,7 +13,11 @@ export const useTransactionDetails = (id: string | undefined) => {
       
       const { data, error } = await supabase
         .from('transactions')
-        .select('*')
+        .select(`
+          *,
+          staff:staff_id(name),
+          client:client_id(name)
+        `)
         .eq('id', id)
         .single();
       
@@ -30,7 +34,9 @@ export const useTransactionDetails = (id: string | undefined) => {
         registerType: data.register_type as 'hotel' | 'restaurant' | 'poker' | 'rooftop',
         description: data.description,
         staffId: data.staff_id,
+        staffName: data.staff?.name,
         clientId: data.client_id,
+        clientName: data.client?.name,
         category: data.category,
         subcategory: data.subcategory
       } as Transaction;
@@ -50,7 +56,9 @@ export const useTransactionDetails = (id: string | undefined) => {
           method: updatedTransaction.method,
           description: updatedTransaction.description,
           category: updatedTransaction.category,
-          subcategory: updatedTransaction.subcategory
+          subcategory: updatedTransaction.subcategory,
+          client_id: updatedTransaction.clientId,
+          staff_id: updatedTransaction.staffId
         })
         .eq('id', id);
       

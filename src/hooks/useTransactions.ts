@@ -9,7 +9,11 @@ export const useTransactions = (registerType?: RegisterType) => {
     queryFn: async () => {
       let query = supabase
         .from('transactions')
-        .select('*')
+        .select(`
+          *,
+          staff:staff_id(name),
+          client:client_id(name)
+        `)
         .order('date', { ascending: false });
       
       if (registerType) {
@@ -25,14 +29,16 @@ export const useTransactions = (registerType?: RegisterType) => {
       // Transform the data to match the Transaction type
       return (data || []).map(item => ({
         id: item.id,
-        date: item.date, // This works now with the updated type
+        date: item.date,
         amount: item.amount,
         type: item.type as 'payment' | 'refund',
         method: item.method as 'cash' | 'card' | 'transfer',
         registerType: item.register_type as RegisterType,
         description: item.description,
         staffId: item.staff_id,
+        staffName: item.staff?.name,
         clientId: item.client_id,
+        clientName: item.client?.name,
         category: item.category,
         subcategory: item.subcategory
       })) as Transaction[];

@@ -2,7 +2,7 @@
 import React from "react";
 import { Transaction } from "@/types";
 import { format } from "date-fns";
-import { MoreHorizontal, Plus, PlusCircle } from "lucide-react";
+import { MoreHorizontal, Plus, PlusCircle, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { formatCurrency } from "@/lib/utils";
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -48,6 +49,7 @@ export function TransactionTable({
           <TableHead>Catégorie</TableHead>
           <TableHead>Type</TableHead>
           <TableHead>Méthode</TableHead>
+          <TableHead>Client</TableHead>
           <TableHead className="text-right">Montant</TableHead>
           <TableHead></TableHead>
         </TableRow>
@@ -67,12 +69,25 @@ export function TransactionTable({
                 <span>{transaction.type === "payment" ? "Paiement" : "Remboursement"}</span>
               </div>
             </TableCell>
-            <TableCell className="capitalize">{transaction.method}</TableCell>
+            <TableCell className="capitalize">
+              {transaction.method === "cash" ? "Espèces" : 
+                transaction.method === "card" ? "Carte" : "Virement"}
+            </TableCell>
+            <TableCell>
+              {transaction.clientName ? (
+                <div className="flex items-center gap-1">
+                  <UserIcon className="size-3 text-blue-500" />
+                  <span>{transaction.clientName}</span>
+                </div>
+              ) : (
+                "-"
+              )}
+            </TableCell>
             <TableCell className={`text-right font-medium ${
               transaction.type === "payment" ? "text-green-600" : "text-red-600"
             }`}>
               {transaction.type === "payment" ? "+" : "-"}
-              {transaction.amount} €
+              {formatCurrency(transaction.amount)}
             </TableCell>
             <TableCell onClick={(e) => e.stopPropagation()}>
               <DropdownMenu>

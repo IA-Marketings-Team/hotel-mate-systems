@@ -12,6 +12,7 @@ import Bookings from "./pages/Bookings";
 import Blueprint from "./pages/Blueprint";
 import NotFound from "./pages/NotFound";
 import TransactionDetails from "./pages/TransactionDetails";
+import Clients from "./pages/Clients";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
             <Bookings />
           </AppLayout>
         } />
+        <Route path="/clients" element={<Clients />} />
         <Route path="/blueprint" element={
           <AppLayout>
             <Blueprint />

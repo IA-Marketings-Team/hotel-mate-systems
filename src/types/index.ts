@@ -30,6 +30,21 @@ export interface StaffMember {
   isAvailable: boolean;
 }
 
+// Client Types
+export interface Client {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  postalCode?: string;
+  notes?: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
 // Service Types
 export interface HotelService {
   id: string;
@@ -53,7 +68,9 @@ export interface Transaction {
   registerType: RegisterType;
   description: string;
   staffId?: string;
+  staffName?: string; // Added for display purposes
   clientId?: string;
+  clientName?: string; // Added for display purposes
   category?: string;
   subcategory?: string;
 }

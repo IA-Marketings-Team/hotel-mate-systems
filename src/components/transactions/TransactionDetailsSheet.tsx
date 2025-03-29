@@ -1,12 +1,12 @@
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Transaction } from "@/types";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, UserCheck, UserIcon } from "lucide-react";
 import { toast } from "sonner";
-import { jsPDF } from "jspdf";
-import 'jspdf-autotable';
+import { generateInvoicePDF } from "@/lib/pdfUtils";
 
 interface TransactionDetailsSheetProps {
   transaction: Transaction | null;
@@ -23,58 +23,7 @@ export function TransactionDetailsSheet({
 
   const generateInvoice = () => {
     try {
-      const doc = new jsPDF();
-      
-      // Add logo or header
-      doc.setFontSize(20);
-      doc.text("FACTURE", 105, 20, { align: "center" });
-      
-      // Add invoice details
-      doc.setFontSize(12);
-      doc.text(`Numéro de transaction: ${transaction.id}`, 20, 40);
-      doc.text(`Date: ${format(new Date(transaction.date), "dd/MM/yyyy HH:mm")}`, 20, 50);
-      doc.text(`Type: ${transaction.type === "payment" ? "Paiement" : "Remboursement"}`, 20, 60);
-      doc.text(`Méthode: ${
-        transaction.method === "cash" ? "Espèces" : 
-        transaction.method === "card" ? "Carte" : "Virement"
-      }`, 20, 70);
-      
-      // Add transaction details
-      const tableColumn = ["Description", "Catégorie", "Sous-catégorie", "Montant"];
-      const tableRows = [
-        [
-          transaction.description,
-          transaction.category || "-",
-          transaction.subcategory || "-",
-          `${transaction.type === "payment" ? "+" : "-"}${formatCurrency(transaction.amount)}`
-        ]
-      ];
-      
-      // @ts-ignore - jsPDF-AutoTable adds this method
-      doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 80,
-        theme: 'grid',
-        styles: {
-          fontSize: 10,
-          cellPadding: 5
-        },
-        headStyles: {
-          fillColor: [66, 66, 66]
-        }
-      });
-      
-      // Add total
-      doc.text(`Total: ${transaction.type === "payment" ? "+" : "-"}${formatCurrency(transaction.amount)}`, 150, 130, { align: "right" });
-      
-      // Footer
-      doc.setFontSize(10);
-      doc.text("Merci pour votre confiance.", 105, 270, { align: "center" });
-      
-      // Save the PDF
-      doc.save(`facture-${transaction.id}.pdf`);
-      
+      generateInvoicePDF(transaction);
       toast.success("La facture a été générée avec succès");
     } catch (error) {
       console.error("Error generating invoice:", error);
@@ -124,7 +73,34 @@ export function TransactionDetailsSheet({
             </div>
           </div>
 
-          <div>
+          {(transaction.clientName || transaction.staffName) && (
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-medium mb-2">Personnes</h3>
+              <div className="space-y-3">
+                {transaction.clientName && (
+                  <div className="flex items-start gap-2">
+                    <UserIcon className="h-4 w-4 mt-0.5 text-blue-500" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Client</p>
+                      <p className="font-medium">{transaction.clientName}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {transaction.staffName && (
+                  <div className="flex items-start gap-2">
+                    <UserCheck className="h-4 w-4 mt-0.5 text-green-500" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Personnel</p>
+                      <p className="font-medium">{transaction.staffName}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="border-t pt-4">
             <h3 className="text-lg font-medium mb-2">Détails</h3>
             <div className="space-y-3">
               <div>

@@ -13,6 +13,7 @@ import { generateInvoicePDF, generateTransactionCSV } from "@/lib/pdfUtils";
 import { useTransactionDetails } from "@/hooks/useTransactionDetails";
 import { TransactionLoading } from "@/components/transactions/TransactionLoading";
 import { TransactionError } from "@/components/transactions/TransactionError";
+import { Transaction } from "@/types"; // Added missing import
 
 const TransactionDetails = () => {
   const { id } = useParams();
