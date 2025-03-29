@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Transaction } from "@/types";
+import { Transaction, RegisterType } from "@/types";
 import { Search, Plus, PlusCircle, Hotel, Utensils, CircleDollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const Registers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("hotel");
+  const [activeTab, setActiveTab] = useState<RegisterType>("hotel");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -27,7 +27,7 @@ const Registers = () => {
     }
   };
 
-  const getRegisterIcon = (registerType: string) => {
+  const getRegisterIcon = (registerType: RegisterType) => {
     switch (registerType) {
       case "hotel":
         return <Hotel className="size-5" />;
@@ -64,7 +64,7 @@ const Registers = () => {
         <Button onClick={() => setIsDialogOpen(true)}>Nouvelle transaction</Button>
       </div>
 
-      <Tabs defaultValue="hotel" onValueChange={setActiveTab}>
+      <Tabs defaultValue="hotel" onValueChange={(value) => setActiveTab(value as RegisterType)}>
         <TabsList className="grid grid-cols-3 mb-6">
           <TabsTrigger value="hotel" className="flex items-center gap-2">
             <Hotel className="size-4" />

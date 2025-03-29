@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCategories, useSubcategories, ServiceCategory } from "@/hooks/useCategories";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { RegisterType } from "@/types";
 
 interface NewTransactionDialogProps {
   open: boolean;
@@ -33,7 +33,6 @@ export function NewTransactionDialog({
   const { data: categories, isLoading: isCategoriesLoading } = useCategories(registerType);
   const { data: subcategories, isLoading: isSubcategoriesLoading } = useSubcategories(selectedCategory);
 
-  // Reset form when dialog opens/closes
   useEffect(() => {
     if (open) {
       setDescription("");
@@ -45,7 +44,6 @@ export function NewTransactionDialog({
     }
   }, [open]);
 
-  // Reset subcategory when category changes
   useEffect(() => {
     setSelectedSubcategory(null);
   }, [selectedCategory]);

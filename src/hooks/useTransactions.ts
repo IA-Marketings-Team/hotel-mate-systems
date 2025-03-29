@@ -22,7 +22,20 @@ export const useTransactions = (registerType?: string) => {
         throw new Error(`Error fetching transactions: ${error.message}`);
       }
       
-      return data as Transaction[];
+      // Transform the data to match the Transaction type
+      return (data || []).map(item => ({
+        id: item.id,
+        date: item.date,
+        amount: item.amount,
+        type: item.type as 'payment' | 'refund',
+        method: item.method as 'cash' | 'card' | 'transfer',
+        registerType: item.register_type as any, // This maps register_type to registerType
+        description: item.description,
+        staffId: item.staff_id,
+        clientId: item.client_id,
+        category: item.category,
+        subcategory: item.subcategory
+      })) as Transaction[];
     }
   });
 };
