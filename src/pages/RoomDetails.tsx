@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRooms } from "@/hooks/useRooms";
 import RoomDialog, { RoomFormValues } from "@/components/rooms/RoomDialog";
+import BookingDialog from "@/components/rooms/BookingDialog";
 import { Room, RoomStatus } from "@/types";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { 
@@ -13,7 +15,8 @@ import {
   Pencil, 
   Trash2, 
   ChevronLeft,
-  Brush
+  Brush,
+  User
 } from "lucide-react";
 import {
   AlertDialog,
@@ -27,6 +30,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const RoomDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,12 +42,16 @@ const RoomDetails = () => {
     error, 
     updateRoom, 
     deleteRoom, 
-    changeRoomStatus 
+    toggleMaintenanceStatus,
+    toggleCleaningStatus,
+    bookRoom,
+    makeRoomAvailable
   } = useRooms();
   
   const [room, setRoom] = useState<Room | null>(null);
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
   useEffect(() => {
     if (!loading && rooms.length > 0 && id) {
@@ -56,7 +65,7 @@ const RoomDetails = () => {
       case "available":
         return <CheckCircle className="size-4 text-green-500" />;
       case "occupied":
-        return <CheckCircle className="size-4 text-blue-500" />;
+        return <User className="size-4 text-blue-500" />;
       case "cleaning":
         return <Brush className="size-4 text-yellow-500" />;
       case "cleaning_pending":
@@ -104,13 +113,43 @@ const RoomDetails = () => {
     }
   };
 
-  const handleChangeRoomStatus = async (status: RoomStatus) => {
+  const handleToggleMaintenance = async (checked: boolean) => {
     if (!room) return;
     
     try {
-      await changeRoomStatus(room.id, status);
+      await toggleMaintenanceStatus(room.id, checked);
     } catch (err) {
-      console.error("Error changing room status:", err);
+      console.error("Error toggling maintenance status:", err);
+    }
+  };
+
+  const handleToggleCleaning = async (checked: boolean) => {
+    if (!room) return;
+    
+    try {
+      await toggleCleaningStatus(room.id, checked);
+    } catch (err) {
+      console.error("Error toggling cleaning status:", err);
+    }
+  };
+
+  const handleMakeAvailable = async () => {
+    if (!room) return;
+    
+    try {
+      await makeRoomAvailable(room.id);
+    } catch (err) {
+      console.error("Error making room available:", err);
+    }
+  };
+
+  const handleBookRoom = async (guestName: string) => {
+    if (!room) return;
+    
+    try {
+      await bookRoom(room.id, guestName);
+    } catch (err) {
+      console.error("Error booking room:", err);
     }
   };
 
@@ -204,6 +243,18 @@ const RoomDetails = () => {
                     <span className="text-sm">{getStatusText(room.status)}</span>
                   </div>
                 </div>
+
+                {room.maintenanceStatus && (
+                  <div className="mb-3">
+                    <Badge variant="destructive" className="mb-2">En maintenance</Badge>
+                  </div>
+                )}
+
+                {room.cleaningStatus && (
+                  <div className="mb-3">
+                    <Badge variant="outline" className="bg-yellow-100 mb-2">À nettoyer</Badge>
+                  </div>
+                )}
                 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between">
@@ -264,49 +315,65 @@ const RoomDetails = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Gestion du statut</CardTitle>
+              <CardTitle>Gestion de la chambre</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant={room.status === 'available' ? 'default' : 'outline'} 
-                  className={room.status === 'available' ? 'bg-green-500 hover:bg-green-600' : ''}
-                  onClick={() => handleChangeRoomStatus('available')}
-                >
-                  <CheckCircle className="h-4 w-4 mr-1" /> Disponible
-                </Button>
-                
-                <Button
-                  variant={room.status === 'occupied' ? 'default' : 'outline'} 
-                  className={room.status === 'occupied' ? 'bg-blue-500 hover:bg-blue-600' : ''}
-                  onClick={() => handleChangeRoomStatus('occupied')}
-                >
-                  <CheckCircle className="h-4 w-4 mr-1" /> Occupée
-                </Button>
-                
-                <Button
-                  variant={room.status === 'cleaning_pending' ? 'default' : 'outline'} 
-                  className={room.status === 'cleaning_pending' ? 'bg-orange-500 hover:bg-orange-600' : ''}
-                  onClick={() => handleChangeRoomStatus('cleaning_pending')}
-                >
-                  <Clock className="h-4 w-4 mr-1" /> À nettoyer
-                </Button>
-                
-                <Button
-                  variant={room.status === 'cleaning' ? 'default' : 'outline'} 
-                  className={room.status === 'cleaning' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
-                  onClick={() => handleChangeRoomStatus('cleaning')}
-                >
-                  <Brush className="h-4 w-4 mr-1" /> Nettoyage
-                </Button>
-                
-                <Button
-                  variant={room.status === 'maintenance' ? 'default' : 'outline'} 
-                  onClick={() => handleChangeRoomStatus('maintenance')}
-                  className={`col-span-2 ${room.status === 'maintenance' ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                >
-                  <AlertCircle className="h-4 w-4 mr-1" /> Maintenance
-                </Button>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium">État de la chambre</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      variant={room.status === 'available' ? 'default' : 'outline'} 
+                      className={room.status === 'available' ? 'bg-green-500 hover:bg-green-600' : ''}
+                      onClick={handleMakeAvailable}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" /> Disponible
+                    </Button>
+                    
+                    <Button
+                      variant={room.status === 'occupied' ? 'default' : 'outline'} 
+                      className={room.status === 'occupied' ? 'bg-blue-500 hover:bg-blue-600' : ''}
+                      onClick={() => setBookingDialogOpen(true)}
+                      disabled={room.status === 'occupied'}
+                    >
+                      <User className="h-4 w-4 mr-1" /> Occuper
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium mb-3">Options additionnelles</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col space-y-1">
+                        <Label htmlFor="maintenance-mode">Mode maintenance</Label>
+                        <span className="text-sm text-muted-foreground">
+                          La chambre nécessite une réparation ou inspection
+                        </span>
+                      </div>
+                      <Switch 
+                        id="maintenance-mode" 
+                        checked={room.maintenanceStatus}
+                        onCheckedChange={handleToggleMaintenance}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col space-y-1">
+                        <Label htmlFor="cleaning-mode">Nettoyage requis</Label>
+                        <span className="text-sm text-muted-foreground">
+                          La chambre nécessite un nettoyage
+                        </span>
+                      </div>
+                      <Switch 
+                        id="cleaning-mode" 
+                        checked={room.cleaningStatus}
+                        onCheckedChange={handleToggleCleaning}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -318,6 +385,13 @@ const RoomDetails = () => {
         open={roomDialogOpen}
         onOpenChange={setRoomDialogOpen}
         onSave={handleSaveRoom}
+      />
+
+      <BookingDialog
+        roomNumber={room.number}
+        open={bookingDialogOpen}
+        onOpenChange={setBookingDialogOpen}
+        onConfirm={handleBookRoom}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

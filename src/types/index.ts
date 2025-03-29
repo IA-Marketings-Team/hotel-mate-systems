@@ -10,7 +10,9 @@ export interface Room {
   pricePerNight: number;
   floor: number;
   view: 'garden' | 'pool' | 'sea' | 'mountain' | 'city';
-  status: RoomStatus;
+  status: RoomStatus; // État principal
+  maintenanceStatus: boolean; // Indique si la chambre est en maintenance
+  cleaningStatus: boolean; // Indique si la chambre est en nettoyage ou à nettoyer
   features: string[];
   notes: string;
   lastCleaned?: Date;

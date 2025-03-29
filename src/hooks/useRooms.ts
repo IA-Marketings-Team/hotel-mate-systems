@@ -30,6 +30,8 @@ export const useRooms = () => {
         pricePerNight: room.price_per_night,
         type: room.type as "standard" | "deluxe" | "suite" | "presidential",
         status: room.status as RoomStatus,
+        maintenanceStatus: room.maintenance_status || false,
+        cleaningStatus: room.cleaning_status || false,
         view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: room.last_cleaned ? new Date(room.last_cleaned) : undefined,
         currentGuest: room.current_guest || undefined
@@ -57,6 +59,8 @@ export const useRooms = () => {
           floor: roomData.floor,
           view: roomData.view,
           status: roomData.status,
+          maintenance_status: roomData.maintenanceStatus || false,
+          cleaning_status: roomData.cleaningStatus || false,
           features: roomData.features,
           notes: roomData.notes,
           last_cleaned: roomData.lastCleaned ? roomData.lastCleaned.toISOString() : null,
@@ -74,6 +78,8 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
+        maintenanceStatus: data.maintenance_status || false,
+        cleaningStatus: data.cleaning_status || false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
@@ -110,6 +116,16 @@ export const useRooms = () => {
         delete dbData.currentGuest;
       }
 
+      if (roomData.maintenanceStatus !== undefined) {
+        dbData.maintenance_status = roomData.maintenanceStatus;
+        delete dbData.maintenanceStatus;
+      }
+
+      if (roomData.cleaningStatus !== undefined) {
+        dbData.cleaning_status = roomData.cleaningStatus;
+        delete dbData.cleaningStatus;
+      }
+
       const { data, error } = await supabase
         .from('rooms')
         .update(dbData)
@@ -126,6 +142,8 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
+        maintenanceStatus: data.maintenance_status || false,
+        cleaningStatus: data.cleaning_status || false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
@@ -161,11 +179,16 @@ export const useRooms = () => {
     }
   };
 
-  const changeRoomStatus = async (id: string, status: RoomStatus) => {
+  const toggleMaintenanceStatus = async (id: string, status: boolean) => {
     try {
+      const roomToUpdate = rooms.find(room => room.id === id);
+      if (!roomToUpdate) throw new Error("Chambre non trouvée");
+
       const { data, error } = await supabase
         .from('rooms')
-        .update({ status })
+        .update({ 
+          maintenance_status: status 
+        })
         .eq('id', id)
         .select('*')
         .single();
@@ -179,35 +202,156 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
+        maintenanceStatus: data.maintenance_status || false,
+        cleaningStatus: data.cleaning_status || false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
-        lastCleaned: data.status === 'cleaning' ? new Date() : (data.last_cleaned ? new Date(data.last_cleaned) : undefined),
+        lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
       };
 
-      if (status === 'cleaning') {
-        const now = new Date();
-        await supabase
-          .from('rooms')
-          .update({ last_cleaned: now.toISOString() })
-          .eq('id', id);
-        
-        updatedRoom.lastCleaned = now;
+      setRooms(prev => prev.map(room => room.id === id ? updatedRoom : room));
+      
+      toast.success(status 
+        ? "Chambre mise en maintenance" 
+        : "Chambre retirée de maintenance");
+      
+      return updatedRoom;
+    } catch (err: any) {
+      toast.error(`Erreur lors de la modification de l'état de maintenance: ${err.message}`);
+      console.error("Error toggling maintenance status:", err);
+      throw err;
+    }
+  };
+
+  const toggleCleaningStatus = async (id: string, status: boolean) => {
+    try {
+      const roomToUpdate = rooms.find(room => room.id === id);
+      if (!roomToUpdate) throw new Error("Chambre non trouvée");
+
+      const now = status ? new Date() : undefined;
+      const { data, error } = await supabase
+        .from('rooms')
+        .update({ 
+          cleaning_status: status,
+          last_cleaned: status ? now?.toISOString() : data?.last_cleaned
+        })
+        .eq('id', id)
+        .select('*')
+        .single();
+
+      if (error) {
+        throw error;
       }
+
+      const updatedRoom: Room = {
+        ...data,
+        pricePerNight: data.price_per_night,
+        type: data.type as "standard" | "deluxe" | "suite" | "presidential",
+        status: data.status as RoomStatus,
+        maintenanceStatus: data.maintenance_status || false,
+        cleaningStatus: data.cleaning_status || false,
+        view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
+        lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
+        currentGuest: data.current_guest || undefined
+      };
 
       setRooms(prev => prev.map(room => room.id === id ? updatedRoom : room));
       
-      const statusMessages = {
-        'available': 'Chambre marquée comme disponible',
-        'occupied': 'Chambre marquée comme occupée',
-        'cleaning': 'Chambre en cours de nettoyage',
-        'cleaning_pending': 'Chambre en attente de nettoyage',
-        'maintenance': 'Chambre en maintenance'
-      };
+      toast.success(status 
+        ? "Chambre marquée à nettoyer" 
+        : "Nettoyage terminé");
       
-      toast.success(statusMessages[status]);
       return updatedRoom;
     } catch (err: any) {
-      toast.error(`Erreur lors du changement de statut: ${err.message}`);
+      toast.error(`Erreur lors de la modification de l'état de nettoyage: ${err.message}`);
+      console.error("Error toggling cleaning status:", err);
+      throw err;
+    }
+  };
+
+  const bookRoom = async (id: string, guestName: string) => {
+    try {
+      const roomToUpdate = rooms.find(room => room.id === id);
+      if (!roomToUpdate) throw new Error("Chambre non trouvée");
+      
+      if (roomToUpdate.status === 'occupied') {
+        throw new Error("Cette chambre est déjà occupée");
+      }
+
+      const { data, error } = await supabase
+        .from('rooms')
+        .update({ 
+          status: 'occupied',
+          current_guest: guestName
+        })
+        .eq('id', id)
+        .select('*')
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedRoom: Room = {
+        ...data,
+        pricePerNight: data.price_per_night,
+        type: data.type as "standard" | "deluxe" | "suite" | "presidential",
+        status: data.status as RoomStatus,
+        maintenanceStatus: data.maintenance_status || false,
+        cleaningStatus: data.cleaning_status || false,
+        view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
+        lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
+        currentGuest: data.current_guest || undefined
+      };
+
+      setRooms(prev => prev.map(room => room.id === id ? updatedRoom : room));
+      
+      toast.success(`Chambre réservée pour ${guestName}`);
+      return updatedRoom;
+    } catch (err: any) {
+      toast.error(`Erreur lors de la réservation: ${err.message}`);
+      console.error("Error booking room:", err);
+      throw err;
+    }
+  };
+
+  const makeRoomAvailable = async (id: string) => {
+    try {
+      const roomToUpdate = rooms.find(room => room.id === id);
+      if (!roomToUpdate) throw new Error("Chambre non trouvée");
+
+      const { data, error } = await supabase
+        .from('rooms')
+        .update({ 
+          status: 'available',
+          current_guest: null
+        })
+        .eq('id', id)
+        .select('*')
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedRoom: Room = {
+        ...data,
+        pricePerNight: data.price_per_night,
+        type: data.type as "standard" | "deluxe" | "suite" | "presidential",
+        status: data.status as RoomStatus,
+        maintenanceStatus: data.maintenance_status || false,
+        cleaningStatus: data.cleaning_status || false,
+        view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
+        lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
+        currentGuest: data.current_guest || undefined
+      };
+
+      setRooms(prev => prev.map(room => room.id === id ? updatedRoom : room));
+      
+      toast.success("Chambre marquée comme disponible");
+      return updatedRoom;
+    } catch (err: any) {
+      toast.error(`Erreur lors de la modification du statut: ${err.message}`);
       console.error("Error changing room status:", err);
       throw err;
     }
@@ -233,6 +377,8 @@ export const useRooms = () => {
         pricePerNight: room.price_per_night,
         type: room.type as "standard" | "deluxe" | "suite" | "presidential",
         status: room.status as RoomStatus,
+        maintenanceStatus: room.maintenance_status || false,
+        cleaningStatus: room.cleaning_status || false,
         view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: room.last_cleaned ? new Date(room.last_cleaned) : undefined,
         currentGuest: room.current_guest || undefined
@@ -266,7 +412,10 @@ export const useRooms = () => {
     addRoom,
     updateRoom,
     deleteRoom,
-    changeRoomStatus,
+    toggleMaintenanceStatus,
+    toggleCleaningStatus,
+    bookRoom,
+    makeRoomAvailable,
     setAllOccupiedToPendingCleaning
   };
 };

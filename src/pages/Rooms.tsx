@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Room, RoomStatus } from "@/types";
-import { Search, CheckCircle, Clock, AlertCircle, Plus, Moon, Brush, ArrowRight } from "lucide-react";
+import { Search, CheckCircle, Clock, AlertCircle, Plus, Moon, Brush, ArrowRight, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useRooms } from "@/hooks/useRooms";
 import RoomDialog, { RoomFormValues } from "@/components/rooms/RoomDialog";
@@ -45,7 +45,7 @@ const Rooms = () => {
       case "available":
         return <CheckCircle className="size-4 text-green-500" />;
       case "occupied":
-        return <CheckCircle className="size-4 text-blue-500" />;
+        return <User className="size-4 text-blue-500" />;
       case "cleaning":
         return <Brush className="size-4 text-yellow-500" />;
       case "cleaning_pending":
@@ -196,6 +196,16 @@ const Rooms = () => {
                   <span className="text-sm">{getStatusText(room.status)}</span>
                 </div>
               </div>
+              
+              <div className="flex gap-1 mb-3">
+                {room.maintenanceStatus && (
+                  <Badge variant="destructive" className="text-xs">Maintenance</Badge>
+                )}
+                {room.cleaningStatus && (
+                  <Badge variant="outline" className="bg-yellow-100 text-xs">À nettoyer</Badge>
+                )}
+              </div>
+              
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Type:</span>

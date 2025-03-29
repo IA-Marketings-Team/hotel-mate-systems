@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Room, RoomStatus } from "@/types";
@@ -31,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 
 type RoomDialogProps = {
   room?: Room;
@@ -47,6 +49,8 @@ const roomFormSchema = z.object({
   floor: z.coerce.number().min(0, "L'étage doit être positif"),
   view: z.enum(["garden", "pool", "sea", "mountain", "city"]),
   status: z.enum(["available", "occupied", "cleaning", "cleaning_pending", "maintenance"]),
+  maintenanceStatus: z.boolean().default(false),
+  cleaningStatus: z.boolean().default(false),
   notes: z.string().optional(),
   currentGuest: z.string().optional(),
   features: z.array(z.string()).default([]),
@@ -80,6 +84,8 @@ const RoomDialog: React.FC<RoomDialogProps> = ({
           ...room,
           features: room.features || [],
           notes: room.notes || "",
+          maintenanceStatus: room.maintenanceStatus || false,
+          cleaningStatus: room.cleaningStatus || false,
         }
       : {
           number: "",
@@ -89,6 +95,8 @@ const RoomDialog: React.FC<RoomDialogProps> = ({
           floor: 1,
           view: "garden",
           status: "available",
+          maintenanceStatus: false,
+          cleaningStatus: false,
           features: [],
           notes: "",
         },
@@ -295,6 +303,50 @@ const RoomDialog: React.FC<RoomDialogProps> = ({
                       <Input {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="maintenanceStatus"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between border p-4 rounded-md">
+                    <div className="space-y-0.5">
+                      <FormLabel>En maintenance</FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        La chambre est en cours de maintenance
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="cleaningStatus"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between border p-4 rounded-md">
+                    <div className="space-y-0.5">
+                      <FormLabel>À nettoyer</FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        La chambre nécessite un nettoyage
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
