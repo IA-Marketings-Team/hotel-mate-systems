@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TransactionForm } from "@/components/transactions/TransactionForm";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -25,9 +25,11 @@ export const ClientTransactionDialog = ({
   initialDescription
 }: ClientTransactionDialogProps) => {
   const { createTransaction } = useTransactions();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: any) => {
     try {
+      setIsSubmitting(true);
       await createTransaction.mutateAsync({
         description: data.description,
         amount: parseFloat(data.amount),
@@ -46,6 +48,8 @@ export const ClientTransactionDialog = ({
     } catch (error) {
       console.error("Error creating transaction:", error);
       toast.error("Erreur lors de la création de la transaction");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -60,6 +64,7 @@ export const ClientTransactionDialog = ({
           clientId={clientId}
           onSubmit={handleSubmit}
           onCancel={() => onOpenChange(false)}
+          isSubmitting={isSubmitting}
           initialType={initialType}
           initialDescription={initialDescription}
         />

@@ -2,21 +2,21 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ServiceCategory } from "@/hooks/useCategories";
+import { useSubcategories } from "@/hooks/useCategories";
 
 interface SubcategorySelectorProps {
-  subcategories: ServiceCategory[] | undefined;
+  selectedCategory: string | null;
   selectedSubcategory: string | null;
   onSubcategoryChange: (value: string) => void;
-  isLoading: boolean;
 }
 
 export function SubcategorySelector({
-  subcategories,
+  selectedCategory,
   selectedSubcategory,
-  onSubcategoryChange,
-  isLoading
+  onSubcategoryChange
 }: SubcategorySelectorProps) {
+  const { data: subcategories, isLoading } = useSubcategories(selectedCategory);
+
   if (!subcategories || subcategories.length === 0) {
     return null;
   }

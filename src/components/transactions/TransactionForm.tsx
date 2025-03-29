@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,8 +44,8 @@ export function TransactionForm({
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("card");
   const [description, setDescription] = useState(initialDescription);
   const [amount, setAmount] = useState(initialAmount ? initialAmount.toString() : "");
-  const [category, setCategory] = useState(initialCategory || "");
-  const [subcategory, setSubcategory] = useState(initialSubcategory || "");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory || null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(initialSubcategory || null);
   const [clientId, setClientId] = useState(initialClientId || "");
   const [staffId, setStaffId] = useState("");
 
@@ -58,8 +59,8 @@ export function TransactionForm({
       amount,
       type,
       method,
-      category,
-      subcategory,
+      category: selectedCategory,
+      subcategory: selectedSubcategory,
       clientId: clientId || null,
       staffId: staffId || null,
     });
@@ -102,17 +103,16 @@ export function TransactionForm({
       <TransactionMethodSelector method={method} onMethodChange={setMethod} />
 
       <CategorySelector 
-        category={category} 
-        onCategoryChange={setCategory} 
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
         registerType={registerType}
       />
 
-      {category && (
+      {selectedCategory && (
         <SubcategorySelector 
-          category={category}
-          subcategory={subcategory}
-          onSubcategoryChange={setSubcategory}
-          registerType={registerType}
+          selectedCategory={selectedCategory}
+          selectedSubcategory={selectedSubcategory}
+          onSubcategoryChange={setSelectedSubcategory}
         />
       )}
 

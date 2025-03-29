@@ -2,21 +2,22 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ServiceCategory } from "@/hooks/useCategories";
+import { RegisterType } from "@/types";
+import { useCategories } from "@/hooks/useCategories";
 
 interface CategorySelectorProps {
-  categories: ServiceCategory[] | undefined;
   selectedCategory: string | null;
   onCategoryChange: (value: string) => void;
-  isLoading: boolean;
+  registerType: RegisterType;
 }
 
 export function CategorySelector({ 
-  categories, 
   selectedCategory, 
   onCategoryChange, 
-  isLoading 
+  registerType 
 }: CategorySelectorProps) {
+  const { data: categories, isLoading } = useCategories(registerType);
+
   return (
     <div className="space-y-2">
       <Label htmlFor="category">Catégorie</Label>
