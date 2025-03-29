@@ -12,14 +12,13 @@ import { BookingType } from "@/types/bookings";
 import { DateRange } from "react-day-picker";
 import { differenceInDays, differenceInHours } from "date-fns";
 import { NewBookingClientField } from "./NewBookingClientField";
-import { NewBookingGuestField } from "./NewBookingGuestField";
 import { NewBookingResourceField } from "./NewBookingResourceField";
-import { NewBookingDateRangeField } from "./NewBookingDateRangeField";
 import { NewBookingAmountField } from "./NewBookingAmountField";
 import { NewBookingExtrasField } from "./NewBookingExtrasField";
 import { useResources } from "@/hooks/useResources";
 import { StayDurationField } from "./StayDurationField";
 import { BookingPriceSummary } from "./BookingPriceSummary";
+import { NewBookingDateFields } from "./NewBookingDateFields";
 
 interface NewBookingFormProps {
   form: UseFormReturn<any>;
@@ -42,7 +41,6 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
   const { createBooking } = useBookings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [extras, setExtras] = useState<any[]>([]);
-  const [hasSelectedClient, setHasSelectedClient] = useState(false);
 
   // Update dateRange in form when it changes
   useEffect(() => {
@@ -96,27 +94,28 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
     form
   ]);
 
-  // When client changes, update the guest name and hasSelectedClient state
+  // When client changes, get the client information
   useEffect(() => {
     const clientId = form.watch("clientId");
     if (clientId) {
       const selectedClient = clients?.find(client => client.id === clientId);
       if (selectedClient) {
-        form.setValue("guestName", selectedClient.name);
-        setHasSelectedClient(true);
+        // Note: We don't need to set guestName anymore as we use the client name directly
       }
-    } else {
-      setHasSelectedClient(false);
     }
   }, [form.watch("clientId"), clients, form]);
 
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
+      // Get the selected client's name for the guestName field
+      const selectedClient = clients?.find(client => client.id === data.clientId);
+      const guestName = selectedClient ? selectedClient.name : "Client inconnu";
+      
       await createBooking({
         resourceId: data.resourceId,
         roomId: bookingType === 'room' ? data.resourceId : undefined,
-        guestName: data.guestName,
+        guestName: guestName, // Use client's name directly
         clientId: data.clientId,
         checkIn: data.dateRange.from,
         checkOut: data.dateRange.to,
@@ -179,17 +178,17 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <NewBookingClientField form={form} clients={clients} />
-        <NewBookingGuestField form={form} readonly={hasSelectedClient} />
+        
         <NewBookingResourceField 
           form={form} 
           resourceOptions={getResourceOptions()} 
           bookingType={bookingType} 
         />
-        <NewBookingDateRangeField 
-          form={form} 
-          dateRange={dateRange} 
-          setDateRange={setDateRange} 
-          rooms={rooms}
+        
+        <NewBookingDateFields
+          form={form}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
           bookingType={bookingType}
         />
         
