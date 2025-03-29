@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,8 +31,8 @@ export const useRooms = () => {
         pricePerNight: room.price_per_night,
         type: room.type as "standard" | "deluxe" | "suite" | "presidential",
         status: room.status as RoomStatus,
-        maintenanceStatus: room.maintenance_status || false,
-        cleaningStatus: room.cleaning_status || false,
+        maintenanceStatus: room.maintenance_status !== undefined ? Boolean(room.maintenance_status) : false,
+        cleaningStatus: room.cleaning_status !== undefined ? Boolean(room.cleaning_status) : false,
         view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: room.last_cleaned ? new Date(room.last_cleaned) : undefined,
         currentGuest: room.current_guest || undefined
@@ -78,8 +79,8 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
-        maintenanceStatus: data.maintenance_status || false,
-        cleaningStatus: data.cleaning_status || false,
+        maintenanceStatus: data.maintenance_status !== undefined ? Boolean(data.maintenance_status) : false,
+        cleaningStatus: data.cleaning_status !== undefined ? Boolean(data.cleaning_status) : false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
@@ -142,8 +143,8 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
-        maintenanceStatus: data.maintenance_status || false,
-        cleaningStatus: data.cleaning_status || false,
+        maintenanceStatus: data.maintenance_status !== undefined ? Boolean(data.maintenance_status) : false,
+        cleaningStatus: data.cleaning_status !== undefined ? Boolean(data.cleaning_status) : false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
@@ -202,8 +203,8 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
-        maintenanceStatus: data.maintenance_status || false,
-        cleaningStatus: data.cleaning_status || false,
+        maintenanceStatus: data.maintenance_status !== undefined ? Boolean(data.maintenance_status) : false,
+        cleaningStatus: data.cleaning_status !== undefined ? Boolean(data.cleaning_status) : false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
@@ -228,12 +229,12 @@ export const useRooms = () => {
       const roomToUpdate = rooms.find(room => room.id === id);
       if (!roomToUpdate) throw new Error("Chambre non trouvée");
 
-      const now = status ? new Date() : undefined;
+      const now = new Date();
       const { data, error } = await supabase
         .from('rooms')
         .update({ 
           cleaning_status: status,
-          last_cleaned: status ? now?.toISOString() : data?.last_cleaned
+          last_cleaned: status ? null : now.toISOString()
         })
         .eq('id', id)
         .select('*')
@@ -248,8 +249,8 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
-        maintenanceStatus: data.maintenance_status || false,
-        cleaningStatus: data.cleaning_status || false,
+        maintenanceStatus: data.maintenance_status !== undefined ? Boolean(data.maintenance_status) : false,
+        cleaningStatus: data.cleaning_status !== undefined ? Boolean(data.cleaning_status) : false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
@@ -297,8 +298,8 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
-        maintenanceStatus: data.maintenance_status || false,
-        cleaningStatus: data.cleaning_status || false,
+        maintenanceStatus: data.maintenance_status !== undefined ? Boolean(data.maintenance_status) : false,
+        cleaningStatus: data.cleaning_status !== undefined ? Boolean(data.cleaning_status) : false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
@@ -339,8 +340,8 @@ export const useRooms = () => {
         pricePerNight: data.price_per_night,
         type: data.type as "standard" | "deluxe" | "suite" | "presidential",
         status: data.status as RoomStatus,
-        maintenanceStatus: data.maintenance_status || false,
-        cleaningStatus: data.cleaning_status || false,
+        maintenanceStatus: data.maintenance_status !== undefined ? Boolean(data.maintenance_status) : false,
+        cleaningStatus: data.cleaning_status !== undefined ? Boolean(data.cleaning_status) : false,
         view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
@@ -377,8 +378,8 @@ export const useRooms = () => {
         pricePerNight: room.price_per_night,
         type: room.type as "standard" | "deluxe" | "suite" | "presidential",
         status: room.status as RoomStatus,
-        maintenanceStatus: room.maintenance_status || false,
-        cleaningStatus: room.cleaning_status || false,
+        maintenanceStatus: room.maintenance_status !== undefined ? Boolean(room.maintenance_status) : false,
+        cleaningStatus: room.cleaning_status !== undefined ? Boolean(room.cleaning_status) : false,
         view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: room.last_cleaned ? new Date(room.last_cleaned) : undefined,
         currentGuest: room.current_guest || undefined
