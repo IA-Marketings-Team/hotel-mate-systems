@@ -15,6 +15,7 @@ import TransactionDetails from "./pages/TransactionDetails";
 import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
 import NewClient from "./pages/NewClient";
+import ClientActionsPage from "./pages/ClientActionsPage";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
         } />
         <Route path="/clients" element={<Clients />} />
         <Route path="/client/:id" element={<ClientDetails />} />
+        <Route path="/client/:id/actions" element={<ClientActionsPage />} />
         <Route path="/client/new" element={<NewClient />} />
         <Route path="/blueprint" element={
           <AppLayout>

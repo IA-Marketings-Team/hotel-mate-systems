@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useClient, useClients } from "@/hooks/useClients";
 import { useTransactions } from "@/hooks/useTransactions";
-import { format } from "date-fns";
 import { Transaction } from "@/types";
 import { TransactionDetailsSheet } from "@/components/transactions/TransactionDetailsSheet";
 import { toast } from "sonner";
@@ -144,13 +143,23 @@ const ClientDetails = () => {
             <h1 className="text-2xl font-bold">Détails du Client</h1>
           </div>
           
-          <ClientActionsMenu
-            onNewTransaction={() => setIsTransactionDialogOpen(true)}
-            onExportHistory={handleExportHistory}
-            onRestaurantOrder={handleServiceAction}
-            onBarOrder={handleServiceAction}
-            onPokerTokens={handleServiceAction}
-          />
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate(`/client/${client.id}/actions`)}
+            >
+              Voir toutes les actions
+            </Button>
+            
+            <ClientActionsMenu
+              clientId={client.id}
+              onNewTransaction={() => setIsTransactionDialogOpen(true)}
+              onExportHistory={handleExportHistory}
+              onRestaurantOrder={handleServiceAction}
+              onBarOrder={handleServiceAction}
+              onPokerTokens={handleServiceAction}
+            />
+          </div>
         </div>
 
         <ClientInfoCard

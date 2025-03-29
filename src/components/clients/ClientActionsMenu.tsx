@@ -1,12 +1,15 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { 
   PlusCircle, 
   Receipt, 
   Download, 
   Utensils, 
-  Wine
+  Wine,
+  CircleDollarSign,
+  ListTodo
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface ClientActionsMenuProps {
+  clientId: string;
   onNewTransaction: () => void;
   onExportHistory: () => void;
   onRestaurantOrder: () => void;
@@ -27,12 +31,15 @@ interface ClientActionsMenuProps {
 }
 
 export const ClientActionsMenu = ({
+  clientId,
   onNewTransaction,
   onExportHistory,
   onRestaurantOrder,
   onBarOrder,
   onPokerTokens
 }: ClientActionsMenuProps) => {
+  const navigate = useNavigate();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,6 +52,10 @@ export const ClientActionsMenu = ({
         <DropdownMenuLabel>Actions client</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/actions`)}>
+            <ListTodo className="h-4 w-4 mr-2" />
+            Toutes les actions
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={onNewTransaction}>
             <Receipt className="h-4 w-4 mr-2" />
             Nouvelle transaction
@@ -66,8 +77,7 @@ export const ClientActionsMenu = ({
             Commande bar
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onPokerTokens}>
-            {/* Fixed: Using a different icon instead of Poker which doesn't exist */}
-            <Receipt className="h-4 w-4 mr-2" />
+            <CircleDollarSign className="h-4 w-4 mr-2" />
             Achat jetons poker
           </DropdownMenuItem>
         </DropdownMenuGroup>
