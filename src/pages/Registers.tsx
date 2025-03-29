@@ -61,9 +61,7 @@ const Registers = () => {
 
   const handleTransactionSuccess = () => {
     refetch();
-    toast("Transaction ajoutée", {
-      description: "La transaction a été ajoutée avec succès à la caisse " + activeTab
-    });
+    toast.success(`La transaction a été ajoutée avec succès à la caisse ${activeTab}`);
   };
 
   const openTransactionDetails = (transaction: Transaction) => {

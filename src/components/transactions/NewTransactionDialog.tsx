@@ -53,10 +53,7 @@ export function NewTransactionDialog({
     e.preventDefault();
 
     if (!description || !amount) {
-      toast("Erreur", {
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive"
-      });
+      toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
@@ -76,18 +73,13 @@ export function NewTransactionDialog({
 
       if (error) throw error;
 
-      toast("Transaction créée", {
-        description: "La transaction a été ajoutée avec succès"
-      });
+      toast.success("La transaction a été ajoutée avec succès");
       
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating transaction:", error);
-      toast("Erreur", {
-        description: "Impossible de créer la transaction",
-        variant: "destructive"
-      });
+      toast.error("Impossible de créer la transaction");
     }
   };
 

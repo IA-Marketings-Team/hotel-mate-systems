@@ -77,15 +77,10 @@ export function TransactionDetailsSheet({
       // Save the PDF
       doc.save(`facture-${transaction.id}.pdf`);
       
-      toast("Facture téléchargée", {
-        description: "La facture a été générée avec succès"
-      });
+      toast.success("La facture a été générée avec succès");
     } catch (error) {
       console.error("Error generating invoice:", error);
-      toast("Erreur", {
-        description: "Impossible de générer la facture",
-        variant: "destructive"
-      });
+      toast.error("Impossible de générer la facture");
     }
   };
 
