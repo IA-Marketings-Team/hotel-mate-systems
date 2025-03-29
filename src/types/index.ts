@@ -1,4 +1,3 @@
-
 // Room Types
 export type RoomStatus = 'available' | 'occupied';
 
@@ -54,6 +53,27 @@ export interface BookingExtra {
   quantity: number;
 }
 
+// Booking Types
+export type BookingType = 'room' | 'meeting' | 'car' | 'terrace' | 'restaurant';
+export type BookingStatus = 'confirmed' | 'canceled' | 'completed';
+
+export interface Booking {
+  id: string;
+  resourceId?: string;
+  roomId?: string;
+  guestName: string;
+  clientId?: string;
+  checkIn: Date;
+  checkOut: Date;
+  amount: number;
+  status: BookingStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  bookingType: BookingType;
+  extras?: BookingExtra[];
+}
+
 // Service Types
 export interface HotelService {
   id: string;
@@ -99,19 +119,4 @@ export interface NavItem {
   href: string;
   icon: string;
   children?: NavItem[];
-}
-
-export interface Booking {
-  id: string;
-  room_id: string;
-  guest_name: string;
-  client_id?: string;
-  check_in: Date;
-  check_out: Date;
-  amount: number;
-  status: 'confirmed' | 'canceled' | 'completed';
-  created_at: Date;
-  updated_at: Date;
-  created_by: string;
-  extras?: BookingExtra[];
 }

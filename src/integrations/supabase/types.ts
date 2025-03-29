@@ -12,39 +12,48 @@ export type Database = {
       bookings: {
         Row: {
           amount: number
+          booking_type: string
           check_in: string
           check_out: string
           client_id: string | null
           created_at: string
           created_by: string
+          extras: Json | null
           guest_name: string
           id: string
+          resource_id: string | null
           room_id: string
           status: string
           updated_at: string
         }
         Insert: {
           amount: number
+          booking_type?: string
           check_in: string
           check_out: string
           client_id?: string | null
           created_at?: string
           created_by?: string
+          extras?: Json | null
           guest_name: string
           id?: string
+          resource_id?: string | null
           room_id: string
           status: string
           updated_at?: string
         }
         Update: {
           amount?: number
+          booking_type?: string
           check_in?: string
           check_out?: string
           client_id?: string | null
           created_at?: string
           created_by?: string
+          extras?: Json | null
           guest_name?: string
           id?: string
+          resource_id?: string | null
           room_id?: string
           status?: string
           updated_at?: string
