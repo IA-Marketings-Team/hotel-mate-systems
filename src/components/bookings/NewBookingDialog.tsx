@@ -28,18 +28,15 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format, addDays } from "date-fns";
-import { fr } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import { useRooms } from "@/hooks/useRooms";
 import { useBookings } from "@/hooks/useBookings";
 import { toast } from "sonner";
 import { BookingType } from "@/types/bookings";
 import { RoomExtrasSelector } from "@/components/rooms/RoomExtrasSelector";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
+import { differenceInDays } from "date-fns";
 
 interface NewBookingDialogProps {
   open: boolean;
@@ -51,11 +48,9 @@ const bookingSchema = z.object({
   clientId: z.string().min(1, "Veuillez sélectionner un client"),
   resourceId: z.string().min(1, "Veuillez sélectionner une ressource"),
   guestName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  checkIn: z.date({
-    required_error: "Veuillez sélectionner une date d'arrivée",
-  }),
-  checkOut: z.date({
-    required_error: "Veuillez sélectionner une date de départ",
+  dateRange: z.object({
+    from: z.date(),
+    to: z.date()
   }),
   amount: z.coerce.number().min(0, "Le montant doit être positif"),
   extras: z.array(z.any()).optional(),
@@ -72,6 +67,10 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
   const { rooms } = useRooms();
   const { createBooking } = useBookings();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: new Date(),
+    to: new Date(new Date().setDate(new Date().getDate() + 1))
+  });
   
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
@@ -79,8 +78,10 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
       clientId: "",
       resourceId: "",
       guestName: "",
-      checkIn: new Date(),
-      checkOut: addDays(new Date(), 1),
+      dateRange: {
+        from: new Date(),
+        to: new Date(new Date().setDate(new Date().getDate() + 1))
+      },
       amount: 0,
       extras: [],
     },
@@ -89,28 +90,46 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
   // Reset the form when the dialog opens or booking type changes
   useEffect(() => {
     if (open) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
       form.reset({
         clientId: "",
         resourceId: "",
         guestName: "",
-        checkIn: new Date(),
-        checkOut: addDays(new Date(), 1),
+        dateRange: {
+          from: new Date(),
+          to: tomorrow
+        },
         amount: 0,
         extras: [],
+      });
+      
+      setDateRange({
+        from: new Date(),
+        to: tomorrow
       });
     }
   }, [open, bookingType, form]);
 
-  // When resourceId changes, update the amount based on the selected room
+  // When resourceId changes, update the amount based on the selected room and duration
   useEffect(() => {
     const resourceId = form.watch("resourceId");
-    if (resourceId && bookingType === "room") {
+    const currentDateRange = form.watch("dateRange");
+    
+    if (resourceId && bookingType === "room" && currentDateRange?.from && currentDateRange?.to) {
       const selectedRoom = rooms.find(room => room.id === resourceId);
       if (selectedRoom) {
-        form.setValue("amount", selectedRoom.pricePerNight);
+        const nights = differenceInDays(currentDateRange.to, currentDateRange.from) || 1;
+        form.setValue("amount", selectedRoom.pricePerNight * nights);
       }
     }
-  }, [form.watch("resourceId"), rooms, bookingType, form]);
+  }, [form.watch("resourceId"), form.watch("dateRange"), rooms, bookingType, form]);
+
+  // Update dateRange in form when it changes
+  useEffect(() => {
+    form.setValue("dateRange", dateRange);
+  }, [dateRange, form]);
 
   // When client changes, update the guest name
   useEffect(() => {
@@ -131,8 +150,8 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
         roomId: bookingType === 'room' ? data.resourceId : undefined,
         guestName: data.guestName,
         clientId: data.clientId,
-        checkIn: data.checkIn,
-        checkOut: data.checkOut,
+        checkIn: data.dateRange.from,
+        checkOut: data.dateRange.to,
         amount: data.amount,
         status: 'confirmed',
         createdBy: 'Admin',
@@ -169,6 +188,14 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
   };
 
   const resourceOptions = getResourceOptions();
+  
+  // Calculate nights for display
+  const calculateNights = () => {
+    if (dateRange?.from && dateRange?.to) {
+      return Math.max(1, differenceInDays(dateRange.to, dateRange.from));
+    }
+    return 1;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -254,92 +281,45 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="checkIn"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date d'arrivée</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: fr })
-                            ) : (
-                              <span>Choisir une date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="checkOut"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date de départ</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: fr })
-                            ) : (
-                              <span>Choisir une date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date <= form.getValues("checkIn")}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="dateRange"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Période de séjour</FormLabel>
+                  <DatePickerWithRange 
+                    dateRange={dateRange} 
+                    onDateRangeChange={(range) => {
+                      if (range?.from && range?.to) {
+                        setDateRange(range);
+                        field.onChange(range);
+                        
+                        // Update amount based on new date range if a room is selected
+                        const resourceId = form.getValues("resourceId");
+                        if (resourceId && bookingType === "room") {
+                          const selectedRoom = rooms.find(room => room.id === resourceId);
+                          if (selectedRoom) {
+                            const nights = differenceInDays(range.to, range.from) || 1;
+                            form.setValue("amount", selectedRoom.pricePerNight * nights);
+                          }
+                        }
+                      }
+                    }} 
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Durée: {calculateNights()} nuit(s)
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Montant (€)</FormLabel>
+                  <FormLabel>Montant total (€)</FormLabel>
                   <FormControl>
                     <Input type="number" min="0" step="0.01" {...field} />
                   </FormControl>
@@ -354,9 +334,27 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
                 name="extras"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>Extras</FormLabel>
                     <RoomExtrasSelector
                       extras={field.value || []}
-                      onChange={field.onChange}
+                      onChange={(extras) => {
+                        field.onChange(extras);
+                        
+                        // Recalculate total price when extras change
+                        const resourceId = form.getValues("resourceId");
+                        const currentDateRange = form.getValues("dateRange");
+                        if (resourceId && currentDateRange?.from && currentDateRange?.to) {
+                          const selectedRoom = rooms.find(room => room.id === resourceId);
+                          if (selectedRoom) {
+                            const nights = differenceInDays(currentDateRange.to, currentDateRange.from) || 1;
+                            const roomPrice = selectedRoom.pricePerNight * nights;
+                            const extrasPrice = extras
+                              .filter(extra => extra.quantity > 0)
+                              .reduce((sum, extra) => sum + (extra.price * extra.quantity), 0);
+                            form.setValue("amount", roomPrice + extrasPrice);
+                          }
+                        }
+                      }}
                     />
                     <FormMessage />
                   </FormItem>

@@ -5,6 +5,7 @@ import { useRooms } from "@/hooks/useRooms";
 import { Room, RoomStatus } from "@/types";
 import { RoomFormValues } from "@/components/rooms/RoomDialog";
 import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
+import { DateRange } from "react-day-picker";
 
 export const useRoomDetail = (id: string | undefined) => {
   const navigate = useNavigate();
@@ -85,11 +86,11 @@ export const useRoomDetail = (id: string | undefined) => {
     }
   };
 
-  const handleBookRoom = async (guestName: string, clientId?: string, extras?: RoomExtra[]) => {
+  const handleBookRoom = async (guestName: string, clientId?: string, extras?: RoomExtra[], dateRange?: DateRange) => {
     if (!room) return;
     
     try {
-      await bookRoom(room.id, guestName, clientId, extras);
+      await bookRoom(room.id, guestName, clientId, extras, dateRange);
     } catch (err) {
       console.error("Error booking room:", err);
     }

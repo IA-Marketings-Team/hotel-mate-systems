@@ -33,17 +33,24 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { RoomExtrasSelector, RoomExtra } from "./RoomExtrasSelector";
 import { Separator } from "@/components/ui/separator";
+import { differenceInDays, differenceInHours } from "date-fns";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
 
 export type BookingDialogProps = {
   roomNumber: string;
   roomPrice: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (guestName: string, clientId?: string, extras?: RoomExtra[]) => Promise<void> | void;
+  onConfirm: (guestName: string, clientId?: string, extras?: RoomExtra[], dateRange?: DateRange) => Promise<void> | void;
 };
 
 const bookingFormSchema = z.object({
   clientId: z.string().min(1, "La sélection d'un client est requise"),
+  dateRange: z.object({
+    from: z.date(),
+    to: z.date()
+  }).optional(),
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
@@ -59,27 +66,60 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedExtras, setSelectedExtras] = useState<RoomExtra[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: new Date(),
+    to: new Date(new Date().setDate(new Date().getDate() + 1))
+  });
   
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
       clientId: "",
+      dateRange: {
+        from: new Date(),
+        to: new Date(new Date().setDate(new Date().getDate() + 1))
+      }
     },
   });
 
-  // Calculate total price including extras
+  useEffect(() => {
+    form.setValue("dateRange", dateRange);
+  }, [dateRange, form]);
+
+  // Calculate nights based on date range
+  const calculateNights = () => {
+    if (dateRange?.from && dateRange?.to) {
+      return Math.max(1, differenceInDays(dateRange.to, dateRange.from));
+    }
+    return 1;
+  };
+
+  // Calculate total price including extras and duration
   const calculateTotalPrice = () => {
+    const nights = calculateNights();
+    const roomTotal = roomPrice * nights;
     const extrasTotal = selectedExtras.reduce((sum, extra) => sum + (extra.price * extra.quantity), 0);
-    return roomPrice + extrasTotal;
+    return roomTotal + extrasTotal;
   };
 
   // Reset form when dialog opens
   useEffect(() => {
     if (open) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
       form.reset({
         clientId: "",
+        dateRange: {
+          from: new Date(),
+          to: tomorrow
+        }
       });
       setSelectedExtras([]);
+      setDateRange({
+        from: new Date(),
+        to: tomorrow
+      });
     }
   }, [open, form]);
 
@@ -88,7 +128,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
     if (selectedClient) {
       setIsSubmitting(true);
       try {
-        await onConfirm(selectedClient.name, selectedClient.id, selectedExtras);
+        await onConfirm(selectedClient.name, selectedClient.id, selectedExtras, dateRange);
         form.reset();
         
         toast.success(`Chambre ${roomNumber} réservée pour ${selectedClient.name}`, {
@@ -108,7 +148,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
               pendingPayment: {
                 clientId: selectedClient.id,
                 clientName: selectedClient.name,
-                description: `Réservation Chambre ${roomNumber}${extrasDescription ? ` (${extrasDescription})` : ""}`,
+                description: `Réservation Chambre ${roomNumber} pour ${calculateNights()} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`,
                 amount: calculateTotalPrice(),
                 category: "Chambres",
                 subcategory: "Réservations"
@@ -132,7 +172,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Réserver la chambre {roomNumber}</DialogTitle>
           <DialogDescription>
-            Sélectionnez un client pour cette réservation et ajoutez des extras si nécessaire.
+            Sélectionnez un client pour cette réservation, les dates de séjour et ajoutez des extras si nécessaire.
           </DialogDescription>
         </DialogHeader>
 
@@ -170,6 +210,27 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="dateRange"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Période de séjour</FormLabel>
+                  <DatePickerWithRange 
+                    dateRange={dateRange} 
+                    onDateRangeChange={(range) => {
+                      setDateRange(range);
+                      field.onChange(range);
+                    }} 
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Durée: {calculateNights()} nuit(s)
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <Separator />
             
             <RoomExtrasSelector 
@@ -181,7 +242,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span>Prix de la chambre:</span>
-                  <span>{roomPrice} €</span>
+                  <span>{roomPrice} € x {calculateNights()} nuit(s) = {roomPrice * calculateNights()} €</span>
                 </div>
                 
                 {selectedExtras.filter(e => e.quantity > 0).map(extra => (

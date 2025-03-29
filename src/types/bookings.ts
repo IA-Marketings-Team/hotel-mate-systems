@@ -62,7 +62,9 @@ export function isRoomExtrasArray(data: Json | null | undefined): boolean {
 // Helper function to safely convert Json to RoomExtra[]
 export function parseRoomExtras(data: Json | null | undefined): RoomExtra[] | undefined {
   if (isRoomExtrasArray(data)) {
-    return data as RoomExtra[];
+    // Using a more explicit type casting approach to avoid TypeScript errors
+    const extrasArray = data as unknown;
+    return extrasArray as RoomExtra[];
   }
   return undefined;
 }

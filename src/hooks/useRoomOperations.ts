@@ -3,10 +3,12 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Room } from "@/types";
 import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
+import { DateRange } from "react-day-picker";
+import { differenceInDays } from "date-fns";
 
 export const useRoomOperations = () => {
-  // Function to handle room booking
-  const bookRoom = async (id: string, guestName: string, clientId?: string, extras?: RoomExtra[]) => {
+  // Function to handle room booking with date range
+  const bookRoom = async (id: string, guestName: string, clientId?: string, extras?: RoomExtra[], dateRange?: DateRange) => {
     try {
       const { data, error } = await supabase
         .from('rooms')
@@ -28,8 +30,15 @@ export const useRoomOperations = () => {
       try {
         const currentUser = "Admin"; // This would be replaced with actual user info
         
-        // Calculate total amount including extras
-        let totalAmount = updatedRoom.pricePerNight;
+        // Get check-in and check-out dates from dateRange or default to 1 day
+        const checkIn = dateRange?.from || new Date();
+        const checkOut = dateRange?.to || new Date(Date.now() + 86400000);
+        
+        // Calculate nights
+        const nights = differenceInDays(checkOut, checkIn) || 1;
+        
+        // Calculate total amount including extras and duration
+        let totalAmount = updatedRoom.pricePerNight * nights;
         if (extras && extras.length > 0) {
           const extrasAmount = extras
             .filter(extra => extra.quantity > 0)
@@ -40,6 +49,7 @@ export const useRoomOperations = () => {
         // Format extras for storage
         const extrasData = extras 
           ? extras.filter(e => e.quantity > 0).map(e => ({
+              id: e.id,
               name: e.name,
               price: e.price,
               quantity: e.quantity
@@ -52,19 +62,21 @@ export const useRoomOperations = () => {
             room_id: id,
             guest_name: guestName,
             client_id: clientId || null,
-            check_in: new Date().toISOString(),
-            check_out: new Date(Date.now() + 86400000).toISOString(), // Default to 1 day
+            check_in: checkIn.toISOString(),
+            check_out: checkOut.toISOString(),
             amount: totalAmount,
             status: 'confirmed',
             created_by: currentUser,
-            extras: extrasData.length > 0 ? extrasData : null
+            booking_type: 'room',
+            extras: extrasData.length > 0 ? extrasData : null,
+            resource_id: id // Room is also a resource
           });
         
         if (bookingError) {
           throw bookingError;
         }
         
-        toast.success("Chambre réservée et enregistrement créé");
+        toast.success(`Chambre réservée pour ${nights} nuit(s) et enregistrement créé`);
       } catch (bookingErr: any) {
         console.error("Error creating booking record:", bookingErr);
         toast.error(`Erreur lors de l'enregistrement de la réservation: ${bookingErr.message}`);

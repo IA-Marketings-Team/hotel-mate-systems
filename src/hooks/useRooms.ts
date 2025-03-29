@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Room, RoomStatus } from "@/types";
@@ -6,6 +5,7 @@ import { toast } from "sonner";
 import { useRoomCrud } from "./useRoomCrud";
 import { useRoomOperations } from "./useRoomOperations";
 import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
+import { DateRange } from "react-day-picker";
 
 export const useRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -54,12 +54,10 @@ export const useRooms = () => {
     }
   };
 
-  // Update local state after operations
   const updateLocalRooms = (updatedRoom: Room) => {
     setRooms(prev => prev.map(room => room.id === updatedRoom.id ? updatedRoom : room));
   };
 
-  // Wrapper functions that update local state
   const addRoom = async (roomData: Omit<Room, 'id'>) => {
     const newRoom = await roomCrud.addRoom(roomData);
     setRooms(prev => [...prev, newRoom]);
@@ -77,8 +75,8 @@ export const useRooms = () => {
     setRooms(prev => prev.filter(room => room.id !== id));
   };
 
-  const bookRoom = async (id: string, guestName: string, clientId?: string, extras?: RoomExtra[]) => {
-    const updatedRoom = await roomOperations.bookRoom(id, guestName, clientId, extras);
+  const bookRoom = async (id: string, guestName: string, clientId?: string, extras?: RoomExtra[], dateRange?: DateRange) => {
+    const updatedRoom = await roomOperations.bookRoom(id, guestName, clientId, extras, dateRange);
     updateLocalRooms(updatedRoom);
     return updatedRoom;
   };
