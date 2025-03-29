@@ -12,7 +12,8 @@ import {
   Utensils, 
   DollarSign,
   Users,
-  ClipboardList
+  ClipboardList,
+  User
 } from "lucide-react";
 import { NavItem } from "@/types";
 
@@ -46,6 +47,11 @@ const navItems: NavItem[] = [
     title: "Bar & Restaurant",
     href: "/restaurant",
     icon: "Utensils",
+  },
+  {
+    title: "Clients",
+    href: "/clients",
+    icon: "User",
   },
   {
     title: "Personnel",
@@ -86,6 +92,8 @@ const getIcon = (iconName: string) => {
       return <Users className="size-5" />;
     case "ClipboardList":
       return <ClipboardList className="size-5" />;
+    case "User":
+      return <User className="size-5" />;
     default:
       return <div className="size-5" />;
   }
