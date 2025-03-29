@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useInvoices, Invoice } from "@/hooks/useInvoices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,18 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { InvoiceTable } from "@/components/invoices/InvoiceTable";
 import { useClients } from "@/hooks/useClients";
 import { Search, Download, FileText, Plus } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { NewTransactionDialog } from "@/components/transactions/NewTransactionDialog";
-import { RegisterType } from "@/types";
+import { useNavigate } from "react-router-dom";
 
 const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState<string | undefined>(undefined);
-  const [isNewInvoiceDialogOpen, setIsNewInvoiceDialogOpen] = useState(false);
-  const [registerType, setRegisterType] = useState<RegisterType>("hotel");
   
-  const location = useLocation();
   const navigate = useNavigate();
   
   const { data: invoices, isLoading, generateAndDownloadInvoice, markAsPaid } = useInvoices({ 
@@ -29,21 +24,6 @@ const Invoices = () => {
     clientId: clientFilter !== "all" ? clientFilter : undefined
   });
   const { data: clients, isLoading: isClientsLoading } = useClients();
-
-  // Check if we should open the invoice creation dialog from navigation state
-  useEffect(() => {
-    const state = location.state as { openCreateDialog?: boolean; registerType?: RegisterType } | null;
-    
-    if (state?.openCreateDialog) {
-      if (state.registerType) {
-        setRegisterType(state.registerType);
-      }
-      setIsNewInvoiceDialogOpen(true);
-      
-      // Clear the location state
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location, navigate]);
 
   const filteredInvoices = (invoices || []).filter((invoice) => {
     const searchInvoice = 
@@ -76,17 +56,12 @@ const Invoices = () => {
     navigate(`/transaction/${invoice.transactionId}`);
   };
 
-  const handleNewInvoiceSuccess = () => {
-    setIsNewInvoiceDialogOpen(false);
-    toast.success("Facture créée avec succès");
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Factures</h1>
         <div className="flex items-center gap-2">
-          <Button onClick={() => setIsNewInvoiceDialogOpen(true)}>
+          <Button onClick={() => navigate("/invoice/new")}>
             <Plus className="mr-2 h-4 w-4" />
             Nouvelle facture
           </Button>
@@ -189,14 +164,6 @@ const Invoices = () => {
           </DashboardCard>
         </TabsContent>
       </Tabs>
-
-      <NewTransactionDialog 
-        open={isNewInvoiceDialogOpen} 
-        onOpenChange={setIsNewInvoiceDialogOpen} 
-        registerType={registerType}
-        onSuccess={handleNewInvoiceSuccess}
-        initialType="pending"
-      />
     </div>
   );
 };

@@ -22,6 +22,8 @@ import NewClient from "./pages/NewClient";
 import ClientActionsPage from "./pages/ClientActionsPage";
 import Invoices from "./pages/Invoices";
 import InvoiceDetails from "./pages/InvoiceDetails";
+import NewInvoice from "./pages/NewInvoice";
+import NewTransaction from "./pages/NewTransaction";
 
 const queryClient = new QueryClient();
 
@@ -50,12 +52,14 @@ const App = () => (
               </AppLayout>
             } />
             <Route path="/transaction/:id" element={<TransactionDetails />} />
+            <Route path="/transaction/new" element={<NewTransaction />} />
             <Route path="/invoices" element={
               <AppLayout>
                 <Invoices />
               </AppLayout>
             } />
             <Route path="/invoice/:id" element={<InvoiceDetails />} />
+            <Route path="/invoice/new" element={<NewInvoice />} />
             <Route path="/services" element={
               <AppLayout>
                 <Services />
