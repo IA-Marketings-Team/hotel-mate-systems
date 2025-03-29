@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -6,7 +5,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Transaction } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, FileCsv, FileText } from "lucide-react";
+import { ArrowLeft, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
@@ -31,7 +30,6 @@ const TransactionDetails = () => {
         throw new Error(`Error fetching transaction: ${error.message}`);
       }
       
-      // Transform the data to match the Transaction type
       return {
         id: data.id,
         date: data.date,
@@ -58,11 +56,9 @@ const TransactionDetails = () => {
     try {
       const doc = new jsPDF();
       
-      // Add logo or header
       doc.setFontSize(20);
       doc.text("FACTURE", 105, 20, { align: "center" });
       
-      // Add invoice details
       doc.setFontSize(12);
       doc.text(`Numéro de transaction: ${transaction.id}`, 20, 40);
       doc.text(`Date: ${format(new Date(transaction.date), "dd/MM/yyyy HH:mm")}`, 20, 50);
@@ -72,7 +68,6 @@ const TransactionDetails = () => {
         transaction.method === "card" ? "Carte" : "Virement"
       }`, 20, 70);
       
-      // Add transaction details
       const tableColumn = ["Description", "Catégorie", "Sous-catégorie", "Montant"];
       const tableRows = [
         [
@@ -83,7 +78,6 @@ const TransactionDetails = () => {
         ]
       ];
       
-      // @ts-ignore - jsPDF-AutoTable adds this method
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
@@ -98,14 +92,11 @@ const TransactionDetails = () => {
         }
       });
       
-      // Add total
       doc.text(`Total: ${transaction.type === "payment" ? "+" : "-"}${formatCurrency(transaction.amount)}`, 150, 130, { align: "right" });
       
-      // Footer
       doc.setFontSize(10);
       doc.text("Merci pour votre confiance.", 105, 270, { align: "center" });
       
-      // Save the PDF
       doc.save(`facture-${transaction.id}.pdf`);
       
       toast.success("La facture a été générée avec succès");
@@ -119,7 +110,6 @@ const TransactionDetails = () => {
     if (!transaction) return;
     
     try {
-      // Create CSV content
       const headers = "ID,Date,Type,Méthode,Description,Catégorie,Sous-catégorie,Montant\n";
       const formattedDate = format(new Date(transaction.date), "dd/MM/yyyy HH:mm");
       const type = transaction.type === "payment" ? "Paiement" : "Remboursement";
@@ -132,7 +122,6 @@ const TransactionDetails = () => {
       const row = `"${transaction.id}","${formattedDate}","${type}","${method}","${transaction.description}","${category}","${subcategory}","${amount}"\n`;
       const csvContent = headers + row;
       
-      // Create a blob and download
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -181,7 +170,7 @@ const TransactionDetails = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={exportAsCSV} className="flex items-center gap-2">
-              <FileCsv className="h-4 w-4" />
+              <FileSpreadsheet className="h-4 w-4" />
               Exporter CSV
             </Button>
             <Button variant="outline" onClick={generateInvoice} className="flex items-center gap-2">
@@ -262,7 +251,7 @@ const TransactionDetails = () => {
                 Télécharger la facture PDF
               </Button>
               <Button variant="outline" onClick={exportAsCSV} className="flex items-center gap-2">
-                <FileCsv className="h-4 w-4" />
+                <FileSpreadsheet className="h-4 w-4" />
                 Télécharger CSV
               </Button>
             </div>
