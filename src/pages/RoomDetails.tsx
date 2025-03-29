@@ -213,6 +213,7 @@ const RoomDetails = () => {
 
       <BookingDialog
         roomNumber={room.number}
+        roomPrice={room.pricePerNight} // Add this missing prop
         open={bookingDialogOpen}
         onOpenChange={setBookingDialogOpen}
         onConfirm={handleBookRoom}
