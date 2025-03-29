@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -303,9 +302,8 @@ const RoomDetails = () => {
                 
                 <Button
                   variant={room.status === 'maintenance' ? 'default' : 'outline'} 
-                  className={room.status === 'maintenance' ? 'bg-red-500 hover:bg-red-600' : ''}
                   onClick={() => handleChangeRoomStatus('maintenance')}
-                  className="col-span-2"
+                  className={`col-span-2 ${room.status === 'maintenance' ? 'bg-red-500 hover:bg-red-600' : ''}`}
                 >
                   <AlertCircle className="h-4 w-4 mr-1" /> Maintenance
                 </Button>
