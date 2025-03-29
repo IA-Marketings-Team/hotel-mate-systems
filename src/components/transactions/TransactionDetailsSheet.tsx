@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Transaction } from "@/types";
 import { format } from "date-fns";
@@ -78,14 +77,12 @@ export function TransactionDetailsSheet({
       // Save the PDF
       doc.save(`facture-${transaction.id}.pdf`);
       
-      toast({
-        title: "Facture téléchargée",
+      toast("Facture téléchargée", {
         description: "La facture a été générée avec succès"
       });
     } catch (error) {
       console.error("Error generating invoice:", error);
-      toast({
-        title: "Erreur",
+      toast("Erreur", {
         description: "Impossible de générer la facture",
         variant: "destructive"
       });

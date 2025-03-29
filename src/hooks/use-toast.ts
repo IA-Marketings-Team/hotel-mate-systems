@@ -1,9 +1,5 @@
 
-import { toast as sonnerToast, type Toast } from "sonner";
-
-type ToastProps = Toast;
-
-type ToastActionElement = React.ReactElement;
+import { toast as sonnerToast } from "sonner";
 
 export const toast = sonnerToast;
 

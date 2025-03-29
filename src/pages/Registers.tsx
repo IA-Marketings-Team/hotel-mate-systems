@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -62,8 +61,7 @@ const Registers = () => {
 
   const handleTransactionSuccess = () => {
     refetch();
-    toast({
-      title: "Transaction ajoutée",
+    toast("Transaction ajoutée", {
       description: "La transaction a été ajoutée avec succès à la caisse " + activeTab
     });
   };

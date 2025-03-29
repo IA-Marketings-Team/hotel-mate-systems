@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -54,8 +53,7 @@ export function NewTransactionDialog({
     e.preventDefault();
 
     if (!description || !amount) {
-      toast({
-        title: "Erreur",
+      toast("Erreur", {
         description: "Veuillez remplir tous les champs obligatoires",
         variant: "destructive"
       });
@@ -78,8 +76,7 @@ export function NewTransactionDialog({
 
       if (error) throw error;
 
-      toast({
-        title: "Transaction créée",
+      toast("Transaction créée", {
         description: "La transaction a été ajoutée avec succès"
       });
       
@@ -87,8 +84,7 @@ export function NewTransactionDialog({
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating transaction:", error);
-      toast({
-        title: "Erreur",
+      toast("Erreur", {
         description: "Impossible de créer la transaction",
         variant: "destructive"
       });
