@@ -2,43 +2,19 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Button } from "@/components/ui/button";
-import { 
-  ArrowLeft, 
-  Download, 
-  Edit, 
-  Mail, 
-  Phone, 
-  Trash, 
-  User, 
-  MapPin,
-  Globe,
-  PlusCircle,
-  Receipt,
-  Utensils,
-  Wine,
-  Poker
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useClient, useClients } from "@/hooks/useClients";
 import { useTransactions } from "@/hooks/useTransactions";
 import { format } from "date-fns";
-import { ClientForm } from "@/components/clients/ClientForm";
 import { Transaction } from "@/types";
-import { TransactionTable } from "@/components/registers/TransactionTable";
 import { TransactionDetailsSheet } from "@/components/transactions/TransactionDetailsSheet";
 import { toast } from "sonner";
 import { generatePDF } from "@/lib/pdfUtils";
 import { ClientTransactionDialog } from "@/components/clients/ClientTransactionDialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuSeparator
-} from "@/components/ui/dropdown-menu";
+import { ClientInfoCard } from "@/components/clients/ClientInfoCard";
+import { ClientTransactionHistory } from "@/components/clients/ClientTransactionHistory";
+import { ClientActionsMenu } from "@/components/clients/ClientActionsMenu";
 
 const ClientDetails = () => {
   const { id } = useParams();
@@ -50,9 +26,6 @@ const ClientDetails = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionSheetOpen, setIsTransactionSheetOpen] = useState(false);
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
-
-  // Filter transactions for this client
-  const clientTransactions = transactions || [];
 
   const handleDelete = async () => {
     if (!client) return;
@@ -79,14 +52,14 @@ const ClientDetails = () => {
   };
 
   const handleExportHistory = () => {
-    if (!client || !clientTransactions) return;
+    if (!client || !transactions) return;
     
-    if (clientTransactions.length === 0) {
+    if (transactions.length === 0) {
       toast.info("Aucune transaction à exporter pour ce client");
       return;
     }
 
-    const tableData = clientTransactions.map(t => [
+    const tableData = transactions.map(t => [
       format(new Date(t.date), "dd/MM/yyyy"),
       t.registerType,
       t.type === "payment" ? "Paiement" : "Remboursement",
@@ -125,6 +98,10 @@ const ClientDetails = () => {
   const handleTransactionSuccess = () => {
     refetchTransactions();
     toast.success("Transaction ajoutée avec succès");
+  };
+
+  const handleServiceAction = () => {
+    setIsTransactionDialogOpen(true);
   };
 
   if (isLoading) {
@@ -167,171 +144,28 @@ const ClientDetails = () => {
             <h1 className="text-2xl font-bold">Détails du Client</h1>
           </div>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Actions
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Actions client</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setIsTransactionDialogOpen(true)}>
-                  <Receipt className="h-4 w-4 mr-2" />
-                  Nouvelle transaction
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportHistory}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Exporter l'historique
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Services</DropdownMenuLabel>
-              <DropdownMenuGroup>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setIsTransactionDialogOpen(true);
-                  }}
-                >
-                  <Utensils className="h-4 w-4 mr-2" />
-                  Commande restaurant
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setIsTransactionDialogOpen(true);
-                  }}
-                >
-                  <Wine className="h-4 w-4 mr-2" />
-                  Commande bar
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setIsTransactionDialogOpen(true);
-                  }}
-                >
-                  <Poker className="h-4 w-4 mr-2" />
-                  Achat jetons poker
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ClientActionsMenu
+            onNewTransaction={() => setIsTransactionDialogOpen(true)}
+            onExportHistory={handleExportHistory}
+            onRestaurantOrder={handleServiceAction}
+            onBarOrder={handleServiceAction}
+            onPokerTokens={handleServiceAction}
+          />
         </div>
 
-        <DashboardCard 
-          title="Informations Client"
-          action={
-            !isEditing && (
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Edit className="h-3.5 w-3.5 mr-1" />
-                  Modifier
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  onClick={handleDelete}
-                >
-                  <Trash className="h-3.5 w-3.5 mr-1" />
-                  Supprimer
-                </Button>
-              </div>
-            )
-          }
-        >
-          <div className="p-4">
-            {isEditing ? (
-              <ClientForm 
-                onSubmit={handleUpdate} 
-                defaultValues={client}
-                onCancel={() => setIsEditing(false)}
-              />
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center">
-                    <User className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">{client.name}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Client depuis {client.createdAt ? format(new Date(client.createdAt), "MMMM yyyy") : "récemment"}
-                    </p>
-                  </div>
-                </div>
+        <ClientInfoCard
+          client={client}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          handleUpdate={handleUpdate}
+          handleDelete={handleDelete}
+        />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>{client.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{client.phone}</span>
-                    </div>
-                  </div>
-
-                  {(client.address || client.city || client.postalCode || client.country) && (
-                    <div className="space-y-1.5">
-                      {client.address && (
-                        <div className="flex items-start gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                          <div>
-                            <div>{client.address}</div>
-                            {client.city && client.postalCode && (
-                              <div>{client.postalCode} {client.city}</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {client.country && (
-                        <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                          <span>{client.country}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </DashboardCard>
-
-        <DashboardCard 
-          title="Historique des Transactions"
-          action={
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleExportHistory}
-              className="flex items-center gap-2"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Exporter l'historique
-            </Button>
-          }
-        >
-          <div className="p-4">
-            {!clientTransactions || clientTransactions.length === 0 ? (
-              <div className="text-center p-8 text-muted-foreground">
-                Aucune transaction enregistrée pour ce client
-              </div>
-            ) : (
-              <TransactionTable 
-                transactions={clientTransactions} 
-                isLoading={false}
-                onViewDetails={handleViewTransactionDetails}
-              />
-            )}
-          </div>
-        </DashboardCard>
+        <ClientTransactionHistory
+          transactions={transactions || []}
+          handleExportHistory={handleExportHistory}
+          onViewDetails={handleViewTransactionDetails}
+        />
       </div>
 
       <TransactionDetailsSheet
