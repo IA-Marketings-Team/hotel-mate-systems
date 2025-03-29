@@ -53,11 +53,31 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
         },
+        success: {
+          DEFAULT: 'hsl(142, 76%, 36%)',
+          light: 'hsl(141, 84%, 93%)'
+        },
+        info: {
+          DEFAULT: 'hsl(217, 91%, 60%)',
+          light: 'hsl(214, 95%, 93%)'
+        },
+        warning: {
+          DEFAULT: 'hsl(38, 92%, 50%)',
+          light: 'hsl(49, 96%, 91%)'
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
+      },
+      boxShadow: {
+        'elegant': '0 2px 12px 0 rgba(0, 0, 0, 0.05)',
+        'card': '0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1)',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Playfair Display', 'serif'],
       },
       keyframes: {
         'accordion-down': {
