@@ -12,10 +12,12 @@ import { Input } from "@/components/ui/input";
 
 interface NewBookingGuestFieldProps {
   form: UseFormReturn<any>;
+  readonly?: boolean;
 }
 
 export const NewBookingGuestField: React.FC<NewBookingGuestFieldProps> = ({
-  form
+  form,
+  readonly = false
 }) => {
   return (
     <FormField
@@ -25,7 +27,12 @@ export const NewBookingGuestField: React.FC<NewBookingGuestFieldProps> = ({
         <FormItem>
           <FormLabel>Nom du client</FormLabel>
           <FormControl>
-            <Input placeholder="Nom du client" {...field} />
+            <Input 
+              placeholder="Nom du client" 
+              {...field} 
+              readOnly={readonly}
+              className={readonly ? "bg-gray-100" : ""}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

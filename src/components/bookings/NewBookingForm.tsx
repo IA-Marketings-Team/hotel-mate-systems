@@ -42,6 +42,7 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
   const { createBooking } = useBookings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [extras, setExtras] = useState<any[]>([]);
+  const [hasSelectedClient, setHasSelectedClient] = useState(false);
 
   // Update dateRange in form when it changes
   useEffect(() => {
@@ -95,14 +96,17 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
     form
   ]);
 
-  // When client changes, update the guest name
+  // When client changes, update the guest name and hasSelectedClient state
   useEffect(() => {
     const clientId = form.watch("clientId");
     if (clientId) {
       const selectedClient = clients?.find(client => client.id === clientId);
       if (selectedClient) {
         form.setValue("guestName", selectedClient.name);
+        setHasSelectedClient(true);
       }
+    } else {
+      setHasSelectedClient(false);
     }
   }, [form.watch("clientId"), clients, form]);
 
@@ -177,7 +181,7 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <NewBookingClientField form={form} clients={clients} />
-        <NewBookingGuestField form={form} />
+        <NewBookingGuestField form={form} readonly={hasSelectedClient} />
         <NewBookingResourceField 
           form={form} 
           resourceOptions={getResourceOptions()} 
