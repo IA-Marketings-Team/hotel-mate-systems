@@ -11,7 +11,7 @@ interface TransactionFilters {
 interface CreateTransactionPayload {
   description: string;
   amount: number;
-  type: 'payment' | 'refund' | 'pending';
+  type: 'payment' | 'refund' | 'pending' | 'partial';
   method: 'cash' | 'card' | 'transfer';
   registerType: RegisterType;
   category?: string;
@@ -59,7 +59,7 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
         id: item.id,
         date: item.date,
         amount: item.amount,
-        type: item.type as 'payment' | 'refund' | 'pending',
+        type: item.type as 'payment' | 'refund' | 'pending' | 'partial',
         method: item.method as 'cash' | 'card' | 'transfer',
         registerType: item.register_type as RegisterType,
         description: item.description,
@@ -68,7 +68,11 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
         clientId: item.client_id,
         clientName: item.client?.name,
         category: item.category,
-        subcategory: item.subcategory
+        subcategory: item.subcategory,
+        paidAmount: item.paid_amount || 0,
+        remainingAmount: item.remaining_amount || 0,
+        dueDate: item.due_date,
+        lastPaymentDate: item.last_payment_date
       })) as Transaction[];
     }
   });
@@ -97,7 +101,11 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
           subcategory: payload.subcategory,
           client_id: clientId,
           staff_id: staffId,
-          date: new Date().toISOString()
+          date: new Date().toISOString(),
+          // For partial or pending payments
+          paid_amount: payload.type === 'payment' ? payload.amount : 0,
+          remaining_amount: payload.type === 'payment' ? 0 : payload.amount,
+          last_payment_date: payload.type === 'payment' ? new Date().toISOString() : null
         })
         .select()
         .single();
@@ -117,4 +125,4 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
     ...query,
     createTransaction
   };
-};
+}

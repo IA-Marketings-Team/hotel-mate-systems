@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -24,14 +25,14 @@ const NewTransaction = () => {
     registerType?: RegisterType,
     clientId?: string,
     initialDescription?: string,
-    initialType?: "payment" | "refund" | "pending"
+    initialType?: "payment" | "refund" | "pending" | "partial"
   } | null;
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createTransaction } = useTransactions();
   
   // Form state
-  const [type, setType] = useState<"payment" | "refund" | "pending">(state?.initialType || "payment");
+  const [type, setType] = useState<"payment" | "refund" | "pending" | "partial">(state?.initialType || "payment");
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("card");
   const [description, setDescription] = useState(state?.initialDescription || "");
   const [amount, setAmount] = useState("");

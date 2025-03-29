@@ -17,7 +17,7 @@ interface NewTransactionDialogProps {
   initialAmount?: number;
   initialCategory?: string;
   initialSubcategory?: string;
-  initialType?: "payment" | "refund" | "pending";
+  initialType?: "payment" | "refund" | "pending" | "partial";
   redirectToInvoices?: boolean;
   disablePendingType?: boolean;
 }

@@ -29,7 +29,7 @@ export const useTransactionDetails = (id: string | undefined) => {
         id: data.id,
         date: data.date,
         amount: data.amount,
-        type: data.type as 'payment' | 'refund' | 'pending',
+        type: data.type as 'payment' | 'refund' | 'pending' | 'partial',
         method: data.method as 'cash' | 'card' | 'transfer',
         registerType: data.register_type as 'hotel' | 'restaurant' | 'poker' | 'rooftop',
         description: data.description,
@@ -38,7 +38,11 @@ export const useTransactionDetails = (id: string | undefined) => {
         clientId: data.client_id,
         clientName: data.client?.name,
         category: data.category,
-        subcategory: data.subcategory
+        subcategory: data.subcategory,
+        paidAmount: data.paid_amount || 0,
+        remainingAmount: data.remaining_amount || 0,
+        dueDate: data.due_date,
+        lastPaymentDate: data.last_payment_date
       } as Transaction;
     },
     enabled: !!id
@@ -58,7 +62,11 @@ export const useTransactionDetails = (id: string | undefined) => {
           category: updatedTransaction.category,
           subcategory: updatedTransaction.subcategory,
           client_id: updatedTransaction.clientId,
-          staff_id: updatedTransaction.staffId
+          staff_id: updatedTransaction.staffId,
+          // Update paid_amount and remaining_amount based on the transaction type
+          paid_amount: updatedTransaction.type === 'payment' ? updatedTransaction.amount : 0,
+          remaining_amount: updatedTransaction.type === 'payment' ? 0 : updatedTransaction.amount,
+          last_payment_date: updatedTransaction.type === 'payment' ? new Date().toISOString() : null
         })
         .eq('id', id);
       

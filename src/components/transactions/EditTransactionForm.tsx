@@ -36,7 +36,7 @@ export function EditTransactionForm({
 }: EditTransactionFormProps) {
   const [description, setDescription] = useState(transaction.description);
   const [amount, setAmount] = useState(transaction.amount.toString());
-  const [type, setType] = useState<"payment" | "refund" | "pending">(transaction.type);
+  const [type, setType] = useState<"payment" | "refund" | "pending" | "partial">(transaction.type);
   const [method, setMethod] = useState<"cash" | "card" | "transfer">(transaction.method);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);

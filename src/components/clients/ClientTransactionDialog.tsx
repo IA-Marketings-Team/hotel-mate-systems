@@ -11,7 +11,7 @@ interface ClientTransactionDialogProps {
   clientId: string;
   clientName: string;
   onSuccess: () => void;
-  initialType?: "payment" | "refund";
+  initialType?: "payment" | "refund" | "pending" | "partial";
   initialDescription?: string;
 }
 

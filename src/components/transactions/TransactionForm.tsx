@@ -23,7 +23,7 @@ export interface TransactionFormProps {
   initialAmount?: number;
   initialCategory?: string;
   initialSubcategory?: string;
-  initialType?: "payment" | "refund" | "pending";
+  initialType?: "payment" | "refund" | "pending" | "partial";
   disablePendingType?: boolean;
 }
 
@@ -40,7 +40,7 @@ export function TransactionForm({
   initialType = "payment",
   disablePendingType = false,
 }: TransactionFormProps) {
-  const [type, setType] = useState<"payment" | "refund" | "pending">(initialType);
+  const [type, setType] = useState<"payment" | "refund" | "pending" | "partial">(initialType);
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("card");
   const [description, setDescription] = useState(initialDescription);
   const [amount, setAmount] = useState(initialAmount ? initialAmount.toString() : "");
