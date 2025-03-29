@@ -10,6 +10,8 @@ interface NewTransactionDialogProps {
   registerType: RegisterType;
   onSuccess: () => void;
   clientId?: string;
+  initialDescription?: string;
+  initialAmount?: number;
 }
 
 export function NewTransactionDialog({ 
@@ -17,7 +19,9 @@ export function NewTransactionDialog({
   onOpenChange, 
   registerType,
   onSuccess,
-  clientId
+  clientId,
+  initialDescription,
+  initialAmount
 }: NewTransactionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -28,6 +32,8 @@ export function NewTransactionDialog({
         <TransactionForm 
           registerType={registerType}
           clientId={clientId}
+          initialDescription={initialDescription}
+          initialAmount={initialAmount}
           onSuccess={onSuccess}
           onCancel={() => onOpenChange(false)}
         />

@@ -46,7 +46,7 @@ const RoomStatusManager: React.FC<RoomStatusManagerProps> = ({
                 onClick={onOpenBookingDialog}
                 disabled={room.status === 'occupied'}
               >
-                <User className="h-4 w-4 mr-1" /> Occuper
+                <User className="h-4 w-4 mr-1" /> Réserver
               </Button>
             </div>
           </div>

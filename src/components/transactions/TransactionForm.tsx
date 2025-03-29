@@ -29,6 +29,7 @@ interface TransactionFormProps {
   clientId?: string;
   initialType?: "payment" | "refund";
   initialDescription?: string;
+  initialAmount?: number;
 }
 
 export function TransactionForm({ 
@@ -37,10 +38,11 @@ export function TransactionForm({
   onCancel,
   clientId,
   initialType = "payment",
-  initialDescription = ""
+  initialDescription = "",
+  initialAmount
 }: TransactionFormProps) {
   const [description, setDescription] = useState(initialDescription);
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(initialAmount ? initialAmount.toString() : "");
   const [type, setType] = useState<"payment" | "refund">(initialType);
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("cash");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -60,6 +62,15 @@ export function TransactionForm({
       setSelectedClientId(clientId);
     }
   }, [clientId]);
+
+  useEffect(() => {
+    if (initialDescription) {
+      setDescription(initialDescription);
+    }
+    if (initialAmount) {
+      setAmount(initialAmount.toString());
+    }
+  }, [initialDescription, initialAmount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
