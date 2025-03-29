@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,13 @@ import {
 } from "@/components/ui/select";
 import { useBookings } from "@/hooks/useBookings";
 import { BookingType, BookingStatus } from "@/types/bookings";
-import NewBookingDialog from "@/components/bookings/NewBookingDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/bookings/ConfirmDialog";
 import { useClients } from "@/hooks/useClients";
 import { useResources } from "@/hooks/useResources";
 
 const Bookings = () => {
+  const navigate = useNavigate();
   const { bookings, loading, error, fetchBookings, updateBookingStatus, deleteBooking } = useBookings();
   const { data: clients } = useClients();
   
@@ -33,7 +33,6 @@ const Bookings = () => {
   const [selectedBooking, setSelectedBooking] = useState<string | null>(null);
   const [actionType, setActionType] = useState<'cancel' | 'complete' | 'delete' | null>(null);
   
-  // Load resources for the active tab
   const { resources } = useResources(activeTab);
 
   useEffect(() => {
@@ -98,6 +97,10 @@ const Bookings = () => {
     }
   };
 
+  const handleNewBooking = () => {
+    navigate(`/bookings/new?type=${activeTab}`);
+  };
+
   const handleStatusChange = async (id: string, action: 'cancel' | 'complete') => {
     setSelectedBooking(id);
     setActionType(action);
@@ -117,7 +120,6 @@ const Bookings = () => {
       if (actionType === 'delete') {
         await deleteBooking(selectedBooking);
       } else {
-        // Make sure we're passing a valid BookingStatus value
         const newStatus: BookingStatus = actionType === 'cancel' ? 'canceled' : 'completed';
         console.log(`Setting booking ${selectedBooking} to status: ${newStatus}`);
         await updateBookingStatus(selectedBooking, newStatus);
@@ -132,13 +134,11 @@ const Bookings = () => {
   };
 
   const filteredBookings = bookings.filter((booking) => {
-    // Search term filter
     const matchesSearch =
       booking.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (booking.roomId && booking.roomId.toString().includes(searchTerm)) ||
       (booking.resourceId && booking.resourceId.toString().includes(searchTerm));
 
-    // Status filter
     const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
 
     return matchesSearch && matchesStatus;
@@ -146,7 +146,6 @@ const Bookings = () => {
 
   const findResourceName = (resourceId: string) => {
     if (activeTab === 'room') {
-      // This would need a rooms data source
       return resourceId;
     } else {
       const resource = resources.find(r => r.id === resourceId);
@@ -166,7 +165,7 @@ const Bookings = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Réservations</h1>
-        <Button onClick={() => setNewBookingOpen(true)}>
+        <Button onClick={handleNewBooking}>
           <PlusCircle className="mr-2 h-4 w-4" /> Nouvelle réservation
         </Button>
       </div>
@@ -294,12 +293,6 @@ const Bookings = () => {
           </DashboardCard>
         )}
       </Tabs>
-
-      <NewBookingDialog
-        open={newBookingOpen}
-        onOpenChange={setNewBookingOpen}
-        bookingType={activeTab}
-      />
 
       <ConfirmDialog
         open={confirmDialogOpen}

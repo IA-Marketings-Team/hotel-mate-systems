@@ -12,6 +12,7 @@ import Staff from "./pages/Staff";
 import Registers from "./pages/Registers";
 import Services from "./pages/Services";
 import Bookings from "./pages/Bookings";
+import NewBooking from "./pages/NewBooking";
 import Blueprint from "./pages/Blueprint";
 import NotFound from "./pages/NotFound";
 import TransactionDetails from "./pages/TransactionDetails";
@@ -57,6 +58,7 @@ const App = () => (
                 <Bookings />
               </AppLayout>
             } />
+            <Route path="/bookings/new" element={<NewBooking />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/client/:id" element={<ClientDetails />} />
             <Route path="/client/:id/actions" element={<ClientActionsPage />} />

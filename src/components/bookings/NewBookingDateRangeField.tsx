@@ -35,112 +35,193 @@ export const NewBookingDateRangeField: React.FC<NewBookingDateRangeFieldProps> =
 }) => {
   const today = new Date();
   
-  const handleRangeChange = (range: DateRange) => {
-    if (range.from && !range.to) {
-      // Quand seulement la date de début est sélectionnée, 
-      // ajoutons automatiquement 1 jour ou 2 heures pour la date de fin
-      let toDate;
-      
+  const handleFromDateChange = (date: Date | undefined) => {
+    if (!date) return;
+    
+    let toDate = dateRange.to;
+    
+    // Si la date de début est après la date de fin ou si la date de fin n'est pas définie
+    if (!toDate || date > toDate) {
       if (bookingType === 'room' || bookingType === 'car') {
-        // Pour les chambres et voitures, on ajoute 1 jour
-        toDate = addDays(range.from, 1);
+        // Pour les chambres et voitures, ajouter 1 jour
+        const newToDate = new Date(date);
+        newToDate.setDate(newToDate.getDate() + 1);
+        toDate = newToDate;
       } else {
-        // Pour les autres ressources, on ajoute 2 heures
-        toDate = new Date(range.from);
-        toDate.setHours(toDate.getHours() + 2);
+        // Pour les autres ressources, ajouter 2 heures
+        const newToDate = new Date(date);
+        newToDate.setHours(newToDate.getHours() + 2);
+        toDate = newToDate;
       }
-      
-      setDateRange({
-        from: range.from,
-        to: toDate
-      });
-    } else {
-      setDateRange(range);
+    }
+    
+    setDateRange({
+      from: date,
+      to: toDate
+    });
+  };
+  
+  const handleToDateChange = (date: Date | undefined) => {
+    if (!date) return;
+    
+    const fromDate = dateRange.from || today;
+    
+    // Si la date de fin est avant la date de début
+    if (date < fromDate) {
+      return;
+    }
+    
+    setDateRange({
+      from: fromDate,
+      to: date
+    });
+  };
+  
+  const getStartDateLabel = () => {
+    switch (bookingType) {
+      case 'room':
+        return "Date d'arrivée";
+      case 'car':
+        return "Date de début de location";
+      case 'meeting':
+        return "Date de la réunion";
+      case 'terrace':
+      case 'restaurant':
+        return "Date de la réservation";
+      default:
+        return "Date de début";
     }
   };
   
-  const getDatePlaceholder = () => {
+  const getEndDateLabel = () => {
     switch (bookingType) {
       case 'room':
-        return "Sélectionner les dates de séjour";
+        return "Date de départ";
       case 'car':
-        return "Sélectionner les dates de location";
+        return "Date de fin de location";
       case 'meeting':
-        return "Sélectionner la date et l'heure de réunion";
+        return "Fin de la réunion";
       case 'terrace':
       case 'restaurant':
-        return "Sélectionner la date et l'heure de réservation";
+        return "Fin de la réservation";
       default:
-        return "Sélectionner des dates";
+        return "Date de fin";
     }
   };
   
-  const getDateLabel = () => {
+  const getFromDatePlaceholder = () => {
     switch (bookingType) {
       case 'room':
-        return "Dates de séjour";
+        return "Sélectionner la date d'arrivée";
       case 'car':
-        return "Dates de location";
-      case 'meeting':
-        return "Date et heure de réunion";
-      case 'terrace':
-      case 'restaurant':
-        return "Date et heure de réservation";
+        return "Sélectionner la date de début";
       default:
-        return "Dates";
+        return "Sélectionner une date";
+    }
+  };
+  
+  const getToDatePlaceholder = () => {
+    switch (bookingType) {
+      case 'room':
+        return "Sélectionner la date de départ";
+      case 'car':
+        return "Sélectionner la date de fin";
+      default:
+        return "Sélectionner une date";
     }
   };
   
   return (
-    <FormField
-      control={form.control}
-      name="dateRange"
-      render={({ field }) => (
-        <FormItem className="flex flex-col">
-          <FormLabel>{getDateLabel()}</FormLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full pl-3 text-left font-normal",
-                    !dateRange && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateRange?.from ? (
-                    dateRange.to ? (
-                      <>
-                        {format(dateRange.from, "PPP", { locale: fr })} -{" "}
-                        {format(dateRange.to, "PPP", { locale: fr })}
-                      </>
-                    ) : (
+    <div className="space-y-4">
+      {/* Champ de date de début */}
+      <FormField
+        control={form.control}
+        name="fromDate"
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel>{getStartDateLabel()}</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !dateRange.from && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange.from ? (
                       format(dateRange.from, "PPP", { locale: fr })
-                    )
-                  ) : (
-                    <span>{getDatePlaceholder()}</span>
-                  )}
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 z-50" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={handleRangeChange}
-                numberOfMonths={1}
-                locale={fr}
-                fromDate={today}
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+                    ) : (
+                      <span>{getFromDatePlaceholder()}</span>
+                    )}
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-50" align="start">
+                <Calendar
+                  initialFocus
+                  mode="single"
+                  defaultMonth={dateRange.from}
+                  selected={dateRange.from}
+                  onSelect={handleFromDateChange}
+                  numberOfMonths={1}
+                  locale={fr}
+                  fromDate={today}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      {/* Champ de date de fin */}
+      <FormField
+        control={form.control}
+        name="toDate"
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel>{getEndDateLabel()}</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !dateRange.to && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange.to ? (
+                      format(dateRange.to, "PPP", { locale: fr })
+                    ) : (
+                      <span>{getToDatePlaceholder()}</span>
+                    )}
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-50" align="start">
+                <Calendar
+                  initialFocus
+                  mode="single"
+                  defaultMonth={dateRange.to}
+                  selected={dateRange.to}
+                  onSelect={handleToDateChange}
+                  numberOfMonths={1}
+                  locale={fr}
+                  fromDate={dateRange.from || today}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   );
 };
