@@ -2,15 +2,17 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { DashboardStat } from "@/types";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown, LucideIcon } from "lucide-react";
 
 interface StatCardProps {
-  stat: DashboardStat;
+  stat: Omit<DashboardStat, 'icon'> & {
+    icon: LucideIcon;
+  };
   className?: string;
 }
 
 export function StatCard({ stat, className }: StatCardProps) {
-  const icon = stat.icon as any;
+  const Icon = stat.icon;
   const iconClassName = cn("size-8", stat.color || "text-primary");
 
   return (
@@ -38,7 +40,7 @@ export function StatCard({ stat, className }: StatCardProps) {
           )}
         </div>
         <div className={cn("p-2 rounded-md bg-primary/10", stat.color ? `bg-${stat.color}/10` : "")}>
-          {React.createElement(icon, { className: iconClassName })}
+          <Icon className={iconClassName} />
         </div>
       </div>
     </div>

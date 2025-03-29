@@ -46,7 +46,7 @@ export type RegisterType = 'hotel' | 'restaurant' | 'poker' | 'rooftop';
 
 export interface Transaction {
   id: string;
-  date: string;
+  date: Date | string;
   amount: number;
   type: 'payment' | 'refund';
   method: 'cash' | 'card' | 'transfer';

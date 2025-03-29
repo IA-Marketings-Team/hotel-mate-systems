@@ -25,7 +25,7 @@ export const useTransactions = (registerType?: string) => {
       // Transform the data to match the Transaction type
       return (data || []).map(item => ({
         id: item.id,
-        date: item.date,
+        date: item.date, // This now works with the updated type
         amount: item.amount,
         type: item.type as 'payment' | 'refund',
         method: item.method as 'cash' | 'card' | 'transfer',

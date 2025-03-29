@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   Hotel, 
@@ -8,8 +7,8 @@ import {
   ArrowRight, 
   CheckCircle, 
   AlertCircle, 
-  Clock, 
-  Tools
+  Clock,
+  Wrench
 } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
