@@ -5,6 +5,7 @@ import { Room, RoomStatus } from "@/types";
 import { toast } from "sonner";
 import { useRoomCrud } from "./useRoomCrud";
 import { useRoomOperations } from "./useRoomOperations";
+import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
 
 export const useRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -76,8 +77,8 @@ export const useRooms = () => {
     setRooms(prev => prev.filter(room => room.id !== id));
   };
 
-  const bookRoom = async (id: string, guestName: string, clientId?: string) => {
-    const updatedRoom = await roomOperations.bookRoom(id, guestName, clientId);
+  const bookRoom = async (id: string, guestName: string, clientId?: string, extras?: RoomExtra[]) => {
+    const updatedRoom = await roomOperations.bookRoom(id, guestName, clientId, extras);
     updateLocalRooms(updatedRoom);
     return updatedRoom;
   };
