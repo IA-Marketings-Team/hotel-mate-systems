@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ interface TransactionFormProps {
   onCancel: () => void;
   isSubmitting?: boolean;
   clientId?: string;
-  initialType?: "payment" | "refund";
+  initialType?: "payment" | "refund" | "pending";
   initialDescription?: string;
   initialAmount?: number;
   initialCategory?: string;
@@ -50,7 +51,7 @@ export function TransactionForm({
 }: TransactionFormProps) {
   const [description, setDescription] = useState(initialDescription);
   const [amount, setAmount] = useState(initialAmount ? initialAmount.toString() : "");
-  const [type, setType] = useState<"payment" | "refund">(initialType);
+  const [type, setType] = useState<"payment" | "refund" | "pending">(initialType);
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("cash");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
