@@ -117,7 +117,9 @@ const Bookings = () => {
       if (actionType === 'delete') {
         await deleteBooking(selectedBooking);
       } else {
+        // Make sure we're passing a valid BookingStatus value
         const newStatus: BookingStatus = actionType === 'cancel' ? 'canceled' : 'completed';
+        console.log(`Setting booking ${selectedBooking} to status: ${newStatus}`);
         await updateBookingStatus(selectedBooking, newStatus);
       }
     } catch (err) {

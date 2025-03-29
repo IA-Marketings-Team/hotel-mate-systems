@@ -1,9 +1,9 @@
-
 import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
 import { Json } from "@/integrations/supabase/types";
 
 export type BookingType = 'room' | 'meeting' | 'car' | 'terrace' | 'restaurant';
 
+// Make sure this matches the values accepted by the database
 export type BookingStatus = 'confirmed' | 'canceled' | 'completed';
 
 export interface Booking {

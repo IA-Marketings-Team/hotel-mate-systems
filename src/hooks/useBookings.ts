@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Booking, BookingType, BookingStatus, parseRoomExtras } from "@/types/bookings";
 import { toast } from "sonner";
 import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
+import { DateRange } from "react-day-picker";
 
 export const useBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -129,6 +131,13 @@ export const useBookings = () => {
 
   const updateBookingStatus = async (id: string, status: BookingStatus) => {
     try {
+      console.log(`Updating booking ${id} to status: ${status}`);
+      
+      // Make sure status is one of the valid values expected by the database
+      if (!['confirmed', 'canceled', 'completed'].includes(status)) {
+        throw new Error(`Invalid status value: ${status}`);
+      }
+      
       const { data, error } = await supabase
         .from('bookings')
         .update({ status })
