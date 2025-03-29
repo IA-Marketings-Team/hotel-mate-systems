@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Booking, BookingType, BookingStatus } from "@/types/bookings";
+import { Booking, BookingType, BookingStatus, parseRoomExtras } from "@/types/bookings";
 import { toast } from "sonner";
 import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
 
@@ -39,12 +38,6 @@ export const useBookings = () => {
       }
       
       const mappedBookings: Booking[] = data.map(item => {
-        // Parse extras from JSON to RoomExtra[] if it exists
-        let parsedExtras: RoomExtra[] | undefined = undefined;
-        if (item.extras) {
-          parsedExtras = Array.isArray(item.extras) ? item.extras as RoomExtra[] : undefined;
-        }
-        
         return {
           id: item.id,
           resourceId: item.resource_id,
@@ -59,7 +52,7 @@ export const useBookings = () => {
           updatedAt: new Date(item.updated_at),
           createdBy: item.created_by,
           bookingType: item.booking_type as BookingType,
-          extras: parsedExtras,
+          extras: parseRoomExtras(item.extras),
           client: item.clients ? {
             id: item.clients.id,
             name: item.clients.name,
@@ -106,12 +99,6 @@ export const useBookings = () => {
         throw error;
       }
 
-      // Parse extras back from JSON
-      let parsedExtras: RoomExtra[] | undefined = undefined;
-      if (data.extras) {
-        parsedExtras = Array.isArray(data.extras) ? data.extras as RoomExtra[] : undefined;
-      }
-
       const newBooking: Booking = {
         id: data.id,
         resourceId: data.resource_id,
@@ -126,7 +113,7 @@ export const useBookings = () => {
         updatedAt: new Date(data.updated_at),
         createdBy: data.created_by,
         bookingType: data.booking_type as BookingType,
-        extras: parsedExtras
+        extras: parseRoomExtras(data.extras)
       };
 
       setBookings(prev => [newBooking, ...prev]);
@@ -153,12 +140,6 @@ export const useBookings = () => {
         throw error;
       }
 
-      // Parse extras from JSON
-      let parsedExtras: RoomExtra[] | undefined = undefined;
-      if (data.extras) {
-        parsedExtras = Array.isArray(data.extras) ? data.extras as RoomExtra[] : undefined;
-      }
-
       const updatedBooking: Booking = {
         id: data.id,
         resourceId: data.resource_id,
@@ -173,7 +154,7 @@ export const useBookings = () => {
         updatedAt: new Date(data.updated_at),
         createdBy: data.created_by,
         bookingType: data.booking_type as BookingType,
-        extras: parsedExtras
+        extras: parseRoomExtras(data.extras)
       };
 
       setBookings(prev => prev.map(booking => booking.id === id ? updatedBooking : booking));
