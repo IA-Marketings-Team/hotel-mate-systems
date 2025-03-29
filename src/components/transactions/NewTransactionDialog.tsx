@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,15 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCategories, useSubcategories, ServiceCategory } from "@/hooks/useCategories";
-import { toast } from "@/hooks/use-toast";
+import { useCategories, useSubcategories } from "@/hooks/useCategories";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { RegisterType } from "@/types";
 
 interface NewTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  registerType: string;
+  registerType: RegisterType;
   onSuccess: () => void;
 }
 
@@ -29,6 +30,7 @@ export function NewTransactionDialog({
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("cash");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const { data: categories, isLoading: isCategoriesLoading } = useCategories(registerType);
   const { data: subcategories, isLoading: isSubcategoriesLoading } = useSubcategories(selectedCategory);
@@ -91,11 +93,6 @@ export function NewTransactionDialog({
         variant: "destructive"
       });
     }
-  };
-
-  const getCategoryName = (id: string): string => {
-    const category = categories?.find(cat => cat.id === id);
-    return category?.name || "";
   };
 
   return (

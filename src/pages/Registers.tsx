@@ -5,7 +5,7 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Transaction, RegisterType } from "@/types";
-import { Search, Plus, PlusCircle, Hotel, Utensils, CircleDollarSign } from "lucide-react";
+import { Search, Plus, PlusCircle, Hotel, Utensils, CircleDollarSign, Umbrella } from "lucide-react";
 import { format } from "date-fns";
 import { useTransactions } from "@/hooks/useTransactions";
 import { NewTransactionDialog } from "@/components/transactions/NewTransactionDialog";
@@ -35,6 +35,8 @@ const Registers = () => {
         return <Utensils className="size-5" />;
       case "poker":
         return <CircleDollarSign className="size-5" />;
+      case "rooftop":
+        return <Umbrella className="size-5" />;
       default:
         return null;
     }
@@ -65,7 +67,7 @@ const Registers = () => {
       </div>
 
       <Tabs defaultValue="hotel" onValueChange={(value) => setActiveTab(value as RegisterType)}>
-        <TabsList className="grid grid-cols-3 mb-6">
+        <TabsList className="grid grid-cols-4 mb-6">
           <TabsTrigger value="hotel" className="flex items-center gap-2">
             <Hotel className="size-4" />
             <span>Hôtellerie</span>
@@ -77,6 +79,10 @@ const Registers = () => {
           <TabsTrigger value="poker" className="flex items-center gap-2">
             <CircleDollarSign className="size-4" />
             <span>Poker</span>
+          </TabsTrigger>
+          <TabsTrigger value="rooftop" className="flex items-center gap-2">
+            <Umbrella className="size-4" />
+            <span>Rooftop</span>
           </TabsTrigger>
         </TabsList>
 
@@ -112,6 +118,16 @@ const Registers = () => {
 
         <TabsContent value="poker" className="space-y-4">
           <DashboardCard title="Caisse Poker">
+            <RegisterContent 
+              transactions={filteredTransactions} 
+              isLoading={isLoading} 
+              getTransactionIcon={getTransactionIcon} 
+            />
+          </DashboardCard>
+        </TabsContent>
+
+        <TabsContent value="rooftop" className="space-y-4">
+          <DashboardCard title="Caisse Rooftop">
             <RegisterContent 
               transactions={filteredTransactions} 
               isLoading={isLoading} 

@@ -1,9 +1,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Transaction } from "@/types";
+import { Transaction, RegisterType } from "@/types";
 
-export const useTransactions = (registerType?: string) => {
+export const useTransactions = (registerType?: RegisterType) => {
   return useQuery({
     queryKey: ['transactions', registerType],
     queryFn: async () => {
@@ -25,11 +25,11 @@ export const useTransactions = (registerType?: string) => {
       // Transform the data to match the Transaction type
       return (data || []).map(item => ({
         id: item.id,
-        date: item.date, // This now works with the updated type
+        date: item.date, // This works now with the updated type
         amount: item.amount,
         type: item.type as 'payment' | 'refund',
         method: item.method as 'cash' | 'card' | 'transfer',
-        registerType: item.register_type as any, // This maps register_type to registerType
+        registerType: item.register_type as RegisterType,
         description: item.description,
         staffId: item.staff_id,
         clientId: item.client_id,

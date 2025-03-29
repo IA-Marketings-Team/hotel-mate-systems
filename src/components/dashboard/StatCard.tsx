@@ -6,14 +6,25 @@ import { ArrowUp, ArrowDown, LucideIcon } from "lucide-react";
 
 interface StatCardProps {
   stat: Omit<DashboardStat, 'icon'> & {
-    icon: LucideIcon;
+    icon: LucideIcon | string | React.FC<{ className?: string }>;
   };
   className?: string;
 }
 
 export function StatCard({ stat, className }: StatCardProps) {
-  const Icon = stat.icon;
   const iconClassName = cn("size-8", stat.color || "text-primary");
+
+  // Render the icon based on type
+  const renderIcon = () => {
+    if (typeof stat.icon === 'string') {
+      // Handle string icons (could be from a different icon system)
+      return <span className={iconClassName}>{stat.icon}</span>;
+    } else {
+      // Handle Lucide or React component icons
+      const Icon = stat.icon as LucideIcon | React.FC<{ className?: string }>;
+      return <Icon className={iconClassName} />;
+    }
+  };
 
   return (
     <div className={cn("stat-card", className)}>
@@ -40,7 +51,7 @@ export function StatCard({ stat, className }: StatCardProps) {
           )}
         </div>
         <div className={cn("p-2 rounded-md bg-primary/10", stat.color ? `bg-${stat.color}/10` : "")}>
-          <Icon className={iconClassName} />
+          {renderIcon()}
         </div>
       </div>
     </div>

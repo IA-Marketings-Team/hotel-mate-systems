@@ -1,4 +1,3 @@
-
 import React from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,8 +10,8 @@ const Blueprint = () => {
     {
       name: "Gestion des Caisses",
       description: "Gestion des transactions pour l'hôtel, le restaurant et le poker.",
-      status: "in-progress",
-      progress: 60,
+      status: "implemented",
+      progress: 100,
       features: [
         { 
           name: "Caisse Hôtellerie", 
@@ -20,25 +19,25 @@ const Blueprint = () => {
           subfeatures: [
             { name: "Services: Chambres, buanderie, chauffeur, excursions, spa", status: "implemented" },
             { name: "Transactions: Paiements, remboursements, notes de frais", status: "implemented" },
-            { name: "Sous-catégories dynamiques", status: "pending" }
+            { name: "Sous-catégories dynamiques", status: "implemented" }
           ]
         },
         { 
           name: "Caisse Bar/Restauration", 
           status: "implemented",
           subfeatures: [
-            { name: "Menu hiérarchisé (boissons, plats)", status: "pending" },
-            { name: "Gestion des événements", status: "pending" },
-            { name: "Liaison avec l'inventaire", status: "pending" }
+            { name: "Menu hiérarchisé (boissons, plats)", status: "implemented" },
+            { name: "Gestion des événements", status: "implemented" },
+            { name: "Liaison avec l'inventaire", status: "implemented" }
           ]
         },
         { 
           name: "Caisse Poker/Jeux", 
           status: "implemented",
           subfeatures: [
-            { name: "Jeux: Texas Hold'em, Blackjack, machines à sous", status: "pending" },
-            { name: "Tournois: Inscriptions, prix, historique", status: "pending" },
-            { name: "Suivi des jetons et transactions", status: "pending" }
+            { name: "Jeux: Texas Hold'em, Blackjack, machines à sous", status: "implemented" },
+            { name: "Tournois: Inscriptions, prix, historique", status: "implemented" },
+            { name: "Suivi des jetons et transactions", status: "implemented" }
           ]
         }
       ]
@@ -370,7 +369,6 @@ const Blueprint = () => {
     }
   ];
 
-  // Calculate overall progress
   const calculateOverallProgress = () => {
     let totalFeatures = 0;
     let implementedFeatures = 0;

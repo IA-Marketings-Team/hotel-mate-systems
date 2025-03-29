@@ -63,7 +63,7 @@ export interface DashboardStat {
   title: string;
   value: string | number;
   change?: number;
-  icon: string;
+  icon: string | React.FC<{ className?: string }>;
   color?: string;
 }
 
