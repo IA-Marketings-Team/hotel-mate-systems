@@ -92,16 +92,20 @@ export interface Transaction {
   id: string;
   date: string;
   amount: number;
-  type: "payment" | "refund" | "pending";
+  type: "payment" | "refund" | "pending" | "partial"; // Updated to include "partial"
   method: "cash" | "card" | "transfer";
   registerType: RegisterType;
   description: string;
-  staffId?: string;
+  staffId: string | null;
   staffName?: string;
-  clientId?: string;
+  clientId: string | null;
   clientName?: string;
-  category?: string;
-  subcategory?: string;
+  category: string | null;
+  subcategory: string | null;
+  paidAmount?: number; // Added new field
+  remainingAmount?: number; // Added new field
+  dueDate?: string | null; // Added new field
+  lastPaymentDate?: string | null; // Added new field
 }
 
 // Dashboard Types

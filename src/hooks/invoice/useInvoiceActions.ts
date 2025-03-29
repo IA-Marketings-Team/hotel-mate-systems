@@ -41,7 +41,9 @@ export const useInvoiceActions = () => {
         category: data.category,
         subcategory: data.subcategory,
         paidAmount: data.paid_amount,
-        remainingAmount: data.remaining_amount
+        remainingAmount: data.remaining_amount,
+        dueDate: data.due_date,
+        lastPaymentDate: data.last_payment_date
       };
 
       const filename = generateInvoicePDF(transaction);
@@ -116,7 +118,7 @@ export const useInvoiceActions = () => {
     mutationFn: async (invoiceId: string) => {
       const { error } = await supabase
         .from('transactions')
-        .update({ type: 'refund' as "payment" | "refund" | "pending" | "partial" })
+        .update({ type: 'refund' })
         .eq('id', invoiceId);
       
       if (error) {

@@ -327,9 +327,13 @@ export type Database = {
           created_at: string
           date: string
           description: string
+          due_date: string | null
           id: string
+          last_payment_date: string | null
           method: string
+          paid_amount: number | null
           register_type: string
+          remaining_amount: number | null
           staff_id: string | null
           subcategory: string | null
           type: string
@@ -341,9 +345,13 @@ export type Database = {
           created_at?: string
           date?: string
           description: string
+          due_date?: string | null
           id?: string
+          last_payment_date?: string | null
           method: string
+          paid_amount?: number | null
           register_type: string
+          remaining_amount?: number | null
           staff_id?: string | null
           subcategory?: string | null
           type: string
@@ -355,9 +363,13 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string
+          due_date?: string | null
           id?: string
+          last_payment_date?: string | null
           method?: string
+          paid_amount?: number | null
           register_type?: string
+          remaining_amount?: number | null
           staff_id?: string | null
           subcategory?: string | null
           type?: string

@@ -17,13 +17,16 @@ export const useInvoiceCreate = () => {
           description: invoiceData.description,
           amount: invoiceData.amount,
           type: 'pending', // Always pending initially
-          method: 'card' as "cash" | "card" | "transfer", // Default method, can be updated when payment is processed
+          method: 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
           subcategory: invoiceData.subcategory || null,
           client_id: invoiceData.clientId,
           staff_id: invoiceData.staffId,
-          date: new Date().toISOString()
+          date: new Date().toISOString(),
+          due_date: invoiceData.dueDate || null,
+          paid_amount: 0, // Initialize with 0
+          remaining_amount: invoiceData.amount // Initially, remaining amount equals total amount
         })
         .select()
         .single();
