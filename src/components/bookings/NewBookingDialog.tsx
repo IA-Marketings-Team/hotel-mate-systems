@@ -39,6 +39,7 @@ import { useRooms } from "@/hooks/useRooms";
 import { useBookings } from "@/hooks/useBookings";
 import { toast } from "sonner";
 import { BookingType } from "@/types/bookings";
+import { RoomExtrasSelector } from "@/components/rooms/RoomExtrasSelector";
 
 interface NewBookingDialogProps {
   open: boolean;
@@ -57,6 +58,7 @@ const bookingSchema = z.object({
     required_error: "Veuillez sélectionner une date de départ",
   }),
   amount: z.coerce.number().min(0, "Le montant doit être positif"),
+  extras: z.array(z.any()).optional(),
 });
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
@@ -80,6 +82,7 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
       checkIn: new Date(),
       checkOut: addDays(new Date(), 1),
       amount: 0,
+      extras: [],
     },
   });
 
@@ -93,6 +96,7 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
         checkIn: new Date(),
         checkOut: addDays(new Date(), 1),
         amount: 0,
+        extras: [],
       });
     }
   }, [open, bookingType, form]);
@@ -123,11 +127,17 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
     setIsSubmitting(true);
     try {
       await createBooking({
-        ...data,
+        resourceId: data.resourceId,
         roomId: bookingType === 'room' ? data.resourceId : undefined,
+        guestName: data.guestName,
+        clientId: data.clientId,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        amount: data.amount,
         status: 'confirmed',
         createdBy: 'Admin',
-        bookingType
+        bookingType,
+        extras: data.extras,
       });
       
       onOpenChange(false);
@@ -337,6 +347,22 @@ const NewBookingDialog: React.FC<NewBookingDialogProps> = ({
                 </FormItem>
               )}
             />
+
+            {bookingType === 'room' && (
+              <FormField
+                control={form.control}
+                name="extras"
+                render={({ field }) => (
+                  <FormItem>
+                    <RoomExtrasSelector
+                      extras={field.value || []}
+                      onChange={field.onChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <DialogFooter>
               <Button

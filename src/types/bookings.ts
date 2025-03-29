@@ -20,6 +20,12 @@ export interface Booking {
   createdBy: string;
   bookingType: BookingType;
   extras?: RoomExtra[];
+  client?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
 }
 
 export interface BookingResource {
