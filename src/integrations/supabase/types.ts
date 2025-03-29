@@ -98,12 +98,14 @@ export type Database = {
       rooms: {
         Row: {
           capacity: number
+          cleaning_status: boolean | null
           created_at: string
           current_guest: string | null
           features: string[]
           floor: number
           id: string
           last_cleaned: string | null
+          maintenance_status: boolean | null
           notes: string | null
           number: string
           price_per_night: number
@@ -114,12 +116,14 @@ export type Database = {
         }
         Insert: {
           capacity: number
+          cleaning_status?: boolean | null
           created_at?: string
           current_guest?: string | null
           features?: string[]
           floor: number
           id?: string
           last_cleaned?: string | null
+          maintenance_status?: boolean | null
           notes?: string | null
           number: string
           price_per_night: number
@@ -130,12 +134,14 @@ export type Database = {
         }
         Update: {
           capacity?: number
+          cleaning_status?: boolean | null
           created_at?: string
           current_guest?: string | null
           features?: string[]
           floor?: number
           id?: string
           last_cleaned?: string | null
+          maintenance_status?: boolean | null
           notes?: string | null
           number?: string
           price_per_night?: number
