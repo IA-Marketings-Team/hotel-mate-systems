@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 
@@ -19,8 +19,6 @@ export function TransactionDetailsSheet({
   open, 
   onOpenChange 
 }: TransactionDetailsSheetProps) {
-  const { toast } = useToast();
-
   if (!transaction) return null;
 
   const generateInvoice = () => {
@@ -52,7 +50,7 @@ export function TransactionDetailsSheet({
         ]
       ];
       
-      // @ts-ignore
+      // @ts-ignore - jsPDF-AutoTable adds this method
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
