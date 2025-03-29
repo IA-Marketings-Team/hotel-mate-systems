@@ -13,7 +13,12 @@ import {
   Trash, 
   User, 
   MapPin,
-  Globe
+  Globe,
+  PlusCircle,
+  Receipt,
+  Utensils,
+  Wine,
+  Poker
 } from "lucide-react";
 import { useClient, useClients } from "@/hooks/useClients";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -24,19 +29,30 @@ import { TransactionTable } from "@/components/registers/TransactionTable";
 import { TransactionDetailsSheet } from "@/components/transactions/TransactionDetailsSheet";
 import { toast } from "sonner";
 import { generatePDF } from "@/lib/pdfUtils";
+import { ClientTransactionDialog } from "@/components/clients/ClientTransactionDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 
 const ClientDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: client, isLoading, error } = useClient(id);
-  const { data: transactions } = useTransactions();
   const { deleteClient, updateClient } = useClients();
+  const { data: transactions, refetch: refetchTransactions } = useTransactions({ clientId: id });
   const [isEditing, setIsEditing] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionSheetOpen, setIsTransactionSheetOpen] = useState(false);
+  const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
 
   // Filter transactions for this client
-  const clientTransactions = transactions?.filter(t => t.clientId === id) || [];
+  const clientTransactions = transactions || [];
 
   const handleDelete = async () => {
     if (!client) return;
@@ -106,6 +122,11 @@ const ClientDetails = () => {
     setIsTransactionSheetOpen(true);
   };
 
+  const handleTransactionSuccess = () => {
+    refetchTransactions();
+    toast.success("Transaction ajoutée avec succès");
+  };
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -134,15 +155,68 @@ const ClientDetails = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={() => navigate("/clients")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-2xl font-bold">Détails du Client</h1>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={() => navigate("/clients")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h1 className="text-2xl font-bold">Détails du Client</h1>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Actions
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Actions client</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => setIsTransactionDialogOpen(true)}>
+                  <Receipt className="h-4 w-4 mr-2" />
+                  Nouvelle transaction
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportHistory}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter l'historique
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Services</DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setIsTransactionDialogOpen(true);
+                  }}
+                >
+                  <Utensils className="h-4 w-4 mr-2" />
+                  Commande restaurant
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setIsTransactionDialogOpen(true);
+                  }}
+                >
+                  <Wine className="h-4 w-4 mr-2" />
+                  Commande bar
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setIsTransactionDialogOpen(true);
+                  }}
+                >
+                  <Poker className="h-4 w-4 mr-2" />
+                  Achat jetons poker
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <DashboardCard 
@@ -265,6 +339,16 @@ const ClientDetails = () => {
         open={isTransactionSheetOpen}
         onOpenChange={setIsTransactionSheetOpen}
       />
+
+      {client && (
+        <ClientTransactionDialog
+          open={isTransactionDialogOpen}
+          onOpenChange={setIsTransactionDialogOpen}
+          clientId={client.id}
+          clientName={client.name}
+          onSuccess={handleTransactionSuccess}
+        />
+      )}
     </AppLayout>
   );
 };

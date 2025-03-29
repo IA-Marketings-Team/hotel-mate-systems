@@ -1,5 +1,5 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Transaction, RegisterType } from "@/types";
 
@@ -8,13 +8,27 @@ interface TransactionFilters {
   clientId?: string;
 }
 
+interface CreateTransactionPayload {
+  description: string;
+  amount: number;
+  type: 'payment' | 'refund';
+  method: 'cash' | 'card' | 'transfer';
+  registerType: RegisterType;
+  category?: string;
+  subcategory?: string;
+  clientId?: string;
+  staffId?: string;
+}
+
 export const useTransactions = (filters?: RegisterType | TransactionFilters) => {
   // Convert string filter to object filter for backward compatibility
   const normalizedFilters: TransactionFilters = typeof filters === 'string' 
     ? { registerType: filters } 
     : filters || {};
   
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ['transactions', normalizedFilters],
     queryFn: async () => {
       let query = supabase
@@ -58,4 +72,39 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
       })) as Transaction[];
     }
   });
+
+  const createTransaction = useMutation({
+    mutationFn: async (payload: CreateTransactionPayload) => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert({
+          description: payload.description,
+          amount: payload.amount,
+          type: payload.type,
+          method: payload.method,
+          register_type: payload.registerType,
+          category: payload.category,
+          subcategory: payload.subcategory,
+          client_id: payload.clientId,
+          staff_id: payload.staffId,
+          date: new Date().toISOString()
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        throw new Error(`Error creating transaction: ${error.message}`);
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    }
+  });
+
+  return {
+    ...query,
+    createTransaction
+  };
 };
