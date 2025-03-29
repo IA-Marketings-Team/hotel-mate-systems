@@ -1,3 +1,4 @@
+
 import { Room, StaffMember, HotelService, Transaction, DashboardStat } from "@/types";
 import { Hotel, Users, Bed, Utensils, CreditCard, DollarSign, Calendar } from "lucide-react";
 
@@ -42,12 +43,12 @@ export const mockRooms: Room[] = [
     pricePerNight: 180,
     floor: 1,
     view: "pool",
-    status: "cleaning",
+    status: "available", // Changed from "cleaning" to "available"
     features: ["WiFi", "TV", "Mini-Bar", "Jacuzzi"],
     notes: "",
     lastCleaned: new Date(Date.now() - 172800000),
     maintenanceStatus: false,
-    cleaningStatus: true
+    cleaningStatus: true // Set to true to indicate it needs cleaning
   },
   {
     id: "4",
@@ -57,11 +58,11 @@ export const mockRooms: Room[] = [
     pricePerNight: 250,
     floor: 2,
     view: "sea",
-    status: "maintenance",
+    status: "available", // Changed from "maintenance" to "available"
     features: ["WiFi", "TV", "Mini-Bar", "Jacuzzi", "Balcon"],
     notes: "Problème de climatisation",
     lastCleaned: new Date(Date.now() - 259200000),
-    maintenanceStatus: true,
+    maintenanceStatus: true, // Set to true to indicate it's in maintenance
     cleaningStatus: false
   },
   {
