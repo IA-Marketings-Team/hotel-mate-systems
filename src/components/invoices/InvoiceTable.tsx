@@ -9,16 +9,17 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Invoice } from "@/hooks/useInvoices";
+import { Link } from "react-router-dom";
 
 interface InvoiceTableProps {
   invoices: Invoice[];
   isLoading: boolean;
   onDownload: (invoice: Invoice) => void;
   onPay?: (invoice: Invoice) => void;
-  onViewDetails: (invoice: Invoice) => void;
+  onViewDetails?: (invoice: Invoice) => void;
 }
 
-export function InvoiceTable({ invoices, isLoading, onDownload, onPay, onViewDetails }: InvoiceTableProps) {
+export function InvoiceTable({ invoices, isLoading, onDownload, onPay }: InvoiceTableProps) {
   if (isLoading) {
     return <LoadingSkeletons />;
   }
@@ -73,9 +74,11 @@ export function InvoiceTable({ invoices, isLoading, onDownload, onPay, onViewDet
               <TableCell>{getStatusBadge(invoice.status)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => onViewDetails(invoice)}>
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                  <Link to={`/invoice/${invoice.id}`}>
+                    <Button variant="ghost" size="icon">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
                   <Button variant="ghost" size="icon" onClick={() => onDownload(invoice)}>
                     <Download className="h-4 w-4" />
                   </Button>

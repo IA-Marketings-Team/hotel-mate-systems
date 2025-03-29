@@ -78,26 +78,28 @@ export const useInvoices = (filters?: { clientId?: string; status?: string }) =>
       subcategory?: string;
       registerType: RegisterType;
     }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('transactions')
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'pending',
-          method: 'card', // Default method, can be updated when payment is processed
-          register_type: invoiceData.registerType,
+          type: 'pending' as "payment" | "refund" | "pending",
+          method: 'card' as "cash" | "card" | "transfer", // Default method, can be updated when payment is processed
+          register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
           subcategory: invoiceData.subcategory || null,
           client_id: invoiceData.clientId,
           staff_id: invoiceData.staffId,
           date: new Date().toISOString()
-        });
+        })
+        .select()
+        .single();
       
       if (error) {
         throw new Error(`Error creating invoice: ${error.message}`);
       }
       
-      return true;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
@@ -153,7 +155,7 @@ export const useInvoices = (filters?: { clientId?: string; status?: string }) =>
     mutationFn: async (invoiceId: string) => {
       const { error } = await supabase
         .from('transactions')
-        .update({ type: 'payment' })
+        .update({ type: 'payment' as "payment" | "refund" | "pending" })
         .eq('id', invoiceId);
       
       if (error) {
@@ -172,7 +174,7 @@ export const useInvoices = (filters?: { clientId?: string; status?: string }) =>
     mutationFn: async (invoiceId: string) => {
       const { error } = await supabase
         .from('transactions')
-        .update({ type: 'refund' })
+        .update({ type: 'refund' as "payment" | "refund" | "pending" })
         .eq('id', invoiceId);
       
       if (error) {

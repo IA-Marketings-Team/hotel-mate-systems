@@ -21,6 +21,7 @@ import ClientDetails from "./pages/ClientDetails";
 import NewClient from "./pages/NewClient";
 import ClientActionsPage from "./pages/ClientActionsPage";
 import Invoices from "./pages/Invoices";
+import InvoiceDetails from "./pages/InvoiceDetails";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
                 <Invoices />
               </AppLayout>
             } />
+            <Route path="/invoice/:id" element={<InvoiceDetails />} />
             <Route path="/services" element={
               <AppLayout>
                 <Services />
