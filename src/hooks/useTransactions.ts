@@ -3,9 +3,19 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Transaction, RegisterType } from "@/types";
 
-export const useTransactions = (registerType?: RegisterType) => {
+interface TransactionFilters {
+  registerType?: RegisterType;
+  clientId?: string;
+}
+
+export const useTransactions = (filters?: RegisterType | TransactionFilters) => {
+  // Convert string filter to object filter for backward compatibility
+  const normalizedFilters: TransactionFilters = typeof filters === 'string' 
+    ? { registerType: filters } 
+    : filters || {};
+  
   return useQuery({
-    queryKey: ['transactions', registerType],
+    queryKey: ['transactions', normalizedFilters],
     queryFn: async () => {
       let query = supabase
         .from('transactions')
@@ -16,8 +26,12 @@ export const useTransactions = (registerType?: RegisterType) => {
         `)
         .order('date', { ascending: false });
       
-      if (registerType) {
-        query = query.eq('register_type', registerType);
+      if (normalizedFilters.registerType) {
+        query = query.eq('register_type', normalizedFilters.registerType);
+      }
+      
+      if (normalizedFilters.clientId) {
+        query = query.eq('client_id', normalizedFilters.clientId);
       }
 
       const { data, error } = await query;

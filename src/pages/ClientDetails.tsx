@@ -15,7 +15,7 @@ import {
   MapPin,
   Globe
 } from "lucide-react";
-import { useClients } from "@/hooks/useClients";
+import { useClient, useClients } from "@/hooks/useClients";
 import { useTransactions } from "@/hooks/useTransactions";
 import { format } from "date-fns";
 import { ClientForm } from "@/components/clients/ClientForm";
@@ -28,17 +28,21 @@ import { generatePDF } from "@/lib/pdfUtils";
 const ClientDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: client, isLoading, error, mutations } = useClients(id);
-  const { data: transactions } = useTransactions({ clientId: id });
+  const { data: client, isLoading, error } = useClient(id);
+  const { data: transactions } = useTransactions();
+  const { deleteClient, updateClient } = useClients();
   const [isEditing, setIsEditing] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionSheetOpen, setIsTransactionSheetOpen] = useState(false);
+
+  // Filter transactions for this client
+  const clientTransactions = transactions?.filter(t => t.clientId === id) || [];
 
   const handleDelete = async () => {
     if (!client) return;
     
     try {
-      await mutations.deleteClient.mutateAsync(client.id);
+      await deleteClient.mutateAsync(client.id);
       toast.success("Client supprimé avec succès");
       navigate("/clients");
     } catch (err) {
@@ -50,7 +54,7 @@ const ClientDetails = () => {
     if (!client) return;
     
     try {
-      await mutations.updateClient.mutateAsync({ id: client.id, ...data });
+      await updateClient.mutateAsync({ id: client.id, ...data });
       setIsEditing(false);
       toast.success("Client mis à jour avec succès");
     } catch (err) {
@@ -59,14 +63,14 @@ const ClientDetails = () => {
   };
 
   const handleExportHistory = () => {
-    if (!client || !transactions) return;
+    if (!client || !clientTransactions) return;
     
-    if (transactions.length === 0) {
+    if (clientTransactions.length === 0) {
       toast.info("Aucune transaction à exporter pour ce client");
       return;
     }
 
-    const tableData = transactions.map(t => [
+    const tableData = clientTransactions.map(t => [
       format(new Date(t.date), "dd/MM/yyyy"),
       t.registerType,
       t.type === "payment" ? "Paiement" : "Remboursement",
@@ -241,13 +245,13 @@ const ClientDetails = () => {
           }
         >
           <div className="p-4">
-            {!transactions || transactions.length === 0 ? (
+            {!clientTransactions || clientTransactions.length === 0 ? (
               <div className="text-center p-8 text-muted-foreground">
                 Aucune transaction enregistrée pour ce client
               </div>
             ) : (
               <TransactionTable 
-                transactions={transactions} 
+                transactions={clientTransactions} 
                 isLoading={false}
                 onViewDetails={handleViewTransactionDetails}
               />

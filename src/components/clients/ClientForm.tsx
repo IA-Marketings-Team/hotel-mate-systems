@@ -32,9 +32,10 @@ type ClientFormValues = z.infer<typeof clientSchema>;
 interface ClientFormProps {
   defaultValues?: Partial<Client>;
   onSubmit: (data: ClientFormValues) => void;
+  onCancel?: () => void;
 }
 
-export const ClientForm = ({ defaultValues, onSubmit }: ClientFormProps) => {
+export const ClientForm = ({ defaultValues, onSubmit, onCancel }: ClientFormProps) => {
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
@@ -170,7 +171,12 @@ export const ClientForm = ({ defaultValues, onSubmit }: ClientFormProps) => {
           )}
         />
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Annuler
+            </Button>
+          )}
           <Button type="submit">
             {defaultValues ? "Mettre à jour" : "Ajouter le client"}
           </Button>
