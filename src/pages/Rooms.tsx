@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Room, RoomStatus } from "@/types";
-import { Search, CheckCircle, Clock, AlertCircle, Plus, Pencil, Trash2 } from "lucide-react";
+import { Search, CheckCircle, Clock, AlertCircle, Plus, Pencil, Trash2, MoreHorizontal, Moon, Brush } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useRooms } from "@/hooks/useRooms";
 import RoomDialog, { RoomFormValues } from "@/components/rooms/RoomDialog";
@@ -26,9 +26,35 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Rooms = () => {
-  const { rooms, loading, error, addRoom, updateRoom, deleteRoom } = useRooms();
+  const { 
+    rooms, 
+    loading, 
+    error, 
+    addRoom, 
+    updateRoom, 
+    deleteRoom, 
+    changeRoomStatus,
+    setAllOccupiedToPendingCleaning 
+  } = useRooms();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -36,6 +62,7 @@ const Rooms = () => {
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>(undefined);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
+  const [batchActionDialogOpen, setBatchActionDialogOpen] = useState(false);
 
   const getStatusIcon = (status: RoomStatus) => {
     switch (status) {
@@ -44,7 +71,9 @@ const Rooms = () => {
       case "occupied":
         return <CheckCircle className="size-4 text-blue-500" />;
       case "cleaning":
-        return <Clock className="size-4 text-yellow-500" />;
+        return <Brush className="size-4 text-yellow-500" />;
+      case "cleaning_pending":
+        return <Clock className="size-4 text-orange-500" />;
       case "maintenance":
         return <AlertCircle className="size-4 text-red-500" />;
     }
@@ -57,7 +86,9 @@ const Rooms = () => {
       case "occupied":
         return "Occupée";
       case "cleaning":
-        return "Nettoyage";
+        return "Nettoyage en cours";
+      case "cleaning_pending":
+        return "Nettoyage requis";
       case "maintenance":
         return "Maintenance";
     }
@@ -102,6 +133,23 @@ const Rooms = () => {
     }
   };
 
+  const handleChangeRoomStatus = async (room: Room, status: RoomStatus) => {
+    try {
+      await changeRoomStatus(room.id, status);
+    } catch (err) {
+      console.error("Error changing room status:", err);
+    }
+  };
+
+  const handleBatchUpdate = async () => {
+    try {
+      await setAllOccupiedToPendingCleaning();
+      setBatchActionDialogOpen(false);
+    } catch (err) {
+      console.error("Error in batch update:", err);
+    }
+  };
+
   const filteredRooms = rooms.filter((room) => {
     // Search term filter
     const matchesSearch =
@@ -135,9 +183,18 @@ const Rooms = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Chambres</h1>
-        <Button onClick={handleOpenAddRoom} className="flex items-center gap-1">
-          <Plus className="size-4" /> Ajouter une chambre
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setBatchActionDialogOpen(true)}
+            className="flex items-center gap-1"
+          >
+            <Moon className="size-4" /> Nettoyage de nuit
+          </Button>
+          <Button onClick={handleOpenAddRoom} className="flex items-center gap-1">
+            <Plus className="size-4" /> Ajouter une chambre
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -161,7 +218,8 @@ const Rooms = () => {
             <SelectItem value="all">Tous les statuts</SelectItem>
             <SelectItem value="available">Disponible</SelectItem>
             <SelectItem value="occupied">Occupée</SelectItem>
-            <SelectItem value="cleaning">Nettoyage</SelectItem>
+            <SelectItem value="cleaning">Nettoyage en cours</SelectItem>
+            <SelectItem value="cleaning_pending">Nettoyage requis</SelectItem>
             <SelectItem value="maintenance">Maintenance</SelectItem>
           </SelectContent>
         </Select>
@@ -214,6 +272,14 @@ const Rooms = () => {
                   <span className="text-sm text-muted-foreground">Vue:</span>
                   <span className="text-sm font-medium capitalize">{room.view}</span>
                 </div>
+                {room.lastCleaned && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Dernier nettoyage:</span>
+                    <span className="text-sm font-medium">
+                      {new Date(room.lastCleaned).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex flex-wrap gap-1 mb-3">
                 {room.features.map((feature, index) => (
@@ -234,21 +300,54 @@ const Rooms = () => {
                   {room.notes}
                 </div>
               )}
-              <div className="flex justify-end gap-2 mt-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleOpenEditRoom(room)}
-                >
-                  <Pencil className="h-4 w-4 mr-1" /> Modifier
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={() => handleOpenDeleteRoom(room)}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" /> Supprimer
-                </Button>
+              <div className="flex justify-between gap-2 mt-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Statut <MoreHorizontal className="h-4 w-4 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'available')}>
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Disponible
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'occupied')}>
+                      <CheckCircle className="h-4 w-4 mr-2 text-blue-500" />
+                      Occupée
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'cleaning')}>
+                      <Brush className="h-4 w-4 mr-2 text-yellow-500" />
+                      Nettoyage en cours
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'cleaning_pending')}>
+                      <Clock className="h-4 w-4 mr-2 text-orange-500" />
+                      Nettoyage requis
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleChangeRoomStatus(room, 'maintenance')}>
+                      <AlertCircle className="h-4 w-4 mr-2 text-red-500" />
+                      Maintenance
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleOpenEditRoom(room)}
+                  >
+                    <Pencil className="h-4 w-4 mr-1" /> Modifier
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => handleOpenDeleteRoom(room)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Supprimer
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
@@ -278,6 +377,26 @@ const Rooms = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={batchActionDialogOpen} onOpenChange={setBatchActionDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nettoyage de nuit</DialogTitle>
+            <DialogDescription>
+              Cette action marquera toutes les chambres actuellement occupées comme "en attente de nettoyage". 
+              Normalement, cela se fait automatiquement à minuit.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBatchActionDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleBatchUpdate}>
+              Confirmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

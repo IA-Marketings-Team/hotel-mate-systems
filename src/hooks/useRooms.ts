@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +28,6 @@ export const useRooms = () => {
         features: room.features || [],
         notes: room.notes || "",
         pricePerNight: room.price_per_night,
-        // Type casting to ensure type compatibility with Room interface
         type: room.type as "standard" | "deluxe" | "suite" | "presidential",
         status: room.status as RoomStatus,
         view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
@@ -71,7 +69,6 @@ export const useRooms = () => {
         throw error;
       }
 
-      // Convert returned data to our Room type format with proper casting
       const newRoom: Room = {
         ...data,
         pricePerNight: data.price_per_night,
@@ -94,12 +91,10 @@ export const useRooms = () => {
 
   const updateRoom = async (id: string, roomData: Partial<Room>) => {
     try {
-      // Convert from our Room type to the database schema
       const dbData: any = {
         ...roomData
       };
       
-      // Handle specific field conversions
       if (roomData.pricePerNight !== undefined) {
         dbData.price_per_night = roomData.pricePerNight;
         delete dbData.pricePerNight;
@@ -126,7 +121,6 @@ export const useRooms = () => {
         throw error;
       }
 
-      // Convert returned data to our Room type format with proper casting
       const updatedRoom: Room = {
         ...data,
         pricePerNight: data.price_per_night,
@@ -167,6 +161,99 @@ export const useRooms = () => {
     }
   };
 
+  const changeRoomStatus = async (id: string, status: RoomStatus) => {
+    try {
+      const { data, error } = await supabase
+        .from('rooms')
+        .update({ status })
+        .eq('id', id)
+        .select('*')
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedRoom: Room = {
+        ...data,
+        pricePerNight: data.price_per_night,
+        type: data.type as "standard" | "deluxe" | "suite" | "presidential",
+        status: data.status as RoomStatus,
+        view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
+        lastCleaned: data.status === 'cleaning' ? new Date() : (data.last_cleaned ? new Date(data.last_cleaned) : undefined),
+        currentGuest: data.current_guest || undefined
+      };
+
+      if (status === 'cleaning') {
+        const now = new Date();
+        await supabase
+          .from('rooms')
+          .update({ last_cleaned: now.toISOString() })
+          .eq('id', id);
+        
+        updatedRoom.lastCleaned = now;
+      }
+
+      setRooms(prev => prev.map(room => room.id === id ? updatedRoom : room));
+      
+      const statusMessages = {
+        'available': 'Chambre marquée comme disponible',
+        'occupied': 'Chambre marquée comme occupée',
+        'cleaning': 'Chambre en cours de nettoyage',
+        'cleaning_pending': 'Chambre en attente de nettoyage',
+        'maintenance': 'Chambre en maintenance'
+      };
+      
+      toast.success(statusMessages[status]);
+      return updatedRoom;
+    } catch (err: any) {
+      toast.error(`Erreur lors du changement de statut: ${err.message}`);
+      console.error("Error changing room status:", err);
+      throw err;
+    }
+  };
+
+  const setAllOccupiedToPendingCleaning = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('rooms')
+        .update({ status: 'cleaning_pending' })
+        .eq('status', 'occupied')
+        .select('*');
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedRooms = data.map(room => ({
+        ...room,
+        id: room.id,
+        features: room.features || [],
+        notes: room.notes || "",
+        pricePerNight: room.price_per_night,
+        type: room.type as "standard" | "deluxe" | "suite" | "presidential",
+        status: room.status as RoomStatus,
+        view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
+        lastCleaned: room.last_cleaned ? new Date(room.last_cleaned) : undefined,
+        currentGuest: room.current_guest || undefined
+      }));
+
+      setRooms(prev => 
+        prev.map(room => {
+          const updatedRoom = updatedRooms.find(r => r.id === room.id);
+          return updatedRoom || room;
+        })
+      );
+
+      toast.success(`Toutes les chambres occupées sont maintenant en attente de nettoyage`);
+      return updatedRooms;
+    } catch (err: any) {
+      toast.error(`Erreur lors de la mise à jour des statuts: ${err.message}`);
+      console.error("Error updating room statuses:", err);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchRooms();
   }, []);
@@ -178,6 +265,8 @@ export const useRooms = () => {
     fetchRooms,
     addRoom,
     updateRoom,
-    deleteRoom
+    deleteRoom,
+    changeRoomStatus,
+    setAllOccupiedToPendingCleaning
   };
 };

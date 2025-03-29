@@ -1,6 +1,6 @@
 
 // Room Types
-export type RoomStatus = 'available' | 'occupied' | 'cleaning' | 'maintenance';
+export type RoomStatus = 'available' | 'occupied' | 'cleaning' | 'cleaning_pending' | 'maintenance';
 
 export interface Room {
   id: string;
