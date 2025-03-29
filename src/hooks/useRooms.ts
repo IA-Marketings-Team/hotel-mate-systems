@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Room } from "@/types";
+import { Room, RoomStatus } from "@/types";
 
 export const useRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -23,15 +23,21 @@ export const useRooms = () => {
         throw error;
       }
       
-      setRooms(data.map(room => ({
+      const typedRooms: Room[] = data.map(room => ({
         ...room,
         id: room.id,
         features: room.features || [],
         notes: room.notes || "",
         pricePerNight: room.price_per_night,
+        // Type casting to ensure type compatibility with Room interface
+        type: room.type as "standard" | "deluxe" | "suite" | "presidential",
+        status: room.status as RoomStatus,
+        view: room.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: room.last_cleaned ? new Date(room.last_cleaned) : undefined,
         currentGuest: room.current_guest || undefined
-      })));
+      }));
+      
+      setRooms(typedRooms);
     } catch (err: any) {
       setError(err.message);
       toast.error("Erreur lors du chargement des chambres");
@@ -65,10 +71,13 @@ export const useRooms = () => {
         throw error;
       }
 
-      // Convert returned data to our Room type format
+      // Convert returned data to our Room type format with proper casting
       const newRoom: Room = {
         ...data,
         pricePerNight: data.price_per_night,
+        type: data.type as "standard" | "deluxe" | "suite" | "presidential",
+        status: data.status as RoomStatus,
+        view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
       };
@@ -117,10 +126,13 @@ export const useRooms = () => {
         throw error;
       }
 
-      // Convert returned data to our Room type format
+      // Convert returned data to our Room type format with proper casting
       const updatedRoom: Room = {
         ...data,
         pricePerNight: data.price_per_night,
+        type: data.type as "standard" | "deluxe" | "suite" | "presidential",
+        status: data.status as RoomStatus,
+        view: data.view as "garden" | "pool" | "sea" | "mountain" | "city",
         lastCleaned: data.last_cleaned ? new Date(data.last_cleaned) : undefined,
         currentGuest: data.current_guest || undefined
       };
