@@ -73,32 +73,30 @@ export function TransactionDetailsSheet({
             </div>
           </div>
 
-          {(transaction.clientName || transaction.staffName) && (
-            <div className="border-t pt-4">
-              <h3 className="text-lg font-medium mb-2">Personnes</h3>
-              <div className="space-y-3">
-                {transaction.clientName && (
-                  <div className="flex items-start gap-2">
-                    <UserIcon className="h-4 w-4 mt-0.5 text-blue-500" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Client</p>
-                      <p className="font-medium">{transaction.clientName}</p>
-                    </div>
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-medium mb-2">Personnes</h3>
+            <div className="space-y-3">
+              {transaction.clientName && (
+                <div className="flex items-start gap-2">
+                  <UserIcon className="h-4 w-4 mt-0.5 text-blue-500" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Client</p>
+                    <p className="font-medium">{transaction.clientName}</p>
                   </div>
-                )}
-                
-                {transaction.staffName && (
-                  <div className="flex items-start gap-2">
-                    <UserCheck className="h-4 w-4 mt-0.5 text-green-500" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Personnel</p>
-                      <p className="font-medium">{transaction.staffName}</p>
-                    </div>
+                </div>
+              )}
+              
+              {transaction.staffName && (
+                <div className="flex items-start gap-2">
+                  <UserCheck className="h-4 w-4 mt-0.5 text-green-500" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Personnel</p>
+                    <p className="font-medium">{transaction.staffName}</p>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           <div className="border-t pt-4">
             <h3 className="text-lg font-medium mb-2">Détails</h3>

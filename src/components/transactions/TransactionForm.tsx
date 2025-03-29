@@ -13,6 +13,14 @@ import { TransactionTypeSelector } from "./TransactionTypeSelector";
 import { TransactionMethodSelector } from "./TransactionMethodSelector";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
+import { useClients } from "@/hooks/useClients";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 interface TransactionFormProps {
   registerType: RegisterType;
@@ -37,13 +45,21 @@ export function TransactionForm({
   const [method, setMethod] = useState<"cash" | "card" | "transfer">("cash");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string | undefined>(clientId);
 
   const { data: categories, isLoading: isCategoriesLoading } = useCategories(registerType);
   const { data: subcategories, isLoading: isSubcategoriesLoading } = useSubcategories(selectedCategory);
+  const { data: clients, isLoading: isClientsLoading } = useClients();
 
   useEffect(() => {
     setSelectedSubcategory(null);
   }, [selectedCategory]);
+
+  useEffect(() => {
+    if (clientId) {
+      setSelectedClientId(clientId);
+    }
+  }, [clientId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +72,9 @@ export function TransactionForm({
     try {
       const selectedCategoryObj = categories?.find(cat => cat.id === selectedCategory);
       
+      // Get user information for staff_id
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase.from("transactions").insert({
         description,
         amount: parseFloat(amount),
@@ -64,7 +83,8 @@ export function TransactionForm({
         register_type: registerType,
         category: selectedCategoryObj?.name || null,
         subcategory: subcategories?.find(subcat => subcat.id === selectedSubcategory)?.name || null,
-        client_id: clientId || null,
+        client_id: selectedClientId || null,
+        staff_id: user?.id || null,
         date: new Date().toISOString()
       });
 
@@ -84,6 +104,34 @@ export function TransactionForm({
       <div className="grid grid-cols-2 gap-4">
         <TransactionTypeSelector type={type} onTypeChange={setType} />
         <TransactionMethodSelector method={method} onMethodChange={setMethod} />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="client">Client</Label>
+        <Select 
+          value={selectedClientId} 
+          onValueChange={setSelectedClientId}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionnez un client (optionnel)" />
+          </SelectTrigger>
+          <SelectContent>
+            {isClientsLoading ? (
+              <SelectItem value="loading" disabled>Chargement des clients...</SelectItem>
+            ) : clients && clients.length > 0 ? (
+              <>
+                <SelectItem value="">Aucun client</SelectItem>
+                {clients.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name}
+                  </SelectItem>
+                ))}
+              </>
+            ) : (
+              <SelectItem value="empty" disabled>Aucun client trouvé</SelectItem>
+            )}
+          </SelectContent>
+        </Select>
       </div>
 
       <CategorySelector 

@@ -2,7 +2,7 @@
 import React from "react";
 import { Transaction } from "@/types";
 import { format } from "date-fns";
-import { MoreHorizontal, Plus, PlusCircle, UserIcon } from "lucide-react";
+import { MoreHorizontal, Plus, PlusCircle, UserIcon, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -50,6 +50,7 @@ export function TransactionTable({
           <TableHead>Type</TableHead>
           <TableHead>Méthode</TableHead>
           <TableHead>Client</TableHead>
+          <TableHead>Personnel</TableHead>
           <TableHead className="text-right">Montant</TableHead>
           <TableHead></TableHead>
         </TableRow>
@@ -78,6 +79,16 @@ export function TransactionTable({
                 <div className="flex items-center gap-1">
                   <UserIcon className="size-3 text-blue-500" />
                   <span>{transaction.clientName}</span>
+                </div>
+              ) : (
+                "-"
+              )}
+            </TableCell>
+            <TableCell>
+              {transaction.staffName ? (
+                <div className="flex items-center gap-1">
+                  <UserCheck className="size-3 text-green-500" />
+                  <span>{transaction.staffName}</span>
                 </div>
               ) : (
                 "-"
