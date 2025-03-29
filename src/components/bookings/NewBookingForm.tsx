@@ -10,13 +10,16 @@ import { useBookings } from "@/hooks/useBookings";
 import { toast } from "sonner";
 import { BookingType } from "@/types/bookings";
 import { DateRange } from "react-day-picker";
-import { differenceInDays } from "date-fns";
+import { differenceInDays, differenceInHours } from "date-fns";
 import { NewBookingClientField } from "./NewBookingClientField";
 import { NewBookingGuestField } from "./NewBookingGuestField";
 import { NewBookingResourceField } from "./NewBookingResourceField";
 import { NewBookingDateRangeField } from "./NewBookingDateRangeField";
 import { NewBookingAmountField } from "./NewBookingAmountField";
 import { NewBookingExtrasField } from "./NewBookingExtrasField";
+import { useResources } from "@/hooks/useResources";
+import { StayDurationField } from "./StayDurationField";
+import { BookingPriceSummary } from "./BookingPriceSummary";
 
 interface NewBookingFormProps {
   form: UseFormReturn<any>;
@@ -35,27 +38,62 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
 }) => {
   const { data: clients } = useClients();
   const { rooms } = useRooms();
+  const { resources } = useResources(bookingType);
   const { createBooking } = useBookings();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [extras, setExtras] = useState<any[]>([]);
 
   // Update dateRange in form when it changes
   useEffect(() => {
     form.setValue("dateRange", dateRange);
   }, [dateRange, form]);
 
-  // When resource changes, update amount based on the selected room and duration
+  // When resource changes, update amount based on the selected resource and duration
   useEffect(() => {
     const resourceId = form.watch("resourceId");
     const currentDateRange = form.watch("dateRange");
     
-    if (resourceId && bookingType === "room" && currentDateRange?.from && currentDateRange?.to) {
-      const selectedRoom = rooms.find(room => room.id === resourceId);
-      if (selectedRoom) {
-        const nights = differenceInDays(currentDateRange.to, currentDateRange.from) || 1;
-        form.setValue("amount", selectedRoom.pricePerNight * nights);
-      }
+    if (!resourceId || !currentDateRange?.from || !currentDateRange?.to) return;
+    
+    let selectedResource;
+    
+    if (bookingType === "room") {
+      selectedResource = rooms.find(room => room.id === resourceId);
+    } else {
+      selectedResource = resources.find(resource => resource.id === resourceId);
     }
-  }, [form.watch("resourceId"), form.watch("dateRange"), rooms, bookingType, form]);
+    
+    if (!selectedResource) return;
+    
+    let price = 0;
+    
+    if (bookingType === "room" || bookingType === "car") {
+      // For rooms and cars, calculate by days
+      const days = differenceInDays(currentDateRange.to, currentDateRange.from) || 1;
+      price = bookingType === "room" 
+        ? (selectedResource.pricePerNight || 0) * days
+        : (selectedResource.pricePerHour || 0) * days;
+    } else {
+      // For other resources, calculate by hours
+      const hours = differenceInHours(currentDateRange.to, currentDateRange.from) || 1;
+      price = (selectedResource.pricePerHour || 0) * hours;
+    }
+    
+    // Add extras if available
+    const extrasTotal = extras
+      ? extras.reduce((sum, extra) => sum + (extra.price * extra.quantity), 0)
+      : 0;
+      
+    form.setValue("amount", price + extrasTotal);
+  }, [
+    form.watch("resourceId"), 
+    form.watch("dateRange"), 
+    extras, 
+    rooms, 
+    resources, 
+    bookingType, 
+    form
+  ]);
 
   // When client changes, update the guest name
   useEffect(() => {
@@ -105,11 +143,34 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
         }));
     }
     
-    // For other resource types, we'd need to implement fetching those resources
-    return [{
-      value: "placeholder",
-      label: `Option ${bookingType} (à implémenter)`
-    }];
+    // For other resource types
+    return resources.map(resource => {
+      let priceInfo = '';
+      
+      if (bookingType === 'car') {
+        priceInfo = resource.pricePerHour ? `${resource.pricePerHour}€/jour` : '';
+      } else {
+        priceInfo = resource.pricePerHour ? `${resource.pricePerHour}€/heure` : '';
+      }
+      
+      return {
+        value: resource.id,
+        label: `${resource.name} (${resource.capacity} pers.) - ${priceInfo}`
+      };
+    });
+  };
+
+  const getSelectedResourcePrice = () => {
+    const resourceId = form.watch("resourceId");
+    if (!resourceId) return 0;
+    
+    if (bookingType === 'room') {
+      const room = rooms.find(r => r.id === resourceId);
+      return room?.pricePerNight || 0;
+    } else {
+      const resource = resources.find(r => r.id === resourceId);
+      return resource?.pricePerHour || 0;
+    }
   };
 
   return (
@@ -129,11 +190,31 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
           rooms={rooms}
           bookingType={bookingType}
         />
-        <NewBookingAmountField form={form} />
+        
+        <StayDurationField 
+          form={form} 
+          dateRange={dateRange} 
+          roomPrice={getSelectedResourcePrice()}
+          bookingType={bookingType}
+        />
         
         {bookingType === 'room' && (
-          <NewBookingExtrasField form={form} rooms={rooms} />
+          <NewBookingExtrasField 
+            form={form} 
+            rooms={rooms}
+            onChange={setExtras}
+          />
         )}
+        
+        <NewBookingAmountField form={form} />
+        
+        <BookingPriceSummary
+          form={form}
+          dateRange={dateRange}
+          roomPrice={getSelectedResourcePrice()}
+          extras={extras}
+          bookingType={bookingType}
+        />
 
         <DialogFooter>
           <Button

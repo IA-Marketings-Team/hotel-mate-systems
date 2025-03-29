@@ -28,22 +28,37 @@ export const NewBookingResourceField: React.FC<NewBookingResourceFieldProps> = (
   resourceOptions,
   bookingType
 }) => {
+  const getResourceLabel = () => {
+    switch (bookingType) {
+      case 'room':
+        return 'Chambre';
+      case 'meeting':
+        return 'Salle de réunion';
+      case 'car':
+        return 'Véhicule';
+      case 'terrace':
+        return 'Terrasse';
+      case 'restaurant':
+        return 'Espace restaurant';
+      default:
+        return 'Ressource';
+    }
+  };
+
   return (
     <FormField
       control={form.control}
       name="resourceId"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
-            {bookingType === 'room' ? 'Chambre' : 'Ressource'}
-          </FormLabel>
+          <FormLabel>{getResourceLabel()}</FormLabel>
           <Select
             onValueChange={field.onChange}
             defaultValue={field.value}
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder={`Sélectionner une ${bookingType === 'room' ? 'chambre' : 'ressource'}`} />
+                <SelectValue placeholder={`Sélectionner ${bookingType === 'room' ? 'une chambre' : 'une ressource'}`} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>

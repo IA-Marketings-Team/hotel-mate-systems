@@ -4,7 +4,7 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Calendar, PlusCircle, FileEdit, Trash2, CheckCircle, X } from "lucide-react";
-import { format, differenceInDays } from "date-fns";
+import { format, differenceInDays, differenceInHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   Select,
@@ -19,6 +19,7 @@ import NewBookingDialog from "@/components/bookings/NewBookingDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/bookings/ConfirmDialog";
 import { useClients } from "@/hooks/useClients";
+import { useResources } from "@/hooks/useResources";
 
 const Bookings = () => {
   const { bookings, loading, error, fetchBookings, updateBookingStatus, deleteBooking } = useBookings();
@@ -31,6 +32,9 @@ const Bookings = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<string | null>(null);
   const [actionType, setActionType] = useState<'cancel' | 'complete' | 'delete' | null>(null);
+  
+  // Load resources for the active tab
+  const { resources } = useResources(activeTab);
 
   useEffect(() => {
     const type = activeTab as BookingType;
@@ -84,6 +88,16 @@ const Bookings = () => {
     }
   };
 
+  const getDurationDisplay = (booking: any) => {
+    if (booking.bookingType === 'room' || booking.bookingType === 'car') {
+      const days = differenceInDays(booking.checkOut, booking.checkIn);
+      return `${days} ${days > 1 ? 'jours' : 'jour'}`;
+    } else {
+      const hours = differenceInHours(booking.checkOut, booking.checkIn);
+      return `${hours} ${hours > 1 ? 'heures' : 'heure'}`;
+    }
+  };
+
   const handleStatusChange = async (id: string, action: 'cancel' | 'complete') => {
     setSelectedBooking(id);
     setActionType(action);
@@ -119,13 +133,24 @@ const Bookings = () => {
     // Search term filter
     const matchesSearch =
       booking.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (booking.roomId && booking.roomId.toString().includes(searchTerm));
+      (booking.roomId && booking.roomId.toString().includes(searchTerm)) ||
+      (booking.resourceId && booking.resourceId.toString().includes(searchTerm));
 
     // Status filter
     const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
+
+  const findResourceName = (resourceId: string) => {
+    if (activeTab === 'room') {
+      // This would need a rooms data source
+      return resourceId;
+    } else {
+      const resource = resources.find(r => r.id === resourceId);
+      return resource ? resource.name : resourceId;
+    }
+  };
 
   if (loading) {
     return <div className="p-6">Chargement des réservations...</div>;
@@ -195,7 +220,7 @@ const Bookings = () => {
                     <th>Resource</th>
                     <th>Arrivée</th>
                     <th>Départ</th>
-                    <th>Nuits</th>
+                    <th>Durée</th>
                     <th>Statut</th>
                     <th className="text-right">Montant</th>
                     <th className="text-right">Actions</th>
@@ -203,7 +228,6 @@ const Bookings = () => {
                 </thead>
                 <tbody>
                   {filteredBookings.map((booking) => {
-                    const nights = differenceInDays(booking.checkOut, booking.checkIn);
                     const client = booking.clientId ? clients?.find(c => c.id === booking.clientId) : null;
                     
                     return (
@@ -211,10 +235,10 @@ const Bookings = () => {
                         <td className="font-medium">
                           {client ? client.name : booking.guestName}
                         </td>
-                        <td>{booking.roomId || booking.resourceId || "-"}</td>
+                        <td>{findResourceName(booking.resourceId || booking.roomId || "")}</td>
                         <td>{format(booking.checkIn, "dd MMM yyyy", { locale: fr })}</td>
                         <td>{format(booking.checkOut, "dd MMM yyyy", { locale: fr })}</td>
-                        <td>{nights}</td>
+                        <td>{getDurationDisplay(booking)}</td>
                         <td>
                           <span
                             className={`px-2 py-1 rounded-full text-xs ${getStatusClass(
