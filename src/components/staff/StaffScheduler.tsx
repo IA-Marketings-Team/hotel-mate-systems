@@ -10,6 +10,7 @@ import { useSchedulerDays } from "./scheduler/useSchedulerDays";
 import { WeeklyCalendarView } from "./scheduler/WeeklyCalendarView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Users } from "lucide-react";
+import { TasksContext } from "./StaffTasks";
 
 interface StaffSchedulerProps {
   staffMembers: StaffMember[];
@@ -61,60 +62,64 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
   };
 
   return (
-    <div className="space-y-6">
-      <DashboardCard title="Planning du personnel">
-        <SchedulerHeader
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          selectedStaff={selectedStaff}
-          setSelectedStaff={setSelectedStaff}
-          staffMembers={staffMembers}
-        />
-        
-        <Tabs defaultValue="weekly" className="mt-6">
-          <TabsList>
-            <TabsTrigger value="weekly" className="flex items-center gap-1">
-              <CalendarDays className="h-4 w-4" />
-              <span>Vue hebdomadaire</span>
-            </TabsTrigger>
-            <TabsTrigger value="staff" className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span>Vue par employé</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="weekly" className="mt-4">
-            <WeeklyCalendarView 
-              days={days}
+    <TasksContext.Consumer>
+      {(tasksContext) => (
+        <div className="space-y-6">
+          <DashboardCard title="Planning du personnel">
+            <SchedulerHeader
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+              selectedStaff={selectedStaff}
+              setSelectedStaff={setSelectedStaff}
               staffMembers={staffMembers}
-              shifts={shifts}
-              isLoading={isLoading}
             />
-          </TabsContent>
-          
-          <TabsContent value="staff" className="mt-4">
-            <SchedulerTable
-              days={days}
-              filteredStaff={filteredStaff}
-              shifts={shifts}
-              isLoading={isLoading}
-              onAddShift={handleAddShift}
-              onEditShift={handleEditShift}
-              onDeleteShift={handleDeleteShift}
-            />
-          </TabsContent>
-        </Tabs>
-      </DashboardCard>
+            
+            <Tabs defaultValue="weekly" className="mt-6">
+              <TabsList>
+                <TabsTrigger value="weekly" className="flex items-center gap-1">
+                  <CalendarDays className="h-4 w-4" />
+                  <span>Vue hebdomadaire</span>
+                </TabsTrigger>
+                <TabsTrigger value="staff" className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <span>Vue par employé</span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="weekly" className="mt-4">
+                <WeeklyCalendarView 
+                  days={days}
+                  staffMembers={staffMembers}
+                  shifts={shifts}
+                  isLoading={isLoading}
+                />
+              </TabsContent>
+              
+              <TabsContent value="staff" className="mt-4">
+                <SchedulerTable
+                  days={days}
+                  filteredStaff={filteredStaff}
+                  shifts={shifts}
+                  isLoading={isLoading}
+                  onAddShift={handleAddShift}
+                  onEditShift={handleEditShift}
+                  onDeleteShift={handleDeleteShift}
+                />
+              </TabsContent>
+            </Tabs>
+          </DashboardCard>
 
-      <ShiftDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSubmit={handleSubmitShift}
-        staffMembers={staffMembers}
-        date={selectedDate}
-        shift={selectedShift}
-        isSubmitting={createShift.isPending || updateShift.isPending}
-      />
-    </div>
+          <ShiftDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onSubmit={handleSubmitShift}
+            staffMembers={staffMembers}
+            date={selectedDate}
+            shift={selectedShift}
+            isSubmitting={createShift.isPending || updateShift.isPending}
+          />
+        </div>
+      )}
+    </TasksContext.Consumer>
   );
 };

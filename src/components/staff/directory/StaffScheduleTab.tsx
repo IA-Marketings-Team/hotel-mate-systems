@@ -6,6 +6,7 @@ import { getShiftName, getShiftColor } from "@/utils/staffUtils";
 import { format, addDays, startOfWeek } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarClock, AlertCircle } from "lucide-react";
+import { TasksInSchedule } from "../scheduler/TasksInSchedule";
 
 interface StaffScheduleTabProps {
   staffId: string;
@@ -65,6 +66,7 @@ export const StaffScheduleTab: React.FC<StaffScheduleTabProps> = ({ staffId }) =
               <TableHead className="text-xs">Date</TableHead>
               <TableHead className="text-xs">Horaire</TableHead>
               <TableHead className="text-xs">Service</TableHead>
+              <TableHead className="text-xs">Tâches</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -80,6 +82,9 @@ export const StaffScheduleTab: React.FC<StaffScheduleTabProps> = ({ staffId }) =
                   <span className={`px-2 py-1 rounded-md text-xs font-medium ${getShiftColor(shift.type)}`}>
                     {getShiftName(shift.type)}
                   </span>
+                </TableCell>
+                <TableCell className="py-2">
+                  <TasksInSchedule date={date} staffId={staffId} />
                 </TableCell>
               </TableRow>
             ))}

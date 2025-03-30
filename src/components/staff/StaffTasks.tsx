@@ -1,15 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, createContext, useContext } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StaffMember } from "@/hooks/useStaff";
 import { TaskFilters } from "./tasks/TaskFilters";
 import { TaskList } from "./tasks/TaskList";
 
-interface StaffTasksProps {
-  staffMembers: StaffMember[];
-}
-
-interface Task {
+export interface Task {
   id: string;
   title: string;
   description?: string;
@@ -17,6 +13,26 @@ interface Task {
   dueDate: Date;
   priority: 'low' | 'medium' | 'high';
   status: 'pending' | 'in-progress' | 'completed';
+}
+
+interface TasksContextType {
+  tasks: Task[];
+  updateTaskStatus: (taskId: string, status: 'pending' | 'in-progress' | 'completed') => void;
+  deleteTask: (taskId: string) => void;
+  addTask: (task: Omit<Task, 'id'>) => void;
+}
+
+export const TasksContext = createContext<TasksContextType>({
+  tasks: [],
+  updateTaskStatus: () => {},
+  deleteTask: () => {},
+  addTask: () => {}
+});
+
+export const useTasksContext = () => useContext(TasksContext);
+
+interface StaffTasksProps {
+  staffMembers: StaffMember[];
 }
 
 export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
@@ -76,6 +92,15 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
     setNewTask('');
   };
 
+  const addTaskObject = (taskData: Omit<Task, 'id'>) => {
+    const task: Task = {
+      id: Date.now().toString(),
+      ...taskData
+    };
+    
+    setTasks([...tasks, task]);
+  };
+
   const updateTaskStatus = (taskId: string, status: 'pending' | 'in-progress' | 'completed') => {
     setTasks(tasks.map(task => 
       task.id === taskId ? { ...task, status } : task
@@ -86,27 +111,36 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
     setTasks(tasks.filter(task => task.id !== taskId));
   };
 
+  const tasksContextValue = {
+    tasks,
+    updateTaskStatus,
+    deleteTask,
+    addTask: addTaskObject
+  };
+
   return (
-    <div className="space-y-6">
-      <DashboardCard title="Liste des tâches">
-        <TaskFilters
-          newTask={newTask}
-          setNewTask={setNewTask}
-          selectedStaff={selectedStaff}
-          setSelectedStaff={setSelectedStaff}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          staffMembers={staffMembers}
-          addTask={addTask}
-        />
-        
-        <TaskList
-          tasks={filteredTasks}
-          staffMembers={staffMembers}
-          updateTaskStatus={updateTaskStatus}
-          deleteTask={deleteTask}
-        />
-      </DashboardCard>
-    </div>
+    <TasksContext.Provider value={tasksContextValue}>
+      <div className="space-y-6">
+        <DashboardCard title="Liste des tâches">
+          <TaskFilters
+            newTask={newTask}
+            setNewTask={setNewTask}
+            selectedStaff={selectedStaff}
+            setSelectedStaff={setSelectedStaff}
+            selectedStatus={selectedStatus}
+            setSelectedStatus={setSelectedStatus}
+            staffMembers={staffMembers}
+            addTask={addTask}
+          />
+          
+          <TaskList
+            tasks={filteredTasks}
+            staffMembers={staffMembers}
+            updateTaskStatus={updateTaskStatus}
+            deleteTask={deleteTask}
+          />
+        </DashboardCard>
+      </div>
+    </TasksContext.Provider>
   );
 };

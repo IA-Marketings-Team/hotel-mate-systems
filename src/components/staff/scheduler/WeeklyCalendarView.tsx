@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CalendarDays } from "lucide-react";
+import { TasksInSchedule } from "./TasksInSchedule";
 
 interface WeeklyCalendarViewProps {
   days: Date[];
@@ -71,6 +72,7 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                   <div className="flex flex-col">
                     <span>{format(day, 'eee', { locale: fr })}</span>
                     <span className="text-xs">{format(day, 'dd/MM')}</span>
+                    <TasksInSchedule date={day} compact={true} />
                   </div>
                 </TableHead>
               ))}

@@ -66,3 +66,55 @@ export const getRoleColor = (role: string) => {
       return "bg-gray-100 text-gray-800";
   }
 };
+
+export const getTaskPriorityName = (priority: string) => {
+  switch (priority) {
+    case "low":
+      return "Basse";
+    case "medium":
+      return "Moyenne";
+    case "high":
+      return "Haute";
+    default:
+      return priority;
+  }
+};
+
+export const getTaskPriorityColor = (priority: string) => {
+  switch (priority) {
+    case "low":
+      return "bg-blue-100 text-blue-800";
+    case "medium":
+      return "bg-amber-100 text-amber-800";
+    case "high":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+export const getTaskStatusName = (status: string) => {
+  switch (status) {
+    case "pending":
+      return "À faire";
+    case "in-progress":
+      return "En cours";
+    case "completed":
+      return "Terminé";
+    default:
+      return status;
+  }
+};
+
+export const getTaskStatusColor = (status: string) => {
+  switch (status) {
+    case "pending":
+      return "bg-gray-100 text-gray-800";
+    case "in-progress":
+      return "bg-amber-100 text-amber-800";
+    case "completed":
+      return "bg-green-100 text-green-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
