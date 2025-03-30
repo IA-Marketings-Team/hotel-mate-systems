@@ -1,9 +1,5 @@
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useEffect } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -11,13 +7,16 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Transaction } from "@/types";
 import { TransactionTypeSelector } from "./TransactionTypeSelector";
 import { TransactionMethodSelector } from "./TransactionMethodSelector";
-import { useCategories, useSubcategories } from "@/hooks/useCategories";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
+import { DescriptionField } from "./form-fields/DescriptionField";
+import { AmountField } from "./form-fields/AmountField";
+import { useTransactionForm } from "@/hooks/useTransactionForm";
 
 interface EditTransactionFormProps {
   transaction: Transaction;
@@ -34,37 +33,43 @@ export function EditTransactionForm({
   onSave,
   isSaving
 }: EditTransactionFormProps) {
-  const [description, setDescription] = useState(transaction.description);
-  const [amount, setAmount] = useState(transaction.amount.toString());
-  const [type, setType] = useState<"payment" | "refund" | "pending" | "partial">(transaction.type);
-  const [method, setMethod] = useState<"cash" | "card" | "transfer">(transaction.method);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const {
+    type, setType,
+    method, setMethod,
+    description, setDescription,
+    amount, setAmount,
+    selectedCategory, setSelectedCategory,
+    selectedSubcategory, setSelectedSubcategory,
+    getFormData
+  } = useTransactionForm({
+    initialType: transaction.type,
+    initialDescription: transaction.description,
+    initialAmount: transaction.amount,
+    initialCategory: transaction.category || null,
+    initialSubcategory: transaction.subcategory || null
+  });
 
-  const { data: categories, isLoading: isCategoriesLoading } = useCategories(transaction.registerType);
-  const { data: subcategories, isLoading: isSubcategoriesLoading } = useSubcategories(selectedCategory);
-
+  // Reset the form when the transaction changes
   useEffect(() => {
-    if (categories && transaction.category) {
-      const category = categories.find(c => c.name === transaction.category);
-      if (category) {
-        setSelectedCategory(category.id);
-      }
-    }
-  }, [categories, transaction.category]);
+    setType(transaction.type);
+    setDescription(transaction.description);
+    setAmount(transaction.amount.toString());
+    setMethod(transaction.method);
+  }, [transaction, setType, setDescription, setAmount, setMethod]);
 
+  // Handle category changes when data loads
   useEffect(() => {
-    if (subcategories && transaction.subcategory) {
-      const subcategory = subcategories.find(s => s.name === transaction.subcategory);
-      if (subcategory) {
-        setSelectedSubcategory(subcategory.id);
-      }
+    if (transaction.category) {
+      // This will be handled by the CategorySelector component
+      // which will find the category ID based on the name
+      setSelectedCategory(null);
     }
-  }, [subcategories, transaction.subcategory]);
+  }, [transaction.category, setSelectedCategory]);
 
+  // Reset subcategory when category changes
   useEffect(() => {
     setSelectedSubcategory(null);
-  }, [selectedCategory]);
+  }, [selectedCategory, setSelectedSubcategory]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,16 +80,13 @@ export function EditTransactionForm({
     }
 
     try {
-      const selectedCategoryObj = categories?.find(cat => cat.id === selectedCategory);
-      const selectedSubcategoryObj = subcategories?.find(subcat => subcat.id === selectedSubcategory);
-      
       await onSave({
         description,
         amount: parseFloat(amount),
         type,
         method,
-        category: selectedCategoryObj?.name || null,
-        subcategory: selectedSubcategoryObj?.name || null
+        category: selectedCategory,
+        subcategory: selectedSubcategory
       });
       
       onClose();
@@ -120,29 +122,15 @@ export function EditTransactionForm({
             />
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="amount">Montant (€)</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              required
-            />
-          </div>
+          <AmountField
+            amount={amount}
+            setAmount={setAmount}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description de la transaction"
-              required
-            />
-          </div>
+          <DescriptionField
+            description={description}
+            setDescription={setDescription}
+          />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
