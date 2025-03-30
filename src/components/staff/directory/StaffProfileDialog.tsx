@@ -1,4 +1,3 @@
-
 import React from "react";
 import { StaffMember } from "@/hooks/useStaff";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Calendar, FileText, UserCog } from "lucide-react";
+import { StaffScheduleTab } from "./StaffScheduleTab";
 
 interface StaffProfileDialogProps {
   staff: StaffMember;
@@ -113,9 +113,7 @@ export const StaffProfileDialog: React.FC<StaffProfileDialogProps> = ({
             </div>
           </TabsContent>
           <TabsContent value="schedule">
-            <div className="p-4 bg-muted rounded-lg text-center">
-              Calendrier et planning des shifts à venir
-            </div>
+            <StaffScheduleTab staffId={staff.id} />
           </TabsContent>
           <TabsContent value="documents">
             <div className="p-4 bg-muted rounded-lg text-center">
