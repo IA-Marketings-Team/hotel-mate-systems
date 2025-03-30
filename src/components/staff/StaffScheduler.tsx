@@ -7,6 +7,9 @@ import { ShiftDialog } from "./scheduler/ShiftDialog";
 import { SchedulerHeader } from "./scheduler/SchedulerHeader";
 import { SchedulerTable } from "./scheduler/SchedulerTable";
 import { useSchedulerDays } from "./scheduler/useSchedulerDays";
+import { WeeklyCalendarView } from "./scheduler/WeeklyCalendarView";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarDays, Users } from "lucide-react";
 
 interface StaffSchedulerProps {
   staffMembers: StaffMember[];
@@ -68,15 +71,39 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
           staffMembers={staffMembers}
         />
         
-        <SchedulerTable
-          days={days}
-          filteredStaff={filteredStaff}
-          shifts={shifts}
-          isLoading={isLoading}
-          onAddShift={handleAddShift}
-          onEditShift={handleEditShift}
-          onDeleteShift={handleDeleteShift}
-        />
+        <Tabs defaultValue="weekly" className="mt-6">
+          <TabsList>
+            <TabsTrigger value="weekly" className="flex items-center gap-1">
+              <CalendarDays className="h-4 w-4" />
+              <span>Vue hebdomadaire</span>
+            </TabsTrigger>
+            <TabsTrigger value="staff" className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>Vue par employé</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="weekly" className="mt-4">
+            <WeeklyCalendarView 
+              days={days}
+              staffMembers={staffMembers}
+              shifts={shifts}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+          
+          <TabsContent value="staff" className="mt-4">
+            <SchedulerTable
+              days={days}
+              filteredStaff={filteredStaff}
+              shifts={shifts}
+              isLoading={isLoading}
+              onAddShift={handleAddShift}
+              onEditShift={handleEditShift}
+              onDeleteShift={handleDeleteShift}
+            />
+          </TabsContent>
+        </Tabs>
       </DashboardCard>
 
       <ShiftDialog

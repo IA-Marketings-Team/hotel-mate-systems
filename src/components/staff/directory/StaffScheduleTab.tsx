@@ -2,7 +2,7 @@
 import React from "react";
 import { useShiftCrud, Shift } from "@/hooks/useShiftCrud";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getShiftName } from "@/utils/staffUtils";
+import { getShiftName, getShiftColor } from "@/utils/staffUtils";
 import { format, addDays, startOfWeek } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarClock, AlertCircle } from "lucide-react";
@@ -29,20 +29,6 @@ export const StaffScheduleTab: React.FC<StaffScheduleTabProps> = ({ staffId }) =
     return staffShifts.find(shift => 
       format(new Date(shift.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
     );
-  };
-
-  // Coloration du shift selon son type
-  const getShiftColor = (type: string) => {
-    switch (type) {
-      case "morning":
-        return "bg-blue-100 text-blue-800"; 
-      case "afternoon":
-        return "bg-amber-100 text-amber-800";
-      case "night":
-        return "bg-indigo-100 text-indigo-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
   };
 
   if (isLoading) {

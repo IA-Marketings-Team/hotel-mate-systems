@@ -33,6 +33,19 @@ export const getShiftName = (shift: string) => {
   }
 };
 
+export const getShiftColor = (type: string) => {
+  switch (type) {
+    case "morning":
+      return "bg-blue-100 text-blue-800"; 
+    case "afternoon":
+      return "bg-amber-100 text-amber-800";
+    case "night":
+      return "bg-indigo-100 text-indigo-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
 export const getRoleColor = (role: string) => {
   switch (role) {
     case "manager":
