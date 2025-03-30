@@ -48,6 +48,24 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
   const navigate = useNavigate();
   
+  // Initialize the form first before using it in useEffect
+  const form = useForm<CreateShiftInput | UpdateShiftInput>({
+    defaultValues: shift ? {
+      id: shift.id,
+      staffId: shift.staffId,
+      date: shift.date,
+      startTime: shift.startTime,
+      endTime: shift.endTime,
+      type: shift.type
+    } : {
+      date,
+      staffId: preSelectedStaffId || "",
+      startTime: "08:00",
+      endTime: "16:00",
+      type: "morning" as const
+    }
+  });
+  
   // Reset the form when opening the dialog
   useEffect(() => {
     if (open) {
@@ -77,23 +95,6 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
       });
     }
   }, [open, shift, preSelectedStaffId, date, form]);
-
-  const form = useForm<CreateShiftInput | UpdateShiftInput>({
-    defaultValues: shift ? {
-      id: shift.id,
-      staffId: shift.staffId,
-      date: shift.date,
-      startTime: shift.startTime,
-      endTime: shift.endTime,
-      type: shift.type
-    } : {
-      date,
-      staffId: preSelectedStaffId || "",
-      startTime: "08:00",
-      endTime: "16:00",
-      type: "morning" as const
-    }
-  });
 
   const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {
     // For new shifts, always redirect to tasks
