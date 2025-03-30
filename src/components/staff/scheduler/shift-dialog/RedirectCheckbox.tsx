@@ -22,7 +22,7 @@ export const RedirectCheckbox: React.FC<RedirectCheckboxProps> = ({
         htmlFor="redirect-tasks"
         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
       >
-        Aller définir des tâches pour cette période après la création
+        Créer des tâches pour cette période après la création
       </label>
     </div>
   );

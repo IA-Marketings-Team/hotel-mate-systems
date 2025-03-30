@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Users } from "lucide-react";
 import { TasksContext, useTasksContext } from "./StaffTasks";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface StaffSchedulerProps {
   staffMembers: StaffMember[];
@@ -54,35 +55,55 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
   };
 
   const handleSubmitShift = async (values: any, selectedTaskId?: string, redirectToTasks: boolean = false) => {
-    if (selectedShift) {
-      await updateShift.mutateAsync({
-        id: selectedShift.id,
-        ...values
-      });
-    } else {
-      await createShift.mutateAsync({
-        ...values,
-        date: selectedDate
-      });
-    }
-
-    // If a task was selected, update its assignedTo property
-    if (selectedTaskId && taskContext) {
-      const task = taskContext.tasks.find(t => t.id === selectedTaskId);
-      if (task) {
-        // Update task assignment to the selected staff member
-        taskContext.updateTaskAssignment(selectedTaskId, values.staffId, selectedDate);
-      }
-    }
-
-    // Redirect to tasks tab if requested
-    if (redirectToTasks) {
-      if (onNavigateToTasks) {
-        onNavigateToTasks();
+    try {
+      let newShiftId;
+      
+      if (selectedShift) {
+        await updateShift.mutateAsync({
+          id: selectedShift.id,
+          ...values
+        });
+        newShiftId = selectedShift.id;
       } else {
-        // If we're in the main staff page, navigate to the tasks tab
-        navigate("/staff", { state: { activeTab: "tasks", selectedStaffId: values.staffId, selectedDate } });
+        const response = await createShift.mutateAsync({
+          ...values,
+          date: selectedDate
+        });
+        if (response) {
+          newShiftId = response.id;
+        }
       }
+
+      // If a task was selected, update its assignment
+      if (selectedTaskId && selectedTaskId !== "no-task" && taskContext) {
+        const task = taskContext.tasks.find(t => t.id === selectedTaskId);
+        if (task) {
+          await taskContext.updateTaskAssignment(selectedTaskId, values.staffId, selectedDate);
+        }
+      }
+
+      // Redirect to tasks tab if requested
+      if (redirectToTasks) {
+        toast.info("Vous allez être redirigé vers la page des tâches");
+        
+        if (onNavigateToTasks) {
+          setTimeout(() => onNavigateToTasks(), 500);
+        } else {
+          // If we're in the main staff page, navigate to the tasks tab
+          setTimeout(() => {
+            navigate("/staff", { 
+              state: { 
+                activeTab: "tasks", 
+                selectedStaffId: values.staffId, 
+                selectedDate 
+              } 
+            });
+          }, 500);
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting shift:", error);
+      toast.error("Une erreur est survenue lors de la création du planning");
     }
   };
 
