@@ -75,21 +75,23 @@ export const useInvoiceActions = () => {
       const newRemainingAmount = invoice.amount - newPaidAmount;
       
       // Determine invoice status based on payment
-      let newStatus: 'payment' | 'partial' | 'pending' = 'pending';
+      let newType = invoice.type;
       
       if (newPaidAmount >= invoice.amount) {
         // Fully paid
-        newStatus = 'payment';
-      } else if (newPaidAmount > 0) {
+        newType = 'payment';
+      } else if (newPaidAmount > 0 && newPaidAmount < invoice.amount) {
         // Partially paid
-        newStatus = 'partial';
+        newType = 'partial';
       }
+      
+      console.log(`Updating invoice payment: Amount=${paymentData.amount}, NewPaidAmount=${newPaidAmount}, NewType=${newType}`);
       
       // Update the invoice
       const { error } = await supabase
         .from('transactions')
         .update({
-          type: newStatus,
+          type: newType,
           method: paymentData.method,
           paid_amount: newPaidAmount,
           remaining_amount: newRemainingAmount,
@@ -105,7 +107,7 @@ export const useInvoiceActions = () => {
         invoiceId: paymentData.invoiceId,
         paidAmount: newPaidAmount,
         remainingAmount: newRemainingAmount,
-        status: newStatus
+        status: newType
       };
     },
     onSuccess: () => {

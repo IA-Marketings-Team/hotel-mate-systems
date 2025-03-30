@@ -10,15 +10,17 @@ export const useInvoiceCreate = () => {
 
   return useMutation({
     mutationFn: async (invoiceData: CreateInvoiceData) => {
-      // The transactions table has a check constraint for the type column
+      console.log("Creating invoice with complete data:", invoiceData);
+      
+      // Check if the type is valid according to the database constraint
       // Valid types are: 'payment', 'refund', 'pending', 'partial'
-      // Let's check the specific types allowed in the database by looking at our selector component
       const { data, error } = await supabase
         .from('transactions')
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'pending', // We'll use 'pending' as this is a valid constraint value
+          // For new invoices, we use 'pending' as this is a valid constraint value
+          type: 'pending',
           method: invoiceData.method || 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
