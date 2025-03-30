@@ -10,13 +10,15 @@ export const useInvoiceCreate = () => {
 
   return useMutation({
     mutationFn: async (invoiceData: CreateInvoiceData) => {
+      // The transactions table has a check constraint for the type column
+      // Valid types are: 'payment', 'refund', 'partial' (not 'pending')
       const { data, error } = await supabase
         .from('transactions')
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'partial', // Changed to 'partial' which is allowed by the database constraint
-          method: 'card', // Default method, can be updated when payment is processed
+          type: 'partial', // Using 'partial' which is allowed by the database constraint
+          method: invoiceData.method || 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
           subcategory: invoiceData.subcategory || null,
