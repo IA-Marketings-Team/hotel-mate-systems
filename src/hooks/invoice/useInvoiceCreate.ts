@@ -11,13 +11,13 @@ export const useInvoiceCreate = () => {
   return useMutation({
     mutationFn: async (invoiceData: CreateInvoiceData) => {
       // The transactions table has a check constraint for the type column
-      // Valid types are: 'payment', 'refund', 'partial' (not 'pending')
+      // Valid types are: 'payment', 'refund', 'pending', 'partial'
       const { data, error } = await supabase
         .from('transactions')
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'payment', // Changed to 'payment' which is allowed by the database constraint
+          type: 'pending', // Changed to 'pending' so invoice starts as unpaid
           method: invoiceData.method || 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
@@ -26,8 +26,8 @@ export const useInvoiceCreate = () => {
           staff_id: invoiceData.staffId,
           date: new Date().toISOString(),
           due_date: invoiceData.dueDate || null,
-          paid_amount: invoiceData.amount, // Set to full amount since it's a payment
-          remaining_amount: 0 // Set to 0 since it's fully paid
+          paid_amount: 0, // Initialize with 0 since it's pending payment
+          remaining_amount: invoiceData.amount // Set to full amount since nothing is paid yet
         })
         .select()
         .single();
