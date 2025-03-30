@@ -11,16 +11,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockStaff } from "@/lib/mock-data";
-import { StaffMember, StaffRole } from "@/types";
-import { Search, Phone, Mail, Check, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StaffMember, useStaff } from "@/hooks/useStaff";
+import { Search, Phone, Mail, Check, X, Calendar, ListTodo, Users, Clock } from "lucide-react";
+import { StaffDirectory } from "@/components/staff/StaffDirectory";
+import { StaffScheduler } from "@/components/staff/StaffScheduler";
+import { StaffTasks } from "@/components/staff/StaffTasks";
+import { StaffTeams } from "@/components/staff/StaffTeams";
+import { StaffTracking } from "@/components/staff/StaffTracking";
 
 const Staff = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [shiftFilter, setShiftFilter] = useState<string>("all");
+  const { data: staffMembers, isLoading, error } = useStaff();
 
-  const getRoleName = (role: StaffRole) => {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-6 bg-red-50 rounded-lg border border-red-200">
+        <h3 className="text-lg font-medium text-red-800">Erreur lors du chargement des données</h3>
+        <p className="text-red-600 mt-2">{error.message}</p>
+      </div>
+    );
+  }
+
+  const filteredStaff = staffMembers?.filter((staff) => {
+    // Search term filter
+    const matchesSearch =
+      staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staff.contactNumber.includes(searchTerm);
+
+    // Role filter
+    const matchesRole = roleFilter === "all" || staff.role === roleFilter;
+
+    // Shift filter
+    const matchesShift = shiftFilter === "all" || staff.shift === shiftFilter;
+
+    return matchesSearch && matchesRole && matchesShift;
+  }) || [];
+
+  const getRoleName = (role: string) => {
     switch (role) {
       case "manager":
         return "Directeur";
@@ -36,6 +75,8 @@ const Staff = () => {
         return "Barman";
       case "maintenance":
         return "Maintenance";
+      default:
+        return role;
     }
   };
 
@@ -52,7 +93,7 @@ const Staff = () => {
     }
   };
 
-  const getRoleColor = (role: StaffRole) => {
+  const getRoleColor = (role: string) => {
     switch (role) {
       case "manager":
         return "bg-purple-100 text-purple-800";
@@ -68,24 +109,10 @@ const Staff = () => {
         return "bg-orange-100 text-orange-800";
       case "maintenance":
         return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
-
-  const filteredStaff = mockStaff.filter((staff) => {
-    // Search term filter
-    const matchesSearch =
-      staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.contactNumber.includes(searchTerm);
-
-    // Role filter
-    const matchesRole = roleFilter === "all" || staff.role === roleFilter;
-
-    // Shift filter
-    const matchesShift = shiftFilter === "all" || staff.shift === shiftFilter;
-
-    return matchesSearch && matchesRole && matchesShift;
-  });
 
   return (
     <div className="space-y-6">
@@ -94,98 +121,61 @@ const Staff = () => {
         <Button>Ajouter un employé</Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Rechercher un employé..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <Select
-          value={roleFilter}
-          onValueChange={(value) => setRoleFilter(value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Filtrer par rôle" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les rôles</SelectItem>
-            <SelectItem value="manager">Directeur</SelectItem>
-            <SelectItem value="receptionist">Réceptionniste</SelectItem>
-            <SelectItem value="housekeeper">Femme de chambre</SelectItem>
-            <SelectItem value="waiter">Serveur</SelectItem>
-            <SelectItem value="chef">Chef</SelectItem>
-            <SelectItem value="bartender">Barman</SelectItem>
-            <SelectItem value="maintenance">Maintenance</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={shiftFilter}
-          onValueChange={(value) => setShiftFilter(value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Filtrer par service" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les services</SelectItem>
-            <SelectItem value="morning">Matin</SelectItem>
-            <SelectItem value="afternoon">Après-midi</SelectItem>
-            <SelectItem value="night">Nuit</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Tabs defaultValue="directory" className="w-full">
+        <TabsList className="grid grid-cols-5 mb-8">
+          <TabsTrigger value="directory" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Annuaire</span>
+          </TabsTrigger>
+          <TabsTrigger value="scheduler" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">Planning</span>
+          </TabsTrigger>
+          <TabsTrigger value="tasks" className="flex items-center gap-2">
+            <ListTodo className="h-4 w-4" />
+            <span className="hidden sm:inline">Tâches</span>
+          </TabsTrigger>
+          <TabsTrigger value="teams" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Équipes</span>
+          </TabsTrigger>
+          <TabsTrigger value="tracking" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span className="hidden sm:inline">Suivi</span>
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {filteredStaff.map((staff) => (
-          <div key={staff.id} className="hotel-card hover:shadow-lg">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-bold">{staff.name}</h3>
-              <Badge className={getRoleColor(staff.role)}>
-                {getRoleName(staff.role)}
-              </Badge>
-            </div>
-            <div className="space-y-3 mb-4">
-              <div className="flex items-center gap-2">
-                <Phone className="size-4 text-muted-foreground" />
-                <span className="text-sm">{staff.contactNumber}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="size-4 text-muted-foreground" />
-                <span className="text-sm">{staff.email}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Service:</span>
-                <span className="text-sm font-medium">{getShiftName(staff.shift)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Disponible:</span>
-                {staff.isAvailable ? (
-                  <div className="flex items-center gap-1 text-green-500">
-                    <Check className="size-4" />
-                    <span className="text-sm font-medium">Oui</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-red-500">
-                    <X className="size-4" />
-                    <span className="text-sm font-medium">Non</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" size="sm">
-                Voir planning
-              </Button>
-              <Button variant="default" size="sm">
-                Détails
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
+        <TabsContent value="directory">
+          <StaffDirectory 
+            staffMembers={filteredStaff}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            roleFilter={roleFilter}
+            setRoleFilter={setRoleFilter}
+            shiftFilter={shiftFilter}
+            setShiftFilter={setShiftFilter}
+            getRoleName={getRoleName}
+            getShiftName={getShiftName}
+            getRoleColor={getRoleColor}
+          />
+        </TabsContent>
+
+        <TabsContent value="scheduler">
+          <StaffScheduler staffMembers={staffMembers || []} />
+        </TabsContent>
+
+        <TabsContent value="tasks">
+          <StaffTasks staffMembers={staffMembers || []} />
+        </TabsContent>
+
+        <TabsContent value="teams">
+          <StaffTeams staffMembers={staffMembers || []} />
+        </TabsContent>
+
+        <TabsContent value="tracking">
+          <StaffTracking staffMembers={staffMembers || []} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

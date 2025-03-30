@@ -10,7 +10,8 @@ import {
   Coffee,
   Hotel,
   Server,
-  FileText
+  FileText,
+  UserCog
 } from "lucide-react";
 
 const navigation = [
@@ -21,7 +22,7 @@ const navigation = [
   { name: "Caisses", href: "/registers", icon: DollarSign },
   { name: "Factures", href: "/invoices", icon: FileText },
   { name: "Services", href: "/services", icon: Coffee },
-  { name: "Personnel", href: "/staff", icon: Users },
+  { name: "Personnel", href: "/staff", icon: UserCog },
   { name: "Blueprint", href: "/blueprint", icon: Server }
 ];
 
