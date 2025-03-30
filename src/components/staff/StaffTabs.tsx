@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs } from "@/components/ui/tabs";
 import { StaffMember } from "@/hooks/useStaff";
 import { TabTriggers } from "./tabs/TabTriggers";
 import { TabContent } from "./tabs/TabContent";
+import { useLocation } from "react-router-dom";
 
 interface StaffTabsProps {
   staffMembers: StaffMember[];
@@ -26,13 +27,21 @@ export const StaffTabs: React.FC<StaffTabsProps> = ({
   shiftFilter,
   setShiftFilter,
 }) => {
-  const tabs = ["directory", "scheduler", "tasks", "teams", "tracking"];
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<string>("directory");
+  
+  // Check for navigation state to determine active tab
+  useEffect(() => {
+    if (location.state && location.state.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
   
   return (
-    <Tabs defaultValue="directory" className="w-full">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabTriggers />
       
-      {tabs.map(tab => (
+      {["directory", "scheduler", "tasks", "teams", "tracking"].map(tab => (
         <TabContent
           key={tab}
           tab={tab}
@@ -44,6 +53,7 @@ export const StaffTabs: React.FC<StaffTabsProps> = ({
           setRoleFilter={setRoleFilter}
           shiftFilter={shiftFilter}
           setShiftFilter={setShiftFilter}
+          setActiveTab={setActiveTab}
         />
       ))}
     </Tabs>

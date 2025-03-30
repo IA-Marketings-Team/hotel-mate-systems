@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -30,11 +30,12 @@ import { Button } from "@/components/ui/button";
 import { StaffMember } from "@/hooks/useStaff";
 import { Shift, CreateShiftInput, UpdateShiftInput } from "@/hooks/useShiftCrud";
 import { Task, useTasksContext } from "../StaffTasks";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ShiftDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: CreateShiftInput | UpdateShiftInput, selectedTaskId?: string) => Promise<void>;
+  onSubmit: (values: CreateShiftInput | UpdateShiftInput, selectedTaskId?: string, redirectToTasks?: boolean) => Promise<void>;
   staffMembers: StaffMember[];
   date: Date;
   shift?: Shift;
@@ -52,7 +53,8 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
 }) => {
   const isEditing = !!shift;
   const { tasks } = useTasksContext();
-  const [selectedTaskId, setSelectedTaskId] = React.useState<string>("");
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [redirectToTasks, setRedirectToTasks] = useState<boolean>(false);
   
   const form = useForm<CreateShiftInput | UpdateShiftInput>({
     defaultValues: shift ? {
@@ -75,14 +77,16 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   React.useEffect(() => {
     if (open) {
       setSelectedTaskId("");
+      setRedirectToTasks(false);
     }
   }, [open]);
 
   const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {
-    await onSubmit(values, selectedTaskId);
+    await onSubmit(values, selectedTaskId, redirectToTasks);
     onOpenChange(false);
     form.reset();
     setSelectedTaskId("");
+    setRedirectToTasks(false);
   };
 
   // Filter tasks to only show those that aren't assigned to a staff member yet
@@ -221,6 +225,20 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
                 <FormMessage />
               </FormItem>
             )}
+
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="redirect-tasks" 
+                checked={redirectToTasks}
+                onCheckedChange={(checked) => setRedirectToTasks(checked as boolean)}
+              />
+              <label
+                htmlFor="redirect-tasks"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Aller définir des tâches pour cette période après la création
+              </label>
+            </div>
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button

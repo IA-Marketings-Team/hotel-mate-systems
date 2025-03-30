@@ -11,12 +11,17 @@ import { WeeklyCalendarView } from "./scheduler/WeeklyCalendarView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Users } from "lucide-react";
 import { TasksContext, useTasksContext } from "./StaffTasks";
+import { useNavigate } from "react-router-dom";
 
 interface StaffSchedulerProps {
   staffMembers: StaffMember[];
+  onNavigateToTasks?: () => void;
 }
 
-export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) => {
+export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ 
+  staffMembers,
+  onNavigateToTasks 
+}) => {
   const [selectedStaff, setSelectedStaff] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -25,6 +30,7 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
   const { dateRange, setDateRange, days } = useSchedulerDays();
   const { getShifts, createShift, updateShift, deleteShift } = useShiftCrud();
   const { data: shifts, isLoading } = getShifts;
+  const navigate = useNavigate();
 
   // Filter staff based on selection
   const filteredStaff = selectedStaff === "all" 
@@ -47,7 +53,7 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
     await deleteShift.mutateAsync(id);
   };
 
-  const handleSubmitShift = async (values: any, selectedTaskId?: string) => {
+  const handleSubmitShift = async (values: any, selectedTaskId?: string, redirectToTasks: boolean = false) => {
     if (selectedShift) {
       await updateShift.mutateAsync({
         id: selectedShift.id,
@@ -66,6 +72,16 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
       if (task) {
         // Update task assignment to the selected staff member
         taskContext.updateTaskAssignment(selectedTaskId, values.staffId, selectedDate);
+      }
+    }
+
+    // Redirect to tasks tab if requested
+    if (redirectToTasks) {
+      if (onNavigateToTasks) {
+        onNavigateToTasks();
+      } else {
+        // If we're in the main staff page, navigate to the tasks tab
+        navigate("/staff", { state: { activeTab: "tasks", selectedStaffId: values.staffId, selectedDate } });
       }
     }
   };

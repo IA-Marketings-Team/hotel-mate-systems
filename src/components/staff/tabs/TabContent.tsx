@@ -19,6 +19,7 @@ interface TabContentProps {
   setRoleFilter: (value: string) => void;
   shiftFilter: string;
   setShiftFilter: (value: string) => void;
+  setActiveTab: (tab: string) => void;
 }
 
 export const TabContent: React.FC<TabContentProps> = ({
@@ -31,6 +32,7 @@ export const TabContent: React.FC<TabContentProps> = ({
   setRoleFilter,
   shiftFilter,
   setShiftFilter,
+  setActiveTab,
 }) => {
   switch (tab) {
     case "directory":
@@ -53,7 +55,10 @@ export const TabContent: React.FC<TabContentProps> = ({
     case "scheduler":
       return (
         <TabsContent value="scheduler">
-          <StaffScheduler staffMembers={staffMembers || []} />
+          <StaffScheduler 
+            staffMembers={staffMembers || []} 
+            onNavigateToTasks={() => setActiveTab("tasks")}
+          />
         </TabsContent>
       );
     case "tasks":
