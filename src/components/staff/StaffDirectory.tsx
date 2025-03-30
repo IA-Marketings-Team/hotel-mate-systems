@@ -1,8 +1,10 @@
 
 import React from "react";
 import { StaffMember } from "@/hooks/useStaff";
+import { useQueryClient } from "@tanstack/react-query";
 import { StaffSearchFilter } from "./directory/StaffSearchFilter";
 import { StaffList } from "./directory/StaffList";
+import { StaffActionsMenu } from "./directory/StaffActionsMenu";
 
 interface StaffDirectoryProps {
   staffMembers: StaffMember[];
@@ -29,16 +31,28 @@ export const StaffDirectory: React.FC<StaffDirectoryProps> = ({
   getShiftName,
   getRoleColor,
 }) => {
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    queryClient.invalidateQueries({ queryKey: ['staff'] })
+      .finally(() => setIsRefreshing(false));
+  };
+
   return (
     <div className="space-y-6">
-      <StaffSearchFilter
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        roleFilter={roleFilter}
-        setRoleFilter={setRoleFilter}
-        shiftFilter={shiftFilter}
-        setShiftFilter={setShiftFilter}
-      />
+      <div className="flex items-center justify-between gap-4">
+        <StaffSearchFilter
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          roleFilter={roleFilter}
+          setRoleFilter={setRoleFilter}
+          shiftFilter={shiftFilter}
+          setShiftFilter={setShiftFilter}
+        />
+        <StaffActionsMenu onRefresh={handleRefresh} isRefreshing={isRefreshing} />
+      </div>
       <StaffList
         staffMembers={staffMembers}
         getRoleName={getRoleName}

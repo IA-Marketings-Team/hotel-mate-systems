@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, Check, X } from "lucide-react";
 import { StaffProfileDialog } from "./StaffProfileDialog";
+import { EditStaffDialog } from "../dialogs/EditStaffDialog";
+import { DeleteStaffDialog } from "../dialogs/DeleteStaffDialog";
+import { useStaffCrud } from "@/hooks/useStaffCrud";
 
 interface StaffCardProps {
   staff: StaffMember;
@@ -19,6 +22,13 @@ export const StaffCard: React.FC<StaffCardProps> = ({
   getShiftName,
   getRoleColor,
 }) => {
+  const { toggleStaffAvailability } = useStaffCrud();
+
+  const handleToggleAvailability = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toggleStaffAvailability.mutate(staff);
+  };
+
   return (
     <div className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-3">
@@ -42,24 +52,30 @@ export const StaffCard: React.FC<StaffCardProps> = ({
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Disponible:</span>
-          {staff.isAvailable ? (
-            <div className="flex items-center gap-1 text-green-500">
-              <Check className="size-4" />
-              <span className="text-sm font-medium">Oui</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 text-red-500">
-              <X className="size-4" />
-              <span className="text-sm font-medium">Non</span>
-            </div>
-          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleToggleAvailability}
+            disabled={toggleStaffAvailability.isPending}
+          >
+            {staff.isAvailable ? (
+              <div className="flex items-center gap-1 text-green-500">
+                <Check className="size-4" />
+                <span className="text-sm font-medium">Oui</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-red-500">
+                <X className="size-4" />
+                <span className="text-sm font-medium">Non</span>
+              </div>
+            )}
+          </Button>
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-4">
         <StaffProfileDialog staff={staff} getRoleName={getRoleName} getShiftName={getShiftName} />
-        <Button variant="default" size="sm">
-          Contacter
-        </Button>
+        <EditStaffDialog staff={staff} />
+        <DeleteStaffDialog staff={staff} />
       </div>
     </div>
   );
