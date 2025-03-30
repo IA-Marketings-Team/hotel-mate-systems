@@ -186,7 +186,10 @@ export const useRoomOperations = () => {
     try {
       const { data, error } = await supabase
         .from('rooms')
-        .update({ status: 'available' })
+        .update({ 
+          status: 'available',
+          current_guest: null  // Clear the current guest when making room available
+        })
         .eq('status', 'occupied')
         .select('*');
 
