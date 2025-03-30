@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -102,7 +103,7 @@ const BookRoom = () => {
         const description = `Réservation Chambre ${room.number} pour ${calculateNights()} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`;
         const totalAmount = calculateTotalPrice();
         
-        // Create invoice - fix the type to 'payment' instead of 'pending'
+        // Create invoice - REMOVED the type property
         await createInvoice.mutateAsync({
           description,
           amount: totalAmount,
@@ -110,8 +111,7 @@ const BookRoom = () => {
           staffId: null,
           category: "Chambres",
           subcategory: "Réservations",
-          registerType: "hotel",
-          type: "payment" // Ensure we use a valid type
+          registerType: "hotel"
         });
         
         toast.success(`Chambre ${room.number} réservée pour ${selectedClient.name}`, {

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Form } from "@/components/ui/form";
@@ -83,7 +82,7 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
         const description = `Réservation Chambre ${roomNumber} pour ${calculateNights()} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`;
         const totalAmount = calculateTotalPrice();
         
-        // Create invoice - fix type to 'payment'
+        // Create invoice - REMOVED the type property
         await createInvoice.mutateAsync({
           description,
           amount: totalAmount,
@@ -91,8 +90,7 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
           staffId: null, // This would be the logged-in user in a real system
           category: "Chambres",
           subcategory: "Réservations",
-          registerType: "hotel",
-          type: "payment" // Use valid type
+          registerType: "hotel"
         });
         
         toast.success(`Chambre ${roomNumber} réservée pour ${selectedClient.name}`, {

@@ -61,10 +61,8 @@ const NewBooking = () => {
   const handleSuccess = async (bookingData: any) => {
     const { clientId, resourceId, dateRange, amount, extras, resourceName, clientName } = bookingData;
     
-    // Calculate nights for the description
     const nights = differenceInDays(dateRange.to, dateRange.from) || 1;
     
-    // Build extras description if available
     const extrasDescription = extras && extras.length > 0
       ? extras
         .filter((extra: any) => extra.quantity > 0)
@@ -72,7 +70,6 @@ const NewBooking = () => {
         .join(", ")
       : "";
     
-    // Prepare the booking description
     const bookingDescription = bookingTypeParam === 'room'
       ? `Réservation Chambre ${resourceName} pour ${nights} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`
       : `Réservation ${bookingTypeParam === 'meeting' ? 'Salle' : 
@@ -80,26 +77,23 @@ const NewBooking = () => {
          bookingTypeParam === 'terrace' ? 'Terrasse' : 'Restaurant'} ${resourceName}`;
     
     try {
-      // Create invoice with valid type
       await createInvoice.mutateAsync({
         description: bookingDescription,
         amount: amount,
         clientId: clientId,
-        staffId: null, // This would be the logged-in staff in a real system
+        staffId: null,
         category: bookingTypeParam === 'room' ? "Chambres" : 
                   bookingTypeParam === 'meeting' ? "Salles de réunion" :
                   bookingTypeParam === 'car' ? "Location voitures" :
                   bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
         subcategory: "Réservations",
-        registerType: "hotel",
-        type: "payment" // Fix: use a valid transaction type
+        registerType: "hotel"
       });
       
       toast.success(`Réservation créée pour ${clientName}`, {
         description: "Une facture a été créée. Vous pouvez effectuer le paiement ultérieurement."
       });
       
-      // Navigate to invoices page
       setTimeout(() => {
         navigate("/invoices");
       }, 1500);
