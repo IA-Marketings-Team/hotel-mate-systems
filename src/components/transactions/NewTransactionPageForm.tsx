@@ -1,7 +1,6 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStaff } from "@/hooks/useStaff";
-import { useClients } from "@/hooks/useClients";
 import { RegisterType } from "@/types";
 import { useTransactions } from "@/hooks/useTransactions";
 import { toast } from "sonner";
@@ -15,6 +14,7 @@ import { ClientField } from "@/components/transactions/form-fields/ClientField";
 import { StaffField } from "@/components/transactions/form-fields/StaffField";
 import { FormActions } from "@/components/transactions/form-fields/FormActions";
 import { RegisterTypeField } from "@/components/transactions/form-fields/RegisterTypeField";
+import { useTransactionForm } from "@/hooks/useTransactionForm";
 
 interface NewTransactionPageFormProps {
   initialRegisterType: RegisterType;
@@ -32,17 +32,22 @@ export const NewTransactionPageForm = ({
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createTransaction } = useTransactions();
-  
-  // Form state
-  const [type, setType] = useState<"payment" | "refund" | "pending" | "partial">(initialType);
-  const [method, setMethod] = useState<"cash" | "card" | "transfer">("card");
-  const [description, setDescription] = useState(initialDescription);
-  const [amount, setAmount] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [clientId, setClientId] = useState(initialClientId);
-  const [staffId, setStaffId] = useState("none");
   const [registerType, setRegisterType] = useState<RegisterType>(initialRegisterType);
+  
+  const {
+    type, setType,
+    method, setMethod,
+    description, setDescription,
+    amount, setAmount,
+    selectedCategory, setSelectedCategory,
+    selectedSubcategory, setSelectedSubcategory,
+    clientId, setClientId,
+    staffId, setStaffId
+  } = useTransactionForm({
+    initialType,
+    initialDescription,
+    initialClientId
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +60,7 @@ export const NewTransactionPageForm = ({
     setIsSubmitting(true);
     
     try {
-      const result = await createTransaction.mutateAsync({
+      await createTransaction.mutateAsync({
         description,
         amount: parseFloat(amount),
         type,

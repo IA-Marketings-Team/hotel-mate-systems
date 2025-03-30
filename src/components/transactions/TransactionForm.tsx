@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { RegisterType } from "@/types";
 import { TransactionTypeSelector } from "./TransactionTypeSelector";
 import { TransactionMethodSelector } from "./TransactionMethodSelector";
@@ -10,6 +10,7 @@ import { AmountField } from "./form-fields/AmountField";
 import { ClientField } from "./form-fields/ClientField";
 import { StaffField } from "./form-fields/StaffField";
 import { FormActions } from "./form-fields/FormActions";
+import { useTransactionForm } from "@/hooks/useTransactionForm";
 
 export interface TransactionFormProps {
   onSubmit: (data: any) => void;
@@ -38,27 +39,28 @@ export function TransactionForm({
   initialType = "payment",
   disablePendingType = false,
 }: TransactionFormProps) {
-  const [type, setType] = useState<"payment" | "refund" | "pending" | "partial">(initialType);
-  const [method, setMethod] = useState<"cash" | "card" | "transfer">("card");
-  const [description, setDescription] = useState(initialDescription);
-  const [amount, setAmount] = useState(initialAmount ? initialAmount.toString() : "");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory || null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(initialSubcategory || null);
-  const [clientId, setClientId] = useState(initialClientId || "none");
-  const [staffId, setStaffId] = useState("none");
+  const {
+    type, setType,
+    method, setMethod,
+    description, setDescription,
+    amount, setAmount,
+    selectedCategory, setSelectedCategory,
+    selectedSubcategory, setSelectedSubcategory,
+    clientId, setClientId,
+    staffId, setStaffId,
+    getFormData
+  } = useTransactionForm({
+    initialType,
+    initialDescription,
+    initialAmount,
+    initialCategory,
+    initialSubcategory,
+    initialClientId
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form data:", {
-      description,
-      amount,
-      type,
-      method,
-      category: selectedCategory,
-      subcategory: selectedSubcategory,
-      clientId: clientId,
-      staffId: staffId,
-    });
+    console.log("Form data:", getFormData());
     
     onSubmit({
       description,
