@@ -90,18 +90,20 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
           staffId: null,
           category: "Chambres",
           subcategory: "Réservations",
-          registerType: "hotel"
+          registerType: "hotel",
+          method: "card" // Adding explicit method
         });
         
-        // Create invoice
+        // Create invoice with correct data structure
         await createInvoice.mutateAsync({
           description,
           amount: totalAmount,
           clientId: selectedClient.id,
-          staffId: null, // This would be the logged-in user in a real system
+          staffId: null,
           category: "Chambres",
           subcategory: "Réservations",
-          registerType: "hotel"
+          registerType: "hotel",
+          method: "card" // Adding explicit method
         });
         
         toast.success(`Chambre ${roomNumber} réservée pour ${selectedClient.name}`, {

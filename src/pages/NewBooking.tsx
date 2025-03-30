@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { NewBookingForm } from "@/components/bookings/NewBookingForm";
@@ -90,6 +91,7 @@ const NewBooking = () => {
         registerType: "hotel"
       });
       
+      // Explicitly create an invoice with the correct structure
       await createInvoice.mutateAsync({
         description: bookingDescription,
         amount: amount,
@@ -100,7 +102,8 @@ const NewBooking = () => {
                   bookingTypeParam === 'car' ? "Location voitures" :
                   bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
         subcategory: "Réservations",
-        registerType: "hotel"
+        registerType: "hotel",
+        method: "card" // Adding an explicit method
       });
       
       toast.success(`Réservation créée pour ${clientName}`, {

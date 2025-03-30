@@ -12,15 +12,14 @@ export const useInvoiceCreate = () => {
     mutationFn: async (invoiceData: CreateInvoiceData) => {
       console.log("Creating invoice with complete data:", invoiceData);
       
-      // Check if the type is valid according to the database constraint
-      // Valid types are: 'payment', 'refund', 'pending', 'partial'
+      // Valid transaction types in DB constraint are: 'payment', 'refund', 'pending', 'partial'
+      // For new invoices/unpaid invoices, we use 'pending'
       const { data, error } = await supabase
         .from('transactions')
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          // For new invoices, we use 'pending' as this is a valid constraint value
-          type: 'pending',
+          type: 'pending', // Explicitly use 'pending' for new invoices
           method: invoiceData.method || 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
