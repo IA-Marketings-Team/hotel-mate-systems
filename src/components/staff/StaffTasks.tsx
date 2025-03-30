@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StaffMember } from "@/hooks/useStaff";
 import { TaskFilters } from "./tasks/TaskFilters";
@@ -55,7 +54,6 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [newTask, setNewTask] = useState<string>('');
 
-  // Filter tasks based on selection
   const filteredTasks = tasks
     .filter(task => selectedStaff === "all" || task.assignedTo === selectedStaff)
     .filter(task => selectedStatus === "all" || task.status === selectedStatus);

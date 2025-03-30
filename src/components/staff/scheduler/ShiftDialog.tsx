@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -10,27 +10,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 import { StaffMember } from "@/hooks/useStaff";
 import { Shift, CreateShiftInput, UpdateShiftInput } from "@/hooks/useShiftCrud";
-import { Task, useTasksContext } from "../StaffTasks";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useTasksContext } from "../StaffTasks";
+import { ShiftFormFields } from "./shift-dialog/ShiftFormFields";
+import { TaskSelector } from "./shift-dialog/TaskSelector";
+import { RedirectCheckbox } from "./shift-dialog/RedirectCheckbox";
+import { DialogActions } from "./shift-dialog/DialogActions";
 
 interface ShiftDialogProps {
   open: boolean;
@@ -53,8 +40,9 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
 }) => {
   const isEditing = !!shift;
   const { tasks, isLoading: tasksLoading } = useTasksContext();
-  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("no-task");
   const [redirectToTasks, setRedirectToTasks] = useState<boolean>(false);
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("");
   
   const form = useForm<CreateShiftInput | UpdateShiftInput>({
     defaultValues: shift ? {
@@ -74,26 +62,37 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   });
 
   // Reset selected task when dialog opens/closes
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
-      setSelectedTaskId("");
+      setSelectedTaskId("no-task");
       setRedirectToTasks(false);
+      setSelectedStaffId(form.getValues().staffId);
     }
-  }, [open]);
+  }, [open, form]);
 
   const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {
-    await onSubmit(values, selectedTaskId === "no-task" ? undefined : selectedTaskId, redirectToTasks);
+    await onSubmit(
+      values, 
+      selectedTaskId === "no-task" ? undefined : selectedTaskId, 
+      redirectToTasks
+    );
     onOpenChange(false);
     form.reset();
-    setSelectedTaskId("");
+    setSelectedTaskId("no-task");
     setRedirectToTasks(false);
+  };
+
+  // Handle staff selection change
+  const handleStaffChange = (staffId: string) => {
+    setSelectedStaffId(staffId);
+    setSelectedTaskId("no-task");
   };
 
   // Filter tasks to only show those that aren't assigned to a staff member yet
   // or are assigned to the currently selected staff member
   const availableTasks = tasks.filter(task => 
     task.assignedTo === "" || 
-    (form.watch("staffId") && task.assignedTo === form.watch("staffId"))
+    (selectedStaffId && task.assignedTo === selectedStaffId)
   );
 
   return (
@@ -110,149 +109,34 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
+            <ShiftFormFields 
               control={form.control}
-              name="staffId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Employé</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      // Reset selected task when staff changes
-                      setSelectedTaskId("");
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un employé" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {staffMembers.map((staff) => (
-                        <SelectItem key={staff.id} value={staff.id}>
-                          {staff.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              staffMembers={staffMembers} 
+              isSubmitting={isSubmitting}
+              onStaffChange={handleStaffChange}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Heure de début</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} disabled={isSubmitting} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Heure de fin</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} disabled={isSubmitting} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type de shift</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isSubmitting}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="morning">Matin</SelectItem>
-                      <SelectItem value="afternoon">Après-midi</SelectItem>
-                      <SelectItem value="night">Nuit</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <TaskSelector 
+              selectedTaskId={selectedTaskId} 
+              setSelectedTaskId={setSelectedTaskId} 
+              availableTasks={availableTasks}
+              isSubmitting={isSubmitting}
+              isLoading={tasksLoading}
+              showTaskSelector={!!selectedStaffId}
             />
 
-            {form.watch("staffId") && (
-              <FormItem>
-                <FormLabel>Tâche à associer</FormLabel>
-                <Select
-                  value={selectedTaskId}
-                  onValueChange={setSelectedTaskId}
-                  disabled={isSubmitting || tasksLoading}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner une tâche (optionnel)" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="no-task">Aucune tâche</SelectItem>
-                    {availableTasks.map((task) => (
-                      <SelectItem key={task.id} value={task.id}>
-                        {task.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
+            {!isEditing && (
+              <RedirectCheckbox 
+                redirectToTasks={redirectToTasks} 
+                setRedirectToTasks={setRedirectToTasks} 
+              />
             )}
 
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="redirect-tasks" 
-                checked={redirectToTasks}
-                onCheckedChange={(checked) => setRedirectToTasks(checked as boolean)}
-              />
-              <label
-                htmlFor="redirect-tasks"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Aller définir des tâches pour cette période après la création
-              </label>
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Annuler
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isEditing ? "Mettre à jour" : "Ajouter"}
-              </Button>
-            </div>
+            <DialogActions 
+              isEditing={isEditing} 
+              isSubmitting={isSubmitting}
+              onCancel={() => onOpenChange(false)}
+            />
           </form>
         </Form>
       </DialogContent>

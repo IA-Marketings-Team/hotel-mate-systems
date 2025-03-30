@@ -2,9 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Task } from "@/components/staff/StaffTasks";
 
-export interface CreateTaskInput {
+export interface Task {
+  id: string;
   title: string;
   description?: string;
   assignedTo: string;
@@ -13,24 +13,18 @@ export interface CreateTaskInput {
   status: 'pending' | 'in-progress' | 'completed';
 }
 
-export interface UpdateTaskInput extends Partial<CreateTaskInput> {
-  id: string;
-}
-
 export const useTasksCrud = () => {
   const queryClient = useQueryClient();
 
+  // Fetch all tasks
   const getTasks = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tasks')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
       return data.map(task => ({
         id: task.id,
@@ -44,22 +38,23 @@ export const useTasksCrud = () => {
     }
   });
 
+  // Create a new task
   const createTask = useMutation({
-    mutationFn: async (data: CreateTaskInput) => {
-      const { data: result, error } = await supabase
+    mutationFn: async (taskData: Omit<Task, 'id'>) => {
+      const { data, error } = await supabase
         .from('tasks')
         .insert([{
-          title: data.title,
-          description: data.description,
-          assigned_to: data.assignedTo || null,
-          due_date: data.dueDate,
-          priority: data.priority,
-          status: data.status
+          title: taskData.title,
+          description: taskData.description,
+          assigned_to: taskData.assignedTo,
+          due_date: taskData.dueDate.toISOString().split('T')[0], // Convert to YYYY-MM-DD
+          priority: taskData.priority,
+          status: taskData.status
         }])
         .select();
 
       if (error) throw error;
-      return result?.[0];
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
@@ -71,35 +66,29 @@ export const useTasksCrud = () => {
     }
   });
 
-  const updateTask = useMutation({
-    mutationFn: async (data: UpdateTaskInput) => {
-      const updateData: any = {};
-      if (data.title) updateData.title = data.title;
-      if (data.description !== undefined) updateData.description = data.description;
-      if (data.assignedTo !== undefined) updateData.assigned_to = data.assignedTo || null;
-      if (data.dueDate) updateData.due_date = data.dueDate;
-      if (data.priority) updateData.priority = data.priority;
-      if (data.status) updateData.status = data.status;
-
-      const { data: result, error } = await supabase
+  // Update task status
+  const updateTaskStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'pending' | 'in-progress' | 'completed' }) => {
+      const { data, error } = await supabase
         .from('tasks')
-        .update(updateData)
-        .eq('id', data.id)
+        .update({ status })
+        .eq('id', id)
         .select();
 
       if (error) throw error;
-      return result?.[0];
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast.success("Tâche mise à jour avec succès");
+      toast.success("Statut de la tâche mis à jour");
     },
     onError: (error) => {
-      console.error("Erreur lors de la mise à jour de la tâche:", error);
-      toast.error("Erreur lors de la mise à jour de la tâche");
+      console.error("Erreur lors de la mise à jour du statut:", error);
+      toast.error("Erreur lors de la mise à jour du statut");
     }
   });
 
+  // Delete a task
   const deleteTask = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -120,56 +109,36 @@ export const useTasksCrud = () => {
     }
   });
 
-  const updateTaskStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string, status: 'pending' | 'in-progress' | 'completed' }) => {
-      const { data, error } = await supabase
-        .from('tasks')
-        .update({ status })
-        .eq('id', id)
-        .select();
-
-      if (error) throw error;
-      return data?.[0];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
-    onError: (error) => {
-      console.error("Erreur lors de la mise à jour du statut:", error);
-      toast.error("Erreur lors de la mise à jour du statut");
-    }
-  });
-
+  // Update task assignment (staff and due date)
   const updateTaskAssignment = useMutation({
-    mutationFn: async ({ id, staffId, dueDate }: { id: string, staffId: string, dueDate: Date }) => {
+    mutationFn: async ({ id, staffId, dueDate }: { id: string; staffId: string; dueDate: Date }) => {
       const { data, error } = await supabase
         .from('tasks')
         .update({ 
-          assigned_to: staffId || null,
-          due_date: dueDate
+          assigned_to: staffId,
+          due_date: dueDate.toISOString().split('T')[0] // Convert to YYYY-MM-DD
         })
         .eq('id', id)
         .select();
 
       if (error) throw error;
-      return data?.[0];
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast.success("Assignation mise à jour avec succès");
+      toast.success("Assignation de la tâche mise à jour");
     },
     onError: (error) => {
-      console.error("Erreur lors de l'assignation:", error);
-      toast.error("Erreur lors de l'assignation");
+      console.error("Erreur lors de la mise à jour de l'assignation:", error);
+      toast.error("Erreur lors de la mise à jour de l'assignation");
     }
   });
 
   return {
     getTasks,
     createTask,
-    updateTask,
-    deleteTask,
     updateTaskStatus,
+    deleteTask,
     updateTaskAssignment
   };
 };
