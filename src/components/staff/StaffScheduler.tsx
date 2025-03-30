@@ -54,7 +54,7 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
     await deleteShift.mutateAsync(id);
   };
 
-  const handleSubmitShift = async (values: any, selectedTaskId?: string, redirectToTasks: boolean = false) => {
+  const handleSubmitShift = async (values: any, selectedTaskId?: string, redirectToTasks: boolean = true) => {
     try {
       let newShiftId;
       
@@ -82,24 +82,12 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
         }
       }
 
-      // Redirect to tasks tab if requested
-      if (redirectToTasks) {
-        toast.info("Vous allez être redirigé vers la page des tâches");
-        
-        if (onNavigateToTasks) {
-          setTimeout(() => onNavigateToTasks(), 500);
-        } else {
-          // If we're in the main staff page, navigate to the tasks tab
-          setTimeout(() => {
-            navigate("/staff", { 
-              state: { 
-                activeTab: "tasks", 
-                selectedStaffId: values.staffId, 
-                selectedDate 
-              } 
-            });
-          }, 500);
-        }
+      // For new shifts, always redirect to the shifts task page
+      if (redirectToTasks && newShiftId) {
+        toast.info("Redirection vers la page des tâches...");
+        setTimeout(() => {
+          navigate(`/shift-tasks/${newShiftId}`);
+        }, 500);
       }
     } catch (error) {
       console.error("Error submitting shift:", error);

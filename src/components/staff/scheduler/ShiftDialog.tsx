@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
@@ -43,7 +44,6 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   const isEditing = !!shift;
   const { tasks, isLoading: tasksLoading } = useTasksContext();
   const [selectedTaskId, setSelectedTaskId] = useState<string>("no-task");
-  const [redirectToTasks, setRedirectToTasks] = useState<boolean>(true); // Set default to true
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
   const navigate = useNavigate();
   
@@ -67,21 +67,22 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   useEffect(() => {
     if (open) {
       setSelectedTaskId("no-task");
-      setRedirectToTasks(true); // Default to true when opening
       setSelectedStaffId(form.getValues().staffId);
     }
   }, [open, form]);
 
   const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {
+    // For new shifts, always redirect to tasks
+    const shouldRedirect = !isEditing;
+    
     await onSubmit(
       values, 
       selectedTaskId === "no-task" ? undefined : selectedTaskId, 
-      redirectToTasks
+      shouldRedirect
     );
     onOpenChange(false);
     form.reset();
     setSelectedTaskId("no-task");
-    setRedirectToTasks(true);
   };
 
   const handleStaffChange = (staffId: string) => {
@@ -131,10 +132,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
             />
 
             {!isEditing && (
-              <RedirectCheckbox 
-                redirectToTasks={redirectToTasks} 
-                setRedirectToTasks={setRedirectToTasks} 
-              />
+              <RedirectCheckbox />
             )}
 
             {isEditing && (
