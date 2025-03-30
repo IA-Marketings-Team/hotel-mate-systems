@@ -11,7 +11,8 @@ import {
   Hotel,
   Server,
   FileText,
-  UserCog
+  UserCog,
+  UserCheck
 } from "lucide-react";
 
 const navigation = [
@@ -23,6 +24,7 @@ const navigation = [
   { name: "Factures", href: "/invoices", icon: FileText },
   { name: "Services", href: "/services", icon: Coffee },
   { name: "Personnel", href: "/staff", icon: UserCog },
+  { name: "Recrutement", href: "/recruitment", icon: UserCheck },
   { name: "Blueprint", href: "/blueprint", icon: Server }
 ];
 

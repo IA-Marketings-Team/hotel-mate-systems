@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StaffMember } from "@/hooks/useStaff";
-import { Calendar, DateRange } from "react-day-picker";
+import { DateRange } from "react-day-picker";
 import { format, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";

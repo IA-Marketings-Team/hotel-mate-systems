@@ -1,31 +1,34 @@
 
 import React, { useState } from "react";
-import { DashboardCard } from "@/components/dashboard/DashboardCard";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StaffMember, useStaff } from "@/hooks/useStaff";
-import { Search, Phone, Mail, Check, X, Calendar, ListTodo, Users, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StaffDirectory } from "@/components/staff/StaffDirectory";
 import { StaffScheduler } from "@/components/staff/StaffScheduler";
 import { StaffTasks } from "@/components/staff/StaffTasks";
 import { StaffTeams } from "@/components/staff/StaffTeams";
 import { StaffTracking } from "@/components/staff/StaffTracking";
+import { Button } from "@/components/ui/button";
+import { 
+  Calendar, 
+  FileText, 
+  Users, 
+  Clock, 
+  ListTodo, 
+  UserCheck, 
+  UserPlus, 
+  MessageSquare,
+  BookOpen,
+  FileArchive,
+  ShieldCheck,
+  Bar
+} from "lucide-react";
 
 const Staff = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [shiftFilter, setShiftFilter] = useState<string>("all");
   const { data: staffMembers, isLoading, error } = useStaff();
-
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -117,8 +120,11 @@ const Staff = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Personnel</h1>
-        <Button>Ajouter un employé</Button>
+        <h1 className="text-2xl font-bold">Gestion du Personnel</h1>
+        <Button>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Ajouter un employé
+        </Button>
       </div>
 
       <Tabs defaultValue="directory" className="w-full">
@@ -144,6 +150,37 @@ const Staff = () => {
             <span className="hidden sm:inline">Suivi</span>
           </TabsTrigger>
         </TabsList>
+
+        <div className="mb-8 flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="flex items-center">
+            <UserCheck className="h-4 w-4 mr-2" />
+            Recrutement
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center">
+            <BookOpen className="h-4 w-4 mr-2" />
+            Onboarding
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center">
+            <FileArchive className="h-4 w-4 mr-2" />
+            Documents RH
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center">
+            <Bar className="h-4 w-4 mr-2" />
+            Engagement
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center">
+            <FileText className="h-4 w-4 mr-2" />
+            Rapports
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center">
+            <ShieldCheck className="h-4 w-4 mr-2" />
+            Conformité
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Communication
+          </Button>
+        </div>
 
         <TabsContent value="directory">
           <StaffDirectory 
