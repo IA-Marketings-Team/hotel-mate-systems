@@ -2,10 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRooms } from "@/hooks/useRooms";
-import { Room, RoomStatus } from "@/types";
+import { Room } from "@/types";
 import { RoomFormValues } from "@/components/rooms/RoomDialog";
-import { RoomExtra } from "@/components/rooms/RoomExtrasSelector";
-import { DateRange } from "react-day-picker";
 
 export const useRoomDetail = (id: string | undefined) => {
   const navigate = useNavigate();
@@ -17,14 +15,12 @@ export const useRoomDetail = (id: string | undefined) => {
     deleteRoom, 
     toggleMaintenanceStatus,
     toggleCleaningStatus,
-    bookRoom,
     makeRoomAvailable
   } = useRooms();
   
   const [room, setRoom] = useState<Room | null>(null);
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
   useEffect(() => {
     if (!loading && rooms.length > 0 && id) {
@@ -86,16 +82,6 @@ export const useRoomDetail = (id: string | undefined) => {
     }
   };
 
-  const handleBookRoom = async (guestName: string, clientId?: string, extras?: RoomExtra[], dateRange?: DateRange) => {
-    if (!room) return;
-    
-    try {
-      await bookRoom(room.id, guestName, clientId, extras, dateRange);
-    } catch (err) {
-      console.error("Error booking room:", err);
-    }
-  };
-
   return {
     room,
     loading,
@@ -104,13 +90,10 @@ export const useRoomDetail = (id: string | undefined) => {
     setRoomDialogOpen,
     deleteDialogOpen,
     setDeleteDialogOpen,
-    bookingDialogOpen,
-    setBookingDialogOpen,
     handleSaveRoom,
     handleDeleteRoom,
     handleToggleMaintenance,
     handleToggleCleaning,
-    handleMakeAvailable,
-    handleBookRoom
+    handleMakeAvailable
   };
 };

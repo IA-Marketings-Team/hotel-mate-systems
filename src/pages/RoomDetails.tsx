@@ -3,7 +3,6 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import RoomDialog from "@/components/rooms/RoomDialog";
-import BookingDialog from "@/components/rooms/BookingDialog";
 import RoomInfoCard from "@/components/rooms/RoomInfoCard";
 import RoomStatusManager from "@/components/rooms/RoomStatusManager";
 import RoomDetailsHeader from "@/components/rooms/RoomDetailsHeader";
@@ -22,14 +21,11 @@ const RoomDetails = () => {
     setRoomDialogOpen,
     deleteDialogOpen,
     setDeleteDialogOpen,
-    bookingDialogOpen,
-    setBookingDialogOpen,
     handleSaveRoom,
     handleDeleteRoom,
     handleToggleMaintenance,
     handleToggleCleaning,
-    handleMakeAvailable,
-    handleBookRoom
+    handleMakeAvailable
   } = useRoomDetail(id);
 
   if (loading) {
@@ -62,7 +58,6 @@ const RoomDetails = () => {
           <RoomStatusManager 
             room={room}
             onMakeAvailable={handleMakeAvailable}
-            onOpenBookingDialog={() => setBookingDialogOpen(true)}
             onToggleMaintenance={handleToggleMaintenance}
             onToggleCleaning={handleToggleCleaning}
           />
@@ -74,14 +69,6 @@ const RoomDetails = () => {
         open={roomDialogOpen}
         onOpenChange={setRoomDialogOpen}
         onSave={handleSaveRoom}
-      />
-
-      <BookingDialog
-        roomNumber={room.number}
-        roomPrice={room.pricePerNight}
-        open={bookingDialogOpen}
-        onOpenChange={setBookingDialogOpen}
-        onConfirm={handleBookRoom}
       />
 
       <DeleteRoomDialog

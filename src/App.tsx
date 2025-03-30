@@ -8,6 +8,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import Rooms from "./pages/Rooms";
 import RoomDetails from "./pages/RoomDetails";
+import BookRoom from "./pages/BookRoom";
 import Staff from "./pages/Staff";
 import Registers from "./pages/Registers";
 import Services from "./pages/Services";
@@ -41,6 +42,7 @@ const App = () => (
               </AppLayout>
             } />
             <Route path="/room/:id" element={<RoomDetails />} />
+            <Route path="/book-room/:id" element={<BookRoom />} />
             <Route path="/staff" element={
               <AppLayout>
                 <Staff />
