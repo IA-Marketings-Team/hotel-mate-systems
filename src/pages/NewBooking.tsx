@@ -14,6 +14,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useInvoices } from "@/hooks/useInvoices";
 
+// Current user hardcoded as Nash
+const CURRENT_USER_ID = "Nash";
+
 const bookingSchema = z.object({
   clientId: z.string().min(1, "Veuillez sélectionner un client"),
   resourceId: z.string().min(1, "Veuillez sélectionner une ressource"),
@@ -82,7 +85,7 @@ const NewBooking = () => {
         description: bookingDescription,
         amount: amount,
         clientId: clientId,
-        staffId: null,
+        staffId: CURRENT_USER_ID, // Use Nash as the creator
         category: bookingTypeParam === 'room' ? "Chambres" : 
                   bookingTypeParam === 'meeting' ? "Salles de réunion" :
                   bookingTypeParam === 'car' ? "Location voitures" :
@@ -96,14 +99,14 @@ const NewBooking = () => {
         description: bookingDescription,
         amount: amount,
         clientId: clientId,
-        staffId: null,
+        staffId: CURRENT_USER_ID, // Use Nash as the creator
         category: bookingTypeParam === 'room' ? "Chambres" : 
                   bookingTypeParam === 'meeting' ? "Salles de réunion" :
                   bookingTypeParam === 'car' ? "Location voitures" :
                   bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
         subcategory: "Réservations",
         registerType: "hotel",
-        method: "card" // Adding an explicit method
+        method: "card"
       });
       
       toast.success(`Réservation créée pour ${clientName}`, {

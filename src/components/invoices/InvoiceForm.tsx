@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { RegisterType } from "@/types";
 import { CategorySelector } from "@/components/transactions/CategorySelector";
 import { SubcategorySelector } from "@/components/transactions/SubcategorySelector";
-import { useStaff } from "@/hooks/useStaff";
 import { useClients } from "@/hooks/useClients";
 
 interface InvoiceFormProps {
@@ -35,12 +34,13 @@ export const InvoiceForm = ({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [clientId, setClientId] = useState(initialData.clientId || "none");
-  const [staffId, setStaffId] = useState("none");
   const [registerType, setRegisterType] = useState<RegisterType>(initialData.registerType || "hotel");
   const [dueDate, setDueDate] = useState<string>("");
 
-  const { data: staff, isLoading: isStaffLoading } = useStaff();
   const { data: clients, isLoading: isClientsLoading } = useClients();
+
+  // Current staff - hardcoded as Nash
+  const currentStaffId = "Nash";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ export const InvoiceForm = ({
       description,
       amount: parseFloat(amount),
       clientId: clientId === "none" ? null : clientId,
-      staffId: staffId === "none" ? null : staffId,
+      staffId: currentStaffId, // Always use Nash as the current staff
       category: selectedCategory,
       subcategory: selectedSubcategory,
       registerType,
@@ -135,23 +135,6 @@ export const InvoiceForm = ({
             {clients?.map((client) => (
               <SelectItem key={client.id} value={client.id}>
                 {client.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="staffId">Personnel</Label>
-        <Select value={staffId} onValueChange={setStaffId}>
-          <SelectTrigger id="staffId">
-            <SelectValue placeholder="Sélectionner un membre du personnel (optionnel)" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Aucun personnel</SelectItem>
-            {staff?.map((staffMember) => (
-              <SelectItem key={staffMember.id} value={staffMember.id}>
-                {staffMember.name}
               </SelectItem>
             ))}
           </SelectContent>

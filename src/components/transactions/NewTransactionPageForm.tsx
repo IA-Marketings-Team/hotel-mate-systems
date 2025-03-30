@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RegisterType } from "@/types";
@@ -11,10 +10,11 @@ import { SubcategorySelector } from "@/components/transactions/SubcategorySelect
 import { DescriptionField } from "@/components/transactions/form-fields/DescriptionField";
 import { AmountField } from "@/components/transactions/form-fields/AmountField";
 import { ClientField } from "@/components/transactions/form-fields/ClientField";
-import { StaffField } from "@/components/transactions/form-fields/StaffField";
 import { FormActions } from "@/components/transactions/form-fields/FormActions";
 import { RegisterTypeField } from "@/components/transactions/form-fields/RegisterTypeField";
 import { useTransactionForm } from "@/hooks/useTransactionForm";
+
+const CURRENT_USER_ID = "Nash";
 
 interface NewTransactionPageFormProps {
   initialRegisterType: RegisterType;
@@ -41,8 +41,7 @@ export const NewTransactionPageForm = ({
     amount, setAmount,
     selectedCategory, setSelectedCategory,
     selectedSubcategory, setSelectedSubcategory,
-    clientId, setClientId,
-    staffId, setStaffId
+    clientId, setClientId
   } = useTransactionForm({
     initialType,
     initialDescription,
@@ -69,7 +68,7 @@ export const NewTransactionPageForm = ({
         category: selectedCategory,
         subcategory: selectedSubcategory,
         clientId: clientId === "none" ? null : clientId,
-        staffId: staffId === "none" ? null : staffId,
+        staffId: CURRENT_USER_ID,
       });
 
       toast.success("Transaction créée avec succès");
@@ -133,11 +132,6 @@ export const NewTransactionPageForm = ({
       <ClientField
         clientId={clientId}
         setClientId={setClientId}
-      />
-
-      <StaffField
-        staffId={staffId}
-        setStaffId={setStaffId}
       />
 
       <FormActions

@@ -16,6 +16,9 @@ import { RoomExtrasSelector } from "./RoomExtrasSelector";
 import { BookingDetails } from "./BookingDetails";
 import { useInvoices } from "@/hooks/useInvoices";
 
+// Current user hardcoded as Nash
+const CURRENT_USER_ID = "Nash";
+
 interface BookingFormContainerProps {
   form: UseFormReturn<any>;
   dateRange: DateRange;
@@ -87,11 +90,11 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
           description,
           amount: totalAmount,
           clientId: selectedClient.id,
-          staffId: null,
+          staffId: CURRENT_USER_ID, // Use Nash as the creator
           category: "Chambres",
           subcategory: "Réservations",
           registerType: "hotel",
-          method: "card" // Adding explicit method
+          method: "card"
         });
         
         // Create invoice with correct data structure
@@ -99,11 +102,11 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
           description,
           amount: totalAmount,
           clientId: selectedClient.id,
-          staffId: null,
+          staffId: CURRENT_USER_ID, // Use Nash as the creator
           category: "Chambres",
           subcategory: "Réservations",
           registerType: "hotel",
-          method: "card" // Adding explicit method
+          method: "card"
         });
         
         toast.success(`Chambre ${roomNumber} réservée pour ${selectedClient.name}`, {

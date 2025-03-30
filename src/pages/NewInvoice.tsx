@@ -10,6 +10,9 @@ import { toast } from "sonner";
 import { InvoiceForm } from "@/components/invoices/InvoiceForm";
 import { validateInvoiceForm } from "@/components/invoices/InvoiceFormValidation";
 
+// Current user hardcoded as Nash
+const CURRENT_USER_ID = "Nash";
+
 const NewInvoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,15 +39,17 @@ const NewInvoice = () => {
     setIsSubmitting(true);
     
     try {
+      // Always use the current user as staffId
       const result = await createInvoice.mutateAsync({
         description: formData.description,
         amount: formData.amount,
         clientId: formData.clientId,
-        staffId: formData.staffId,
+        staffId: CURRENT_USER_ID, // Use Nash as the current user
         category: formData.category,
         subcategory: formData.subcategory,
         registerType: formData.registerType,
         dueDate: formData.dueDate,
+        method: formData.method || "card"
       });
 
       toast.success("Facture créée avec succès");

@@ -8,9 +8,11 @@ import { SubcategorySelector } from "./SubcategorySelector";
 import { DescriptionField } from "./form-fields/DescriptionField";
 import { AmountField } from "./form-fields/AmountField";
 import { ClientField } from "./form-fields/ClientField";
-import { StaffField } from "./form-fields/StaffField";
 import { FormActions } from "./form-fields/FormActions";
 import { useTransactionForm } from "@/hooks/useTransactionForm";
+
+// Current user hardcoded as Nash
+const CURRENT_USER_ID = "Nash";
 
 export interface TransactionFormProps {
   onSubmit: (data: any) => void;
@@ -47,7 +49,6 @@ export function TransactionForm({
     selectedCategory, setSelectedCategory,
     selectedSubcategory, setSelectedSubcategory,
     clientId, setClientId,
-    staffId, setStaffId,
     getFormData
   } = useTransactionForm({
     initialType,
@@ -70,7 +71,7 @@ export function TransactionForm({
       category: selectedCategory,
       subcategory: selectedSubcategory,
       clientId: clientId === "none" ? null : clientId,
-      staffId: staffId === "none" ? null : staffId,
+      staffId: CURRENT_USER_ID, // Always use Nash as the current staff
     });
   };
 
@@ -111,11 +112,6 @@ export function TransactionForm({
       <ClientField
         clientId={clientId}
         setClientId={setClientId}
-      />
-
-      <StaffField
-        staffId={staffId}
-        setStaffId={setStaffId}
       />
 
       <FormActions
