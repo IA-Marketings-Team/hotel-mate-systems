@@ -8,16 +8,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { UserCheck } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StaffMember } from "@/hooks/useStaff";
+import { getRoleName, getShiftName } from "@/utils/staffUtils";
 
 interface TeamMemberCardProps {
   member: StaffMember;
   isTeamLeader: boolean;
+  onPromoteToLeader?: () => void;
 }
 
 export const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ 
   member, 
-  isTeamLeader 
+  isTeamLeader,
+  onPromoteToLeader
 }) => {
   return (
     <Card className="border shadow-sm">
@@ -33,23 +38,34 @@ export const TeamMemberCard: React.FC<TeamMemberCardProps> = ({
       </CardHeader>
       <CardContent className="p-4 pt-2">
         <p className="text-sm text-muted-foreground">
-          Poste: {member.role === "receptionist" ? "Réceptionniste" : 
-                  member.role === "housekeeper" ? "Femme de chambre" :
-                  member.role === "waiter" ? "Serveur" :
-                  member.role === "chef" ? "Chef" :
-                  member.role === "bartender" ? "Barman" :
-                  member.role === "maintenance" ? "Maintenance" :
-                  member.role === "manager" ? "Directeur" : member.role}
+          Poste: {getRoleName(member.role)}
         </p>
         <p className="text-sm text-muted-foreground mt-1">
-          Service: {member.shift === "morning" ? "Matin" :
-                   member.shift === "afternoon" ? "Après-midi" :
-                   member.shift === "night" ? "Nuit" : member.shift}
+          Service: {getShiftName(member.shift)}
         </p>
-        <div className="flex justify-end mt-3">
+        <div className="flex justify-between mt-3">
           <Button variant="ghost" size="sm">
             Voir profil
           </Button>
+          
+          {!isTeamLeader && onPromoteToLeader && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onPromoteToLeader}
+                  className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                >
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  Chef d'équipe
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Promouvoir comme chef d'équipe</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </CardContent>
     </Card>

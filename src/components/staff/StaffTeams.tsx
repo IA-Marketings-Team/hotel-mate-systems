@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StaffMember } from "@/hooks/useStaff";
@@ -79,6 +78,17 @@ export const StaffTeams: React.FC<StaffTeamsProps> = ({ staffMembers }) => {
     setShowNewTeamDialog(false);
   };
 
+  const handlePromoteMember = (teamId: string, memberId: string) => {
+    setTeams(prevTeams => 
+      prevTeams.map(team => {
+        if (team.id === teamId) {
+          return { ...team, leader: memberId };
+        }
+        return team;
+      })
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -109,6 +119,7 @@ export const StaffTeams: React.FC<StaffTeamsProps> = ({ staffMembers }) => {
           <TeamMembersList 
             team={currentTeam} 
             teamMembers={getTeamMembers(currentTeam.id)} 
+            onPromoteMember={handlePromoteMember}
           />
         </DashboardCard>
       )}
