@@ -103,7 +103,7 @@ const BookRoom = () => {
         const description = `Réservation Chambre ${room.number} pour ${calculateNights()} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`;
         const totalAmount = calculateTotalPrice();
         
-        // Create invoice - REMOVED the type property
+        // Create invoice - REMOVED the type property as it's handled internally in useInvoiceCreate
         await createInvoice.mutateAsync({
           description,
           amount: totalAmount,
