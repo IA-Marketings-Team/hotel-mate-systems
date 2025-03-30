@@ -15,7 +15,7 @@ export const useInvoiceCreate = () => {
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'pending', // Changed back to 'pending'
+          type: 'partial', // Changed to 'partial' which is allowed by the database constraint
           method: 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
