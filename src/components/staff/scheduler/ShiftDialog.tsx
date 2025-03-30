@@ -52,7 +52,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   isSubmitting,
 }) => {
   const isEditing = !!shift;
-  const { tasks } = useTasksContext();
+  const { tasks, isLoading: tasksLoading } = useTasksContext();
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [redirectToTasks, setRedirectToTasks] = useState<boolean>(false);
   
@@ -82,7 +82,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   }, [open]);
 
   const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {
-    await onSubmit(values, selectedTaskId, redirectToTasks);
+    await onSubmit(values, selectedTaskId === "no-task" ? undefined : selectedTaskId, redirectToTasks);
     onOpenChange(false);
     form.reset();
     setSelectedTaskId("");
@@ -206,7 +206,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
                 <Select
                   value={selectedTaskId}
                   onValueChange={setSelectedTaskId}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || tasksLoading}
                 >
                   <FormControl>
                     <SelectTrigger>

@@ -3,6 +3,7 @@ import React from "react";
 import { StaffMember } from "@/hooks/useStaff";
 import { TaskItem } from "./TaskItem";
 import { ListTodo } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Task {
   id: string;
@@ -19,14 +20,39 @@ interface TaskListProps {
   staffMembers: StaffMember[];
   updateTaskStatus: (taskId: string, status: 'pending' | 'in-progress' | 'completed') => void;
   deleteTask: (taskId: string) => void;
+  isLoading: boolean;
 }
 
 export const TaskList: React.FC<TaskListProps> = ({
   tasks,
   staffMembers,
   updateTaskStatus,
-  deleteTask
+  deleteTask,
+  isLoading
 }) => {
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="p-4 border rounded-lg">
+            <div className="flex items-start gap-3">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <div className="flex-1">
+                <Skeleton className="h-5 w-full max-w-[250px] mb-2" />
+                <Skeleton className="h-4 w-full max-w-[400px] mb-3" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (tasks.length === 0) {
     return (
       <div className="text-center p-6 bg-muted rounded-lg">

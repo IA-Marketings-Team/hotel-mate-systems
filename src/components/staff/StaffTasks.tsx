@@ -1,9 +1,10 @@
 
-import React, { useState, createContext, useContext } from "react";
+import React, { createContext, useContext } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StaffMember } from "@/hooks/useStaff";
 import { TaskFilters } from "./tasks/TaskFilters";
 import { TaskList } from "./tasks/TaskList";
+import { useTasksCrud } from "@/hooks/useTasksCrud";
 
 export interface Task {
   id: string;
@@ -21,6 +22,7 @@ interface TasksContextType {
   deleteTask: (taskId: string) => void;
   addTask: (task: Omit<Task, 'id'>) => void;
   updateTaskAssignment: (taskId: string, staffId: string, dueDate: Date) => void;
+  isLoading: boolean;
 }
 
 export const TasksContext = createContext<TasksContextType>({
@@ -28,7 +30,8 @@ export const TasksContext = createContext<TasksContextType>({
   updateTaskStatus: () => {},
   deleteTask: () => {},
   addTask: () => {},
-  updateTaskAssignment: () => {}
+  updateTaskAssignment: () => {},
+  isLoading: false
 });
 
 export const useTasksContext = () => useContext(TasksContext);
@@ -38,40 +41,19 @@ interface StaffTasksProps {
 }
 
 export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
-  // Mock tasks data - in a real app this would come from a database
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'Vérification des chambres',
-      description: 'Vérifier la propreté des chambres 101-110',
-      assignedTo: staffMembers[0]?.id || '',
-      dueDate: new Date(),
-      priority: 'high',
-      status: 'pending'
-    },
-    {
-      id: '2',
-      title: 'Préparation du service',
-      description: 'Préparer les tables pour le service du soir',
-      assignedTo: staffMembers[1]?.id || '',
-      dueDate: new Date(),
-      priority: 'medium',
-      status: 'in-progress'
-    },
-    {
-      id: '3',
-      title: 'Inventaire des boissons',
-      description: 'Faire l\'inventaire du bar',
-      assignedTo: staffMembers[2]?.id || '',
-      dueDate: new Date(),
-      priority: 'low',
-      status: 'completed'
-    }
-  ]);
+  const { 
+    getTasks, 
+    updateTaskStatus: updateTaskStatusMutation, 
+    deleteTask: deleteTaskMutation,
+    createTask,
+    updateTaskAssignment: updateTaskAssignmentMutation 
+  } = useTasksCrud();
+  
+  const { data: tasks = [], isLoading } = getTasks;
 
-  const [newTask, setNewTask] = useState<string>('');
   const [selectedStaff, setSelectedStaff] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [newTask, setNewTask] = useState<string>('');
 
   // Filter tasks based on selection
   const filteredTasks = tasks
@@ -81,51 +63,40 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
   const addTask = () => {
     if (!newTask.trim()) return;
     
-    const task: Task = {
-      id: Date.now().toString(),
+    createTask.mutate({
       title: newTask,
       assignedTo: selectedStaff === "all" ? staffMembers[0]?.id || '' : selectedStaff,
       dueDate: new Date(),
       priority: 'medium',
       status: 'pending'
-    };
+    });
     
-    setTasks([...tasks, task]);
     setNewTask('');
   };
 
   const addTaskObject = (taskData: Omit<Task, 'id'>) => {
-    const task: Task = {
-      id: Date.now().toString(),
-      ...taskData
-    };
-    
-    setTasks([...tasks, task]);
+    createTask.mutate(taskData);
   };
 
-  const updateTaskStatus = (taskId: string, status: 'pending' | 'in-progress' | 'completed') => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, status } : task
-    ));
+  const handleUpdateTaskStatus = (taskId: string, status: 'pending' | 'in-progress' | 'completed') => {
+    updateTaskStatusMutation.mutate({ id: taskId, status });
   };
 
-  const deleteTask = (taskId: string) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
+  const handleDeleteTask = (taskId: string) => {
+    deleteTaskMutation.mutate(taskId);
   };
 
-  // New function to update task assignment
-  const updateTaskAssignment = (taskId: string, staffId: string, dueDate: Date) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, assignedTo: staffId, dueDate } : task
-    ));
+  const handleUpdateTaskAssignment = (taskId: string, staffId: string, dueDate: Date) => {
+    updateTaskAssignmentMutation.mutate({ id: taskId, staffId, dueDate });
   };
 
   const tasksContextValue = {
     tasks,
-    updateTaskStatus,
-    deleteTask,
+    updateTaskStatus: handleUpdateTaskStatus,
+    deleteTask: handleDeleteTask,
     addTask: addTaskObject,
-    updateTaskAssignment
+    updateTaskAssignment: handleUpdateTaskAssignment,
+    isLoading
   };
 
   return (
@@ -141,13 +112,15 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
             setSelectedStatus={setSelectedStatus}
             staffMembers={staffMembers}
             addTask={addTask}
+            isSubmitting={createTask.isPending}
           />
           
           <TaskList
             tasks={filteredTasks}
             staffMembers={staffMembers}
-            updateTaskStatus={updateTaskStatus}
-            deleteTask={deleteTask}
+            updateTaskStatus={handleUpdateTaskStatus}
+            deleteTask={handleDeleteTask}
+            isLoading={isLoading}
           />
         </DashboardCard>
       </div>

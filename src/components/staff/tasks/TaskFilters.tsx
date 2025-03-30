@@ -21,6 +21,7 @@ interface TaskFiltersProps {
   setSelectedStatus: (value: string) => void;
   staffMembers: StaffMember[];
   addTask: () => void;
+  isSubmitting: boolean;
 }
 
 export const TaskFilters: React.FC<TaskFiltersProps> = ({
@@ -32,6 +33,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   setSelectedStatus,
   staffMembers,
   addTask,
+  isSubmitting,
 }) => {
   return (
     <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
@@ -42,8 +44,9 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
           onChange={(e) => setNewTask(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && addTask()}
           className="flex-1"
+          disabled={isSubmitting}
         />
-        <Button onClick={addTask}>
+        <Button onClick={addTask} disabled={isSubmitting}>
           <Plus className="h-4 w-4 mr-2" />
           Ajouter
         </Button>
