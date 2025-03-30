@@ -17,7 +17,7 @@ export const useInvoiceCreate = () => {
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'pending', // Changed to 'pending' so invoice starts as unpaid
+          type: 'partial', // Using 'partial' instead of 'pending' to indicate unpaid invoice
           method: invoiceData.method || 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
@@ -26,7 +26,7 @@ export const useInvoiceCreate = () => {
           staff_id: invoiceData.staffId,
           date: new Date().toISOString(),
           due_date: invoiceData.dueDate || null,
-          paid_amount: 0, // Initialize with 0 since it's pending payment
+          paid_amount: 0, // Initialize with 0 since it's unpaid
           remaining_amount: invoiceData.amount // Set to full amount since nothing is paid yet
         })
         .select()
