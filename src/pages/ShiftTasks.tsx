@@ -8,7 +8,7 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { useShiftCrud } from "@/hooks/useShiftCrud";
 import { useStaff } from "@/hooks/useStaff";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Calendar } from "lucide-react";
 import { TasksContext } from "@/components/staff/StaffTasks";
 import { ShiftTasksList } from "@/components/staff/tasks/ShiftTasksList";
 import { CreateTaskDialog } from "@/components/staff/tasks/CreateTaskDialog";
@@ -31,8 +31,10 @@ const ShiftTasks = () => {
 
   useEffect(() => {
     if (!shiftsLoading && !shift) {
-      toast.error("Planning non trouvé");
-      navigate("/staff", { state: { activeTab: "scheduler" } });
+      toast.error("Planning non trouvé. Veuillez d'abord créer un planning.");
+      setTimeout(() => {
+        navigate("/staff", { state: { activeTab: "scheduler" } });
+      }, 1500);
     }
   }, [shift, shiftsLoading, navigate]);
 
@@ -57,9 +59,13 @@ const ShiftTasks = () => {
   if (!shift || !staffMember) {
     return (
       <AppLayout>
-        <div className="p-4 text-center">
-          <p>Planning non trouvé</p>
-          <Button onClick={handleBackToScheduler} className="mt-4">Retour au planning</Button>
+        <div className="p-8 text-center">
+          <div className="mb-6">
+            <Calendar className="mx-auto h-16 w-16 text-muted-foreground" />
+          </div>
+          <h2 className="text-2xl font-semibold mb-2">Planning non trouvé</h2>
+          <p className="text-muted-foreground mb-6">Veuillez d'abord créer un planning pour pouvoir ajouter des tâches.</p>
+          <Button onClick={handleBackToScheduler}>Retour au planning</Button>
         </div>
       </AppLayout>
     );

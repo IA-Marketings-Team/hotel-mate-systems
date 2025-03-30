@@ -18,8 +18,10 @@ import { ShiftFormFields } from "./shift-dialog/ShiftFormFields";
 import { TaskSelector } from "./shift-dialog/TaskSelector";
 import { DialogActions } from "./shift-dialog/DialogActions";
 import { useNavigate } from "react-router-dom";
-import { Link } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { Link, Button } from "@/components/ui/button";
+import { ExternalLink, ArrowRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface ShiftDialogProps {
   open: boolean;
@@ -46,6 +48,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   const { tasks, isLoading: tasksLoading } = useTasksContext();
   const [selectedTaskId, setSelectedTaskId] = useState<string>("no-task");
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
+  const [redirectToTasks, setRedirectToTasks] = useState(!isEditing); // Default to true for new shifts
   const navigate = useNavigate();
   
   // Initialize the form first before using it in useEffect
@@ -76,6 +79,9 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
       const initialStaffId = preSelectedStaffId || (shift ? shift.staffId : "");
       setSelectedStaffId(initialStaffId);
       
+      // Set redirect to tasks (always true for new shifts)
+      setRedirectToTasks(!isEditing);
+      
       // Use reset to ensure form values are updated properly
       form.reset({
         ...(shift ? {
@@ -94,16 +100,13 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
         })
       });
     }
-  }, [open, shift, preSelectedStaffId, date, form]);
+  }, [open, shift, preSelectedStaffId, date, form, isEditing]);
 
-  const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {
-    // For new shifts, always redirect to tasks
-    const shouldRedirect = !isEditing;
-    
+  const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {    
     await onSubmit(
       values, 
       selectedTaskId === "no-task" ? undefined : selectedTaskId, 
-      shouldRedirect
+      redirectToTasks
     );
     onOpenChange(false);
     form.reset();
@@ -157,17 +160,34 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
               showTaskSelector={!!selectedStaffId}
             />
 
+            {!isEditing && (
+              <div className="flex items-center space-x-2 pt-2">
+                <Switch 
+                  id="redirect" 
+                  checked={redirectToTasks}
+                  onCheckedChange={setRedirectToTasks}
+                />
+                <Label htmlFor="redirect" className="cursor-pointer">
+                  <div className="flex items-center">
+                    <span>Créer des tâches après</span>
+                    <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  </div>
+                </Label>
+              </div>
+            )}
+
             {isEditing && (
               <div className="flex justify-center">
-                <Link
+                <Button
                   variant="outline"
-                  className="flex items-center text-sm"
+                  className="flex items-center text-sm w-full"
                   size="sm"
                   onClick={handleGoToShiftTasks}
+                  type="button"
                 >
                   <ExternalLink className="h-3.5 w-3.5 mr-1" />
                   Gérer les tâches pour ce planning
-                </Link>
+                </Button>
               </div>
             )}
 

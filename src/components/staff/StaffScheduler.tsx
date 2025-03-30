@@ -57,17 +57,19 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
     await deleteShift.mutateAsync(id);
   };
 
-  const handleSubmitShift = async (values: any, selectedTaskId?: string, redirectToTasks: boolean = true) => {
+  const handleSubmitShift = async (values: any, selectedTaskId?: string, redirectToTasks: boolean = false) => {
     try {
       let newShiftId;
       
       if (selectedShift) {
+        // Update existing shift
         await updateShift.mutateAsync({
           id: selectedShift.id,
           ...values
         });
         newShiftId = selectedShift.id;
       } else {
+        // Create new shift
         const response = await createShift.mutateAsync({
           ...values,
           date: selectedDate
@@ -85,12 +87,12 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
         }
       }
 
-      // For new shifts, always redirect to the shifts task page
+      // Always redirect to tasks page if requested
       if (redirectToTasks && newShiftId) {
-        toast.info("Redirection vers la page des tâches...");
+        toast.success("Planning créé avec succès. Redirection vers les tâches...");
         setTimeout(() => {
           navigate(`/shift-tasks/${newShiftId}`);
-        }, 500);
+        }, 800);
       }
     } catch (error) {
       console.error("Error submitting shift:", error);
