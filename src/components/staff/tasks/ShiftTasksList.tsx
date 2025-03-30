@@ -1,6 +1,6 @@
 
 import React from "react";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { TaskItem } from "./TaskItem";
 import { ListTodo } from "lucide-react";
@@ -21,7 +21,7 @@ export const ShiftTasksList: React.FC<ShiftTasksListProps> = ({
   const filteredTasks = tasksContext.tasks.filter(
     (task: any) => 
       task.assignedTo === staffId && 
-      format(new Date(task.dueDate), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+      isSameDay(new Date(task.dueDate), date)
   );
 
   if (tasksContext.isLoading) {
