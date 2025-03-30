@@ -214,7 +214,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Aucune tâche</SelectItem>
+                    <SelectItem value="no-task">Aucune tâche</SelectItem>
                     {availableTasks.map((task) => (
                       <SelectItem key={task.id} value={task.id}>
                         {task.title}
