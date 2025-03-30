@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { StaffMember, useStaff } from "@/hooks/useStaff";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,7 +19,7 @@ import {
   BookOpen,
   FileArchive,
   ShieldCheck,
-  Bar
+  TrendingUp
 } from "lucide-react";
 
 const Staff = () => {
@@ -47,16 +46,13 @@ const Staff = () => {
   }
 
   const filteredStaff = staffMembers?.filter((staff) => {
-    // Search term filter
     const matchesSearch =
       staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.contactNumber.includes(searchTerm);
 
-    // Role filter
     const matchesRole = roleFilter === "all" || staff.role === roleFilter;
 
-    // Shift filter
     const matchesShift = shiftFilter === "all" || staff.shift === shiftFilter;
 
     return matchesSearch && matchesRole && matchesShift;
@@ -165,7 +161,7 @@ const Staff = () => {
             Documents RH
           </Button>
           <Button variant="outline" size="sm" className="flex items-center">
-            <Bar className="h-4 w-4 mr-2" />
+            <TrendingUp className="h-4 w-4 mr-2" />
             Engagement
           </Button>
           <Button variant="outline" size="sm" className="flex items-center">
