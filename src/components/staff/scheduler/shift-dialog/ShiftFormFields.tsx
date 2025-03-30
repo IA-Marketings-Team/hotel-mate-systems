@@ -24,6 +24,7 @@ interface ShiftFormFieldsProps {
   staffMembers: StaffMember[];
   isSubmitting: boolean;
   onStaffChange?: (staffId: string) => void;
+  disableStaffSelection?: boolean;
 }
 
 export const ShiftFormFields: React.FC<ShiftFormFieldsProps> = ({
@@ -31,6 +32,7 @@ export const ShiftFormFields: React.FC<ShiftFormFieldsProps> = ({
   staffMembers,
   isSubmitting,
   onStaffChange,
+  disableStaffSelection = false,
 }) => {
   return (
     <>
@@ -48,7 +50,7 @@ export const ShiftFormFields: React.FC<ShiftFormFieldsProps> = ({
                   onStaffChange(value);
                 }
               }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || disableStaffSelection}
             >
               <FormControl>
                 <SelectTrigger>

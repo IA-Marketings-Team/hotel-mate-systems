@@ -10,7 +10,7 @@ interface StaffRowProps {
   staff: StaffMember;
   days: Date[];
   shifts: Shift[];
-  onAddShift: (date: Date) => void;
+  onAddShift: (date: Date, staffId: string) => void;
   onEditShift: (shift: Shift) => void;
   onDeleteShift: (id: string) => void;
 }
@@ -41,7 +41,7 @@ export const StaffRow: React.FC<StaffRowProps> = ({
             <ShiftCell
               shift={shift}
               date={day}
-              onAddShift={() => onAddShift(day)}
+              onAddShift={() => onAddShift(day, staff.id)}
               onEdit={onEditShift}
               onDelete={onDeleteShift}
             />

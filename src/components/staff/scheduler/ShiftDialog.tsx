@@ -30,6 +30,7 @@ interface ShiftDialogProps {
   date: Date;
   shift?: Shift;
   isSubmitting: boolean;
+  preSelectedStaffId?: string; // Add this to pre-select a staff member
 }
 
 export const ShiftDialog: React.FC<ShiftDialogProps> = ({
@@ -40,6 +41,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   date,
   shift,
   isSubmitting,
+  preSelectedStaffId,
 }) => {
   const isEditing = !!shift;
   const { tasks, isLoading: tasksLoading } = useTasksContext();
@@ -57,7 +59,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
       type: shift.type
     } : {
       date,
-      staffId: "",
+      staffId: preSelectedStaffId || "",
       startTime: "08:00",
       endTime: "16:00",
       type: "morning" as const
@@ -120,6 +122,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
               staffMembers={staffMembers} 
               isSubmitting={isSubmitting}
               onStaffChange={handleStaffChange}
+              disableStaffSelection={!!preSelectedStaffId && !isEditing}
             />
 
             <TaskSelector 

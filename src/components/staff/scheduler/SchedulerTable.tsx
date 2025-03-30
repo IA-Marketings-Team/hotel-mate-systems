@@ -14,7 +14,7 @@ interface SchedulerTableProps {
   filteredStaff: StaffMember[];
   shifts?: Shift[];
   isLoading: boolean;
-  onAddShift: (date: Date) => void;
+  onAddShift: (date: Date, staffId?: string) => void;
   onEditShift: (shift: Shift) => void;
   onDeleteShift: (id: string) => void;
 }

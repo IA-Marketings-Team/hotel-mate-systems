@@ -50,6 +50,11 @@ export const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
       return;
     }
     
+    if (!staffId) {
+      toast.error("Un employé doit être assigné à cette tâche");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {

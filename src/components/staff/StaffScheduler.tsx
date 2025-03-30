@@ -27,6 +27,7 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedShift, setSelectedShift] = useState<any>(undefined);
+  const [preSelectedStaffId, setPreSelectedStaffId] = useState<string | undefined>(undefined);
   
   const { dateRange, setDateRange, days } = useSchedulerDays();
   const { getShifts, createShift, updateShift, deleteShift } = useShiftCrud();
@@ -38,15 +39,17 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
     ? staffMembers 
     : staffMembers.filter(s => s.id === selectedStaff);
 
-  const handleAddShift = (date: Date) => {
+  const handleAddShift = (date: Date, staffId?: string) => {
     setSelectedDate(date);
     setSelectedShift(undefined);
+    setPreSelectedStaffId(staffId);
     setDialogOpen(true);
   };
 
   const handleEditShift = (shift: any) => {
     setSelectedShift(shift);
     setSelectedDate(new Date(shift.date));
+    setPreSelectedStaffId(undefined);
     setDialogOpen(true);
   };
 
@@ -154,6 +157,7 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
             date={selectedDate}
             shift={selectedShift}
             isSubmitting={createShift.isPending || updateShift.isPending}
+            preSelectedStaffId={preSelectedStaffId}
           />
         </div>
       )}
