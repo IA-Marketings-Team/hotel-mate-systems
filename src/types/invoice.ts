@@ -25,6 +25,7 @@ export interface CreateInvoiceData {
   subcategory?: string;
   registerType: RegisterType;
   dueDate?: string;
+  method?: "cash" | "card" | "transfer"; // Added method property
 }
 
 export interface InvoiceFilters {
