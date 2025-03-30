@@ -20,13 +20,15 @@ interface TasksContextType {
   updateTaskStatus: (taskId: string, status: 'pending' | 'in-progress' | 'completed') => void;
   deleteTask: (taskId: string) => void;
   addTask: (task: Omit<Task, 'id'>) => void;
+  updateTaskAssignment: (taskId: string, staffId: string, dueDate: Date) => void;
 }
 
 export const TasksContext = createContext<TasksContextType>({
   tasks: [],
   updateTaskStatus: () => {},
   deleteTask: () => {},
-  addTask: () => {}
+  addTask: () => {},
+  updateTaskAssignment: () => {}
 });
 
 export const useTasksContext = () => useContext(TasksContext);
@@ -111,11 +113,19 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
     setTasks(tasks.filter(task => task.id !== taskId));
   };
 
+  // New function to update task assignment
+  const updateTaskAssignment = (taskId: string, staffId: string, dueDate: Date) => {
+    setTasks(tasks.map(task => 
+      task.id === taskId ? { ...task, assignedTo: staffId, dueDate } : task
+    ));
+  };
+
   const tasksContextValue = {
     tasks,
     updateTaskStatus,
     deleteTask,
-    addTask: addTaskObject
+    addTask: addTaskObject,
+    updateTaskAssignment
   };
 
   return (

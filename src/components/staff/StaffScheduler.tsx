@@ -10,7 +10,7 @@ import { useSchedulerDays } from "./scheduler/useSchedulerDays";
 import { WeeklyCalendarView } from "./scheduler/WeeklyCalendarView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Users } from "lucide-react";
-import { TasksContext } from "./StaffTasks";
+import { TasksContext, useTasksContext } from "./StaffTasks";
 
 interface StaffSchedulerProps {
   staffMembers: StaffMember[];
@@ -47,7 +47,7 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
     await deleteShift.mutateAsync(id);
   };
 
-  const handleSubmitShift = async (values: any) => {
+  const handleSubmitShift = async (values: any, selectedTaskId?: string) => {
     if (selectedShift) {
       await updateShift.mutateAsync({
         id: selectedShift.id,
@@ -59,7 +59,19 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
         date: selectedDate
       });
     }
+
+    // If a task was selected, update its assignedTo property
+    if (selectedTaskId && taskContext) {
+      const task = taskContext.tasks.find(t => t.id === selectedTaskId);
+      if (task) {
+        // Update task assignment to the selected staff member
+        taskContext.updateTaskAssignment(selectedTaskId, values.staffId, selectedDate);
+      }
+    }
   };
+
+  // Get the task context to update task assignments
+  const taskContext = useTasksContext();
 
   return (
     <TasksContext.Consumer>

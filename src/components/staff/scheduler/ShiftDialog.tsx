@@ -29,11 +29,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StaffMember } from "@/hooks/useStaff";
 import { Shift, CreateShiftInput, UpdateShiftInput } from "@/hooks/useShiftCrud";
+import { Task, useTasksContext } from "../StaffTasks";
 
 interface ShiftDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: CreateShiftInput | UpdateShiftInput) => Promise<void>;
+  onSubmit: (values: CreateShiftInput | UpdateShiftInput, selectedTaskId?: string) => Promise<void>;
   staffMembers: StaffMember[];
   date: Date;
   shift?: Shift;
@@ -50,6 +51,8 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   isSubmitting,
 }) => {
   const isEditing = !!shift;
+  const { tasks } = useTasksContext();
+  const [selectedTaskId, setSelectedTaskId] = React.useState<string>("");
   
   const form = useForm<CreateShiftInput | UpdateShiftInput>({
     defaultValues: shift ? {
@@ -68,11 +71,26 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
     }
   });
 
+  // Reset selected task when dialog opens/closes
+  React.useEffect(() => {
+    if (open) {
+      setSelectedTaskId("");
+    }
+  }, [open]);
+
   const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {
-    await onSubmit(values);
+    await onSubmit(values, selectedTaskId);
     onOpenChange(false);
     form.reset();
+    setSelectedTaskId("");
   };
+
+  // Filter tasks to only show those that aren't assigned to a staff member yet
+  // or are assigned to the currently selected staff member
+  const availableTasks = tasks.filter(task => 
+    task.assignedTo === "" || 
+    (form.watch("staffId") && task.assignedTo === form.watch("staffId"))
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -96,7 +114,11 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
                   <FormLabel>Employé</FormLabel>
                   <Select
                     value={field.value}
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Reset selected task when staff changes
+                      setSelectedTaskId("");
+                    }}
                     disabled={isSubmitting}
                   >
                     <FormControl>
@@ -173,6 +195,32 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
                 </FormItem>
               )}
             />
+
+            {form.watch("staffId") && (
+              <FormItem>
+                <FormLabel>Tâche à associer</FormLabel>
+                <Select
+                  value={selectedTaskId}
+                  onValueChange={setSelectedTaskId}
+                  disabled={isSubmitting}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une tâche (optionnel)" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">Aucune tâche</SelectItem>
+                    {availableTasks.map((task) => (
+                      <SelectItem key={task.id} value={task.id}>
+                        {task.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button
