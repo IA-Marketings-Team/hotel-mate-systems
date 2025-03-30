@@ -55,7 +55,7 @@ export const useShiftCrud = () => {
         .from('shifts')
         .insert([{
           staff_id: data.staffId,
-          date: data.date.toISOString(),
+          date: data.date.toISOString().split('T')[0], // Format as YYYY-MM-DD for DATE type
           start_time: data.startTime,
           end_time: data.endTime,
           type: data.type
@@ -80,7 +80,7 @@ export const useShiftCrud = () => {
     mutationFn: async (data: UpdateShiftInput) => {
       const updateData: any = {};
       if (data.staffId) updateData.staff_id = data.staffId;
-      if (data.date) updateData.date = data.date.toISOString();
+      if (data.date) updateData.date = data.date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
       if (data.startTime) updateData.start_time = data.startTime;
       if (data.endTime) updateData.end_time = data.endTime;
       if (data.type) updateData.type = data.type;
