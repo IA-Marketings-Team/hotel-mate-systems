@@ -1,18 +1,10 @@
 
 import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
-import { StaffForm } from "../forms/StaffForm";
 import { useStaffCrud } from "@/hooks/useStaffCrud";
 import { StaffMember } from "@/hooks/useStaff";
+import { BaseStaffDialog } from "./BaseStaffDialog";
 
 interface EditStaffDialogProps {
   staff: StaffMember;
@@ -23,34 +15,27 @@ export const EditStaffDialog: React.FC<EditStaffDialogProps> = ({ staff }) => {
   const { updateStaff } = useStaffCrud();
 
   const handleSubmit = async (values: any) => {
-    await updateStaff.mutateAsync({
+    return updateStaff.mutateAsync({
       id: staff.id,
       ...values
     });
-    setOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <BaseStaffDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="Modifier un employé"
+      description="Mettez à jour les informations de l'employé."
+      onSubmit={handleSubmit}
+      isSubmitting={updateStaff.isPending}
+      defaultValues={staff}
+      trigger={
         <Button variant="outline" size="sm">
           <Pencil className="h-4 w-4 mr-2" />
           Modifier
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Modifier un employé</DialogTitle>
-          <DialogDescription>
-            Mettez à jour les informations de l'employé.
-          </DialogDescription>
-        </DialogHeader>
-        <StaffForm 
-          defaultValues={staff} 
-          onSubmit={handleSubmit} 
-          isSubmitting={updateStaff.isPending} 
-        />
-      </DialogContent>
-    </Dialog>
+      }
+    />
   );
 };
