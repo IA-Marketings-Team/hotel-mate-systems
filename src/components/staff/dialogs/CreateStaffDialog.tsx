@@ -9,13 +9,17 @@ export const CreateStaffDialog: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const { createStaff } = useStaffCrud();
 
+  const handleSubmit = async (values: any) => {
+    await createStaff.mutateAsync(values);
+  };
+
   return (
     <BaseStaffDialog
       open={open}
       onOpenChange={setOpen}
       title="Nouvel employé"
       description="Remplissez le formulaire ci-dessous pour ajouter un nouvel employé."
-      onSubmit={createStaff.mutateAsync}
+      onSubmit={handleSubmit}
       isSubmitting={createStaff.isPending}
       trigger={
         <Button>

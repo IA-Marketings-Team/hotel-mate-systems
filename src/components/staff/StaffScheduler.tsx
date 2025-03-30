@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StaffMember } from "@/hooks/useStaff";
 import { DateRange } from "react-day-picker";
-import { format, addDays } from "date-fns";
+import { format, addDays, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,21 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronLeft, ChevronRight, Plus, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { useShiftCrud, Shift } from "@/hooks/useShiftCrud";
+import { ShiftDialog } from "./scheduler/ShiftDialog";
 
 interface StaffSchedulerProps {
   staffMembers: StaffMember[];
@@ -35,6 +49,12 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
     to: addDays(today, 6)
   });
   const [selectedStaff, setSelectedStaff] = useState<string>("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
+  const [selectedShift, setSelectedShift] = useState<Shift | undefined>(undefined);
+  
+  const { getShifts, createShift, updateShift, deleteShift } = useShiftCrud();
+  const { data: shifts, isLoading } = getShifts;
 
   // Generate array of days between from and to dates
   const getDaysArray = () => {
@@ -58,18 +78,11 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
     ? staffMembers 
     : staffMembers.filter(s => s.id === selectedStaff);
 
-  // Mock shifts data - in a real app this would come from a database
-  const shifts = [
-    { staffId: staffMembers[0]?.id, date: today, startTime: '08:00', endTime: '16:00', type: 'morning' },
-    { staffId: staffMembers[1]?.id, date: today, startTime: '16:00', endTime: '00:00', type: 'afternoon' },
-    { staffId: staffMembers[2]?.id, date: addDays(today, 1), startTime: '00:00', endTime: '08:00', type: 'night' },
-  ];
-
   // Helper function to get shift for a staff member on a specific day
   const getShift = (staffId: string, date: Date) => {
-    return shifts.find(s => 
+    return shifts?.find(s => 
       s.staffId === staffId && 
-      format(s.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+      isSameDay(new Date(s.date), date)
     );
   };
 
@@ -90,6 +103,50 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
     const newTo = dateRange.to ? addDays(dateRange.to, 7) : undefined;
     
     setDateRange({ from: newFrom, to: newTo });
+  };
+
+  const handleAddShift = (date: Date) => {
+    setSelectedDate(date);
+    setSelectedShift(undefined);
+    setDialogOpen(true);
+  };
+
+  const handleEditShift = (shift: Shift) => {
+    setSelectedShift(shift);
+    setSelectedDate(new Date(shift.date));
+    setDialogOpen(true);
+  };
+
+  const handleDeleteShift = async (id: string) => {
+    await deleteShift.mutateAsync(id);
+  };
+
+  const handleSubmitShift = async (values: any) => {
+    if (selectedShift) {
+      await updateShift.mutateAsync({
+        id: selectedShift.id,
+        ...values
+      });
+    } else {
+      await createShift.mutateAsync({
+        ...values,
+        date: selectedDate
+      });
+    }
+  };
+
+  // Helper to get shift background color
+  const getShiftColor = (type: string) => {
+    switch (type) {
+      case "morning":
+        return "bg-blue-100 text-blue-800"; 
+      case "afternoon":
+        return "bg-amber-100 text-amber-800";
+      case "night":
+        return "bg-indigo-100 text-indigo-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
   return (
@@ -122,10 +179,6 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
                 ))}
               </SelectContent>
             </Select>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter Shift
-            </Button>
           </div>
         </div>
         
@@ -145,36 +198,98 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({ staffMembers }) 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredStaff.map(staff => (
-                <TableRow key={staff.id}>
-                  <TableCell className="font-medium">{staff.name}</TableCell>
-                  {days.map(day => {
-                    const shift = getShift(staff.id, day);
-                    return (
-                      <TableCell key={day.toString()} className="text-center">
-                        {shift ? (
-                          <div className={`
-                            p-2 rounded-md text-xs font-medium
-                            ${shift.type === 'morning' ? 'bg-blue-100 text-blue-800' : 
-                              shift.type === 'afternoon' ? 'bg-amber-100 text-amber-800' : 
-                              'bg-indigo-100 text-indigo-800'}
-                          `}>
-                            {shift.startTime} - {shift.endTime}
-                          </div>
-                        ) : (
-                          <Button variant="ghost" size="sm" className="hover:bg-muted">
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    );
-                  })}
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={days.length + 1} className="text-center py-10">
+                    Chargement du planning...
+                  </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredStaff.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={days.length + 1} className="text-center py-10">
+                    Aucun employé trouvé
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredStaff.map(staff => (
+                  <TableRow key={staff.id}>
+                    <TableCell className="font-medium">{staff.name}</TableCell>
+                    {days.map(day => {
+                      const shift = getShift(staff.id, day);
+                      return (
+                        <TableCell key={day.toString()} className="text-center">
+                          {shift ? (
+                            <div className="relative flex items-center">
+                              <div className={`
+                                p-2 rounded-md text-xs font-medium w-full
+                                ${getShiftColor(shift.type)}
+                              `}>
+                                {shift.startTime} - {shift.endTime}
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="absolute right-0 top-0 h-full opacity-0 hover:opacity-100 rounded-l-none"
+                                  >
+                                    <MoreVertical className="h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditShift(shift)}>
+                                    <Pencil className="h-4 w-4 mr-2" />
+                                    Modifier
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    className="text-destructive"
+                                    onClick={() => handleDeleteShift(shift.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Supprimer
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          ) : (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="hover:bg-muted"
+                                    onClick={() => handleAddShift(day)}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Ajouter un shift</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
       </DashboardCard>
+
+      <ShiftDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmit={handleSubmitShift}
+        staffMembers={staffMembers}
+        date={selectedDate}
+        shift={selectedShift}
+        isSubmitting={createShift.isPending || updateShift.isPending}
+      />
     </div>
   );
 };

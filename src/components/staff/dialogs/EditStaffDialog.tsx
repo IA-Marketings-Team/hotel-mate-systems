@@ -15,7 +15,7 @@ export const EditStaffDialog: React.FC<EditStaffDialogProps> = ({ staff }) => {
   const { updateStaff } = useStaffCrud();
 
   const handleSubmit = async (values: any) => {
-    return updateStaff.mutateAsync({
+    await updateStaff.mutateAsync({
       id: staff.id,
       ...values
     });
