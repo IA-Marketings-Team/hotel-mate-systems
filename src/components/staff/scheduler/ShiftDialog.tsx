@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
@@ -18,6 +17,9 @@ import { ShiftFormFields } from "./shift-dialog/ShiftFormFields";
 import { TaskSelector } from "./shift-dialog/TaskSelector";
 import { RedirectCheckbox } from "./shift-dialog/RedirectCheckbox";
 import { DialogActions } from "./shift-dialog/DialogActions";
+import { useNavigate } from "react-router-dom";
+import { Link } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface ShiftDialogProps {
   open: boolean;
@@ -43,6 +45,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   const [selectedTaskId, setSelectedTaskId] = useState<string>("no-task");
   const [redirectToTasks, setRedirectToTasks] = useState<boolean>(true); // Set default to true
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
+  const navigate = useNavigate();
   
   const form = useForm<CreateShiftInput | UpdateShiftInput>({
     defaultValues: shift ? {
@@ -61,7 +64,6 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
     }
   });
 
-  // Reset selected task when dialog opens/closes
   useEffect(() => {
     if (open) {
       setSelectedTaskId("no-task");
@@ -82,14 +84,17 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
     setRedirectToTasks(true);
   };
 
-  // Handle staff selection change
   const handleStaffChange = (staffId: string) => {
     setSelectedStaffId(staffId);
     setSelectedTaskId("no-task");
   };
 
-  // Filter tasks to only show those that aren't assigned to a staff member yet
-  // or are assigned to the currently selected staff member
+  const handleGoToShiftTasks = () => {
+    if (shift) {
+      navigate(`/shift-tasks/${shift.id}`);
+    }
+  };
+
   const availableTasks = tasks.filter(task => 
     task.assignedTo === "" || 
     (selectedStaffId && task.assignedTo === selectedStaffId)
@@ -130,6 +135,20 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
                 redirectToTasks={redirectToTasks} 
                 setRedirectToTasks={setRedirectToTasks} 
               />
+            )}
+
+            {isEditing && (
+              <div className="flex justify-center">
+                <Link
+                  variant="outline"
+                  className="flex items-center text-sm"
+                  size="sm"
+                  onClick={handleGoToShiftTasks}
+                >
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                  Gérer les tâches pour ce planning
+                </Link>
+              </div>
             )}
 
             <DialogActions 

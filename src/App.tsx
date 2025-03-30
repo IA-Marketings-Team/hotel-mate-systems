@@ -25,6 +25,7 @@ import Invoices from "./pages/Invoices";
 import InvoiceDetails from "./pages/InvoiceDetails";
 import NewInvoice from "./pages/NewInvoice";
 import NewTransaction from "./pages/NewTransaction";
+import ShiftTasks from "./pages/ShiftTasks";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
                 <Staff />
               </AppLayout>
             } />
+            <Route path="/shift-tasks/:shiftId" element={<ShiftTasks />} />
             <Route path="/registers" element={
               <AppLayout>
                 <Registers />
