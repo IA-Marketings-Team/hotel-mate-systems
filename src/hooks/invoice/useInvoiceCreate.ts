@@ -17,7 +17,7 @@ export const useInvoiceCreate = () => {
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'partial', // Using 'partial' instead of 'pending' to indicate unpaid invoice
+          type: 'pending', // Use 'pending' to indicate unpaid invoice (valid constraint value)
           method: invoiceData.method || 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
