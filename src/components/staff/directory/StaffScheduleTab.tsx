@@ -3,7 +3,7 @@ import React from "react";
 import { useShiftCrud, Shift } from "@/hooks/useShiftCrud";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getShiftName } from "@/utils/staffUtils";
-import { format, isThisWeek, addDays, startOfWeek } from "date-fns";
+import { format, addDays, startOfWeek } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarClock, AlertCircle } from "lucide-react";
 
@@ -31,11 +31,6 @@ export const StaffScheduleTab: React.FC<StaffScheduleTabProps> = ({ staffId }) =
     );
   };
 
-  // Formatage pour l'affichage des shifts
-  const getShiftDisplay = (shift: Shift) => {
-    return `${shift.startTime} - ${shift.endTime} (${getShiftName(shift.type)})`;
-  };
-
   // Coloration du shift selon son type
   const getShiftColor = (type: string) => {
     switch (type) {
@@ -51,56 +46,57 @@ export const StaffScheduleTab: React.FC<StaffScheduleTabProps> = ({ staffId }) =
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-4">Chargement du planning...</div>;
+    return <div className="flex justify-center p-2">Chargement...</div>;
   }
 
   if (staffShifts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">Aucun planning trouvé</h3>
-        <p className="text-sm text-muted-foreground mt-2">
-          Ce membre du personnel n'a pas de shifts planifiés prochainement.
+      <div className="flex flex-col items-center justify-center p-4 text-center">
+        <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
+        <p className="text-sm text-muted-foreground">
+          Aucun planning trouvé pour ce membre du personnel
         </p>
       </div>
     );
   }
 
+  // Filtrer pour ne garder que les jours avec un shift planifié
+  const daysWithShifts = nextThreeWeeks
+    .filter(date => getShiftForDate(date))
+    .map(date => ({ date, shift: getShiftForDate(date)! }));
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <CalendarClock className="h-5 w-5 text-muted-foreground" />
-        <h3 className="text-lg font-medium">Planning des prochaines semaines</h3>
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 mb-2">
+        <CalendarClock className="h-4 w-4 text-muted-foreground" />
+        <h3 className="text-sm font-medium">Planning des prochains jours</h3>
       </div>
 
       <div className="border rounded-md overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Jour</TableHead>
-              <TableHead>Shift</TableHead>
+              <TableHead className="text-xs">Date</TableHead>
+              <TableHead className="text-xs">Horaire</TableHead>
+              <TableHead className="text-xs">Service</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {nextThreeWeeks.map(date => {
-              const shift = getShiftForDate(date);
-              return (
-                <TableRow key={date.toString()} className={shift ? "" : "opacity-60"}>
-                  <TableCell>{format(date, 'dd/MM/yyyy')}</TableCell>
-                  <TableCell>{format(date, 'EEEE', { locale: fr })}</TableCell>
-                  <TableCell>
-                    {shift ? (
-                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${getShiftColor(shift.type)}`}>
-                        {getShiftDisplay(shift)}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">Pas de shift</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {daysWithShifts.map(({ date, shift }) => (
+              <TableRow key={date.toString()}>
+                <TableCell className="py-2 text-xs">
+                  {format(date, 'eee dd/MM', { locale: fr })}
+                </TableCell>
+                <TableCell className="py-2 text-xs">
+                  {shift.startTime} - {shift.endTime}
+                </TableCell>
+                <TableCell className="py-2">
+                  <span className={`px-2 py-1 rounded-md text-xs font-medium ${getShiftColor(shift.type)}`}>
+                    {getShiftName(shift.type)}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
