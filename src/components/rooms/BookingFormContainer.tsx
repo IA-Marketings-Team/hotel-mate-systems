@@ -83,7 +83,7 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
         const description = `Réservation Chambre ${roomNumber} pour ${calculateNights()} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`;
         const totalAmount = calculateTotalPrice();
         
-        // Create invoice first
+        // Create invoice - fix type to 'payment'
         await createInvoice.mutateAsync({
           description,
           amount: totalAmount,
@@ -91,7 +91,8 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
           staffId: null, // This would be the logged-in user in a real system
           category: "Chambres",
           subcategory: "Réservations",
-          registerType: "hotel"
+          registerType: "hotel",
+          type: "payment" // Use valid type
         });
         
         toast.success(`Chambre ${roomNumber} réservée pour ${selectedClient.name}`, {

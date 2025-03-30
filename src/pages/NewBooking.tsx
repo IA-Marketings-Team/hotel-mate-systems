@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { NewBookingForm } from "@/components/bookings/NewBookingForm";
@@ -60,7 +59,7 @@ const NewBooking = () => {
   };
 
   const handleSuccess = async (bookingData: any) => {
-    const { clientId, resourceId, dateRange, amount, extras, resourceName, clientName, paymentOption } = bookingData;
+    const { clientId, resourceId, dateRange, amount, extras, resourceName, clientName } = bookingData;
     
     // Calculate nights for the description
     const nights = differenceInDays(dateRange.to, dateRange.from) || 1;
@@ -81,7 +80,7 @@ const NewBooking = () => {
          bookingTypeParam === 'terrace' ? 'Terrasse' : 'Restaurant'} ${resourceName}`;
     
     try {
-      // Create invoice first
+      // Create invoice with valid type
       await createInvoice.mutateAsync({
         description: bookingDescription,
         amount: amount,
@@ -92,7 +91,8 @@ const NewBooking = () => {
                   bookingTypeParam === 'car' ? "Location voitures" :
                   bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
         subcategory: "Réservations",
-        registerType: "hotel"
+        registerType: "hotel",
+        type: "payment" // Fix: use a valid transaction type
       });
       
       toast.success(`Réservation créée pour ${clientName}`, {

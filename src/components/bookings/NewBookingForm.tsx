@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Form } from "@/components/ui/form";
@@ -44,12 +43,10 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [extras, setExtras] = useState<any[]>([]);
 
-  // Update dateRange in form when it changes
   useEffect(() => {
     form.setValue("dateRange", dateRange);
   }, [dateRange, form]);
 
-  // When resource changes, update amount based on the selected resource and duration
   useEffect(() => {
     const resourceId = form.watch("resourceId");
     const currentDateRange = form.watch("dateRange");
@@ -69,18 +66,15 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
     let price = 0;
     
     if (bookingType === "room" || bookingType === "car") {
-      // For rooms and cars, calculate by days
       const days = differenceInDays(currentDateRange.to, currentDateRange.from) || 1;
       price = bookingType === "room" 
         ? (selectedResource.pricePerNight || 0) * days
         : (selectedResource.pricePerHour || 0) * days;
     } else {
-      // For other resources, calculate by hours
       const hours = differenceInHours(currentDateRange.to, currentDateRange.from) || 1;
       price = (selectedResource.pricePerHour || 0) * hours;
     }
     
-    // Add extras if available
     const extrasTotal = extras
       ? extras.reduce((sum, extra) => sum + (extra.price * extra.quantity), 0)
       : 0;
@@ -99,7 +93,6 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      // Get the selected client's name for the guestName field
       const selectedClient = clients?.find(client => client.id === data.clientId);
       if (!selectedClient) {
         toast.error("Client non trouvé");
@@ -109,7 +102,6 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
       
       const guestName = selectedClient.name;
       
-      // Get the resource name for display purposes
       let resourceName = "";
       if (bookingType === "room") {
         const room = rooms.find(r => r.id === data.resourceId);
@@ -134,7 +126,6 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
       });
       
       if (onSuccess) {
-        // Pass all relevant data to parent component for payment processing
         onSuccess({
           clientId: data.clientId,
           clientName: guestName,
@@ -143,10 +134,10 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
           dateRange: data.dateRange,
           amount: data.amount,
           extras: data.extras,
-          bookingId: bookingResult?.id
+          bookingId: bookingResult?.id,
+          type: "payment"
         });
       } else {
-        // Default success handling if no callback provided
         onOpenChange(false);
         toast.success("Réservation créée avec succès");
       }
@@ -166,7 +157,6 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
       }));
     }
     
-    // For other resource types
     return resources.map(resource => {
       let priceInfo = '';
       
