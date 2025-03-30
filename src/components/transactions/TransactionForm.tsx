@@ -1,17 +1,15 @@
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useState } from "react";
+import { RegisterType } from "@/types";
 import { TransactionTypeSelector } from "./TransactionTypeSelector";
 import { TransactionMethodSelector } from "./TransactionMethodSelector";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useStaff } from "@/hooks/useStaff";
-import { useClients } from "@/hooks/useClients";
-import { Label } from "@/components/ui/label";
-import { RegisterType } from "@/types";
+import { DescriptionField } from "./form-fields/DescriptionField";
+import { AmountField } from "./form-fields/AmountField";
+import { ClientField } from "./form-fields/ClientField";
+import { StaffField } from "./form-fields/StaffField";
+import { FormActions } from "./form-fields/FormActions";
 
 export interface TransactionFormProps {
   onSubmit: (data: any) => void;
@@ -49,9 +47,6 @@ export function TransactionForm({
   const [clientId, setClientId] = useState(initialClientId || "none");
   const [staffId, setStaffId] = useState("none");
 
-  const { data: staff, isLoading: isStaffLoading } = useStaff();
-  const { data: clients, isLoading: isClientsLoading } = useClients();
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form data:", {
@@ -79,31 +74,15 @@ export function TransactionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          placeholder="Description de la transaction"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-          className="min-h-[80px]"
-        />
-      </div>
+      <DescriptionField 
+        description={description}
+        setDescription={setDescription}
+      />
 
-      <div>
-        <Label htmlFor="amount">Montant</Label>
-        <Input
-          id="amount"
-          type="number"
-          placeholder="0.00"
-          step="0.01"
-          min="0"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
-        />
-      </div>
+      <AmountField
+        amount={amount}
+        setAmount={setAmount}
+      />
 
       <TransactionTypeSelector 
         type={type} 
@@ -127,48 +106,20 @@ export function TransactionForm({
         />
       )}
 
-      <div>
-        <Label htmlFor="clientId">Client</Label>
-        <Select value={clientId} onValueChange={setClientId}>
-          <SelectTrigger id="clientId">
-            <SelectValue placeholder="Sélectionner un client (optionnel)" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Aucun client</SelectItem>
-            {clients?.map((client) => (
-              <SelectItem key={client.id} value={client.id}>
-                {client.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <ClientField
+        clientId={clientId}
+        setClientId={setClientId}
+      />
 
-      <div>
-        <Label htmlFor="staffId">Personnel</Label>
-        <Select value={staffId} onValueChange={setStaffId}>
-          <SelectTrigger id="staffId">
-            <SelectValue placeholder="Sélectionner un membre du personnel (optionnel)" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Aucun personnel</SelectItem>
-            {staff?.map((staffMember) => (
-              <SelectItem key={staffMember.id} value={staffMember.id}>
-                {staffMember.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <StaffField
+        staffId={staffId}
+        setStaffId={setStaffId}
+      />
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Annuler
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "En cours..." : "Enregistrer"}
-        </Button>
-      </div>
+      <FormActions
+        onCancel={onCancel}
+        isSubmitting={isSubmitting}
+      />
     </form>
   );
 }
