@@ -17,7 +17,7 @@ export const useInvoiceCreate = () => {
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'partial', // Using 'partial' which is allowed by the database constraint
+          type: 'payment', // Changed to 'payment' which is allowed by the database constraint
           method: invoiceData.method || 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
@@ -26,8 +26,8 @@ export const useInvoiceCreate = () => {
           staff_id: invoiceData.staffId,
           date: new Date().toISOString(),
           due_date: invoiceData.dueDate || null,
-          paid_amount: 0, // Initialize with 0 since it's pending payment
-          remaining_amount: invoiceData.amount // Set to full amount since nothing is paid yet
+          paid_amount: invoiceData.amount, // Set to full amount since it's a payment
+          remaining_amount: 0 // Set to 0 since it's fully paid
         })
         .select()
         .single();
