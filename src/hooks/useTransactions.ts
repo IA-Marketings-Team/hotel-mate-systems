@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Transaction, RegisterType } from "@/types";
@@ -21,7 +20,6 @@ interface CreateTransactionPayload {
 }
 
 export const useTransactions = (filters?: RegisterType | TransactionFilters) => {
-  // Convert string filter to object filter for backward compatibility
   const normalizedFilters: TransactionFilters = typeof filters === 'string' 
     ? { registerType: filters } 
     : filters || {};
@@ -54,7 +52,6 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
         throw new Error(`Error fetching transactions: ${error.message}`);
       }
       
-      // Transform the data to match the Transaction type
       return (data || []).map(item => ({
         id: item.id,
         date: item.date,
@@ -79,7 +76,6 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
 
   const createTransaction = useMutation({
     mutationFn: async (payload: CreateTransactionPayload) => {
-      // S'assurer que payload.clientId et payload.staffId ne sont pas vides
       const clientId = payload.clientId === "none" ? null : payload.clientId;
       const staffId = payload.staffId === "none" ? null : payload.staffId;
       
@@ -102,7 +98,6 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
           client_id: clientId,
           staff_id: staffId,
           date: new Date().toISOString(),
-          // For partial or pending payments
           paid_amount: payload.type === 'payment' ? payload.amount : 0,
           remaining_amount: payload.type === 'payment' ? 0 : payload.amount,
           last_payment_date: payload.type === 'payment' ? new Date().toISOString() : null
@@ -111,6 +106,7 @@ export const useTransactions = (filters?: RegisterType | TransactionFilters) => 
         .single();
       
       if (error) {
+        console.error("Error creating transaction:", error.message);
         throw new Error(`Error creating transaction: ${error.message}`);
       }
       

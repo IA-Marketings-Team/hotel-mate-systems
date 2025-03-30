@@ -77,6 +77,19 @@ const NewBooking = () => {
          bookingTypeParam === 'terrace' ? 'Terrasse' : 'Restaurant'} ${resourceName}`;
     
     try {
+      console.log("Creating invoice with data:", {
+        description: bookingDescription,
+        amount: amount,
+        clientId: clientId,
+        staffId: null,
+        category: bookingTypeParam === 'room' ? "Chambres" : 
+                  bookingTypeParam === 'meeting' ? "Salles de réunion" :
+                  bookingTypeParam === 'car' ? "Location voitures" :
+                  bookingTypeParam === 'terrace' ? "Terrasses" : "Restaurant",
+        subcategory: "Réservations",
+        registerType: "hotel"
+      });
+      
       await createInvoice.mutateAsync({
         description: bookingDescription,
         amount: amount,

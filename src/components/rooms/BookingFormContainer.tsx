@@ -83,7 +83,17 @@ export const BookingFormContainer: React.FC<BookingFormContainerProps> = ({
         const description = `Réservation Chambre ${roomNumber} pour ${calculateNights()} nuit(s)${extrasDescription ? ` (${extrasDescription})` : ""}`;
         const totalAmount = calculateTotalPrice();
         
-        // Create invoice - REMOVED the type property as it's handled internally in useInvoiceCreate
+        console.log("Creating invoice with data:", {
+          description,
+          amount: totalAmount,
+          clientId: selectedClient.id,
+          staffId: null,
+          category: "Chambres",
+          subcategory: "Réservations",
+          registerType: "hotel"
+        });
+        
+        // Create invoice
         await createInvoice.mutateAsync({
           description,
           amount: totalAmount,
