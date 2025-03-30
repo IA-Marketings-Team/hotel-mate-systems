@@ -10,13 +10,13 @@ export const useInvoiceCreate = () => {
 
   return useMutation({
     mutationFn: async (invoiceData: CreateInvoiceData) => {
-      // Update to create invoices with 'pending' status instead of 'payment'
+      // Create invoices with 'partial' status instead of 'pending' to avoid constraint violations
       const { data, error } = await supabase
         .from('transactions')
         .insert({
           description: invoiceData.description,
           amount: invoiceData.amount,
-          type: 'pending', // Changed from 'payment' to 'pending'
+          type: 'partial', // Changed from 'pending' to 'partial' to comply with constraint
           method: 'card', // Default method, can be updated when payment is processed
           register_type: invoiceData.registerType as RegisterType,
           category: invoiceData.category || null,
