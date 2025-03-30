@@ -20,14 +20,18 @@ import { ShiftTasksLink } from "./ShiftTasksLink";
 
 interface ShiftCellProps {
   shift: Shift;
+  date?: Date; // Added date property as optional
   onEdit: (shift: Shift) => void;
   onDelete: (id: string) => void;
+  onAddShift?: (date: Date) => void; // Added onAddShift as optional
 }
 
 export const ShiftCell: React.FC<ShiftCellProps> = ({
   shift,
+  date,
   onEdit,
   onDelete,
+  onAddShift,
 }) => {
   const getShiftColor = (type: string) => {
     switch(type) {
@@ -41,6 +45,26 @@ export const ShiftCell: React.FC<ShiftCellProps> = ({
         return 'bg-gray-50 text-gray-800 border-gray-200';
     }
   };
+
+  // If there's no shift but there is a date and onAddShift function,
+  // render an empty cell with an add button
+  if (!shift && date && onAddShift) {
+    return (
+      <div 
+        className="p-2 border border-dashed rounded-md min-h-20 flex items-center justify-center"
+        onClick={() => onAddShift(date)}
+      >
+        <Button variant="ghost" size="sm" className="text-xs">
+          + Ajouter
+        </Button>
+      </div>
+    );
+  }
+
+  // If no shift and we can't add one, return an empty cell
+  if (!shift) {
+    return <div className="p-2 border border-dashed rounded-md min-h-20"></div>;
+  }
 
   return (
     <div className="p-2 border border-dashed rounded-md">

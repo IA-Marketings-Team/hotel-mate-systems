@@ -37,14 +37,15 @@ export const StaffRow: React.FC<StaffRowProps> = ({
       {days.map(day => {
         const shift = getShift(staff.id, day);
         return (
-          <ShiftCell
-            key={day.toString()}
-            shift={shift}
-            date={day}
-            onAddShift={onAddShift}
-            onEditShift={onEditShift}
-            onDeleteShift={onDeleteShift}
-          />
+          <TableCell key={day.toString()} className="p-1">
+            <ShiftCell
+              shift={shift}
+              date={day}
+              onAddShift={() => onAddShift(day)}
+              onEdit={onEditShift}
+              onDelete={onDeleteShift}
+            />
+          </TableCell>
         );
       })}
     </TableRow>
