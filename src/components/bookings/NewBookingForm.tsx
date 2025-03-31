@@ -1,8 +1,6 @@
+
 import React, { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
 import { useClients } from "@/hooks/useClients";
 import { useRooms } from "@/hooks/useRooms";
 import { useBookings } from "@/hooks/useBookings";
@@ -10,14 +8,8 @@ import { toast } from "sonner";
 import { BookingType } from "@/types/bookings";
 import { DateRange } from "react-day-picker";
 import { differenceInDays, differenceInHours } from "date-fns";
-import { NewBookingClientField } from "./NewBookingClientField";
-import { NewBookingResourceField } from "./NewBookingResourceField";
-import { NewBookingAmountField } from "./NewBookingAmountField";
-import { NewBookingExtrasField } from "./NewBookingExtrasField";
 import { useResources } from "@/hooks/useResources";
-import { StayDurationField } from "./StayDurationField";
-import { BookingPriceSummary } from "./BookingPriceSummary";
-import { NewBookingDateFields } from "./NewBookingDateFields";
+import { NewBookingFormContent } from "./NewBookingFormContent";
 
 interface NewBookingFormProps {
   form: UseFormReturn<any>;
@@ -186,62 +178,29 @@ export const NewBookingForm: React.FC<NewBookingFormProps> = ({
     }
   };
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <NewBookingClientField form={form} clients={clients} />
-        
-        <NewBookingResourceField 
-          form={form} 
-          resourceOptions={getResourceOptions()} 
-          bookingType={bookingType} 
-        />
-        
-        <NewBookingDateFields
-          form={form}
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          bookingType={bookingType}
-        />
-        
-        <StayDurationField 
-          form={form} 
-          dateRange={dateRange} 
-          roomPrice={getSelectedResourcePrice()}
-          bookingType={bookingType}
-        />
-        
-        {bookingType === 'room' && (
-          <NewBookingExtrasField 
-            form={form} 
-            rooms={rooms}
-            onChange={setExtras}
-          />
-        )}
-        
-        <NewBookingAmountField form={form} />
-        
-        <BookingPriceSummary
-          form={form}
-          dateRange={dateRange}
-          roomPrice={getSelectedResourcePrice()}
-          extras={extras}
-          bookingType={bookingType}
-        />
+  const clientOptions = clients ? clients.map(client => ({
+    value: client.id,
+    label: client.name
+  })) : [];
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Annuler
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Création..." : "Créer la réservation"}
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+  const resourceOptions = getResourceOptions();
+  const selectedResourcePrice = getSelectedResourcePrice();
+
+  return (
+    <NewBookingFormContent
+      form={form}
+      dateRange={dateRange}
+      setDateRange={setDateRange}
+      bookingType={bookingType}
+      onOpenChange={onOpenChange}
+      clientOptions={clientOptions}
+      resourceOptions={resourceOptions}
+      selectedResourcePrice={selectedResourcePrice}
+      extras={extras}
+      setExtras={setExtras}
+      isSubmitting={isSubmitting}
+      rooms={rooms}
+      onSubmit={onSubmit}
+    />
   );
 };
