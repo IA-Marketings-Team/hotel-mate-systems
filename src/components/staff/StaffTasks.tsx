@@ -1,9 +1,13 @@
+
 import React, { createContext, useContext, useState } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StaffMember } from "@/hooks/useStaff";
 import { TaskFilters } from "./tasks/TaskFilters";
 import { TaskList } from "./tasks/TaskList";
 import { useTasksCrud } from "@/hooks/useTasksCrud";
+import { Button } from "@/components/ui/button";
+import { CreateIndependentTaskDialog } from "./tasks/CreateIndependentTaskDialog";
+import { Plus } from "lucide-react";
 
 export interface Task {
   id: string;
@@ -53,6 +57,7 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
   const [selectedStaff, setSelectedStaff] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [newTask, setNewTask] = useState<string>('');
+  const [independentTaskDialogOpen, setIndependentTaskDialogOpen] = useState(false);
 
   const filteredTasks = tasks
     .filter(task => selectedStaff === "all" || task.assignedTo === selectedStaff)
@@ -100,6 +105,14 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
   return (
     <TasksContext.Provider value={tasksContextValue}>
       <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Gestion des tâches</h2>
+          <Button onClick={() => setIndependentTaskDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouvelle tâche
+          </Button>
+        </div>
+        
         <DashboardCard title="Liste des tâches">
           <TaskFilters
             newTask={newTask}
@@ -121,6 +134,13 @@ export const StaffTasks: React.FC<StaffTasksProps> = ({ staffMembers }) => {
             isLoading={isLoading}
           />
         </DashboardCard>
+        
+        <CreateIndependentTaskDialog 
+          open={independentTaskDialogOpen}
+          onOpenChange={setIndependentTaskDialogOpen}
+          staffMembers={staffMembers}
+          tasksContext={tasksContextValue}
+        />
       </div>
     </TasksContext.Provider>
   );

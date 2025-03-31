@@ -18,10 +18,11 @@ import { ShiftFormFields } from "./shift-dialog/ShiftFormFields";
 import { TaskSelector } from "./shift-dialog/TaskSelector";
 import { DialogActions } from "./shift-dialog/DialogActions";
 import { useNavigate } from "react-router-dom";
-import { Link, Button } from "@/components/ui/button";
-import { ExternalLink, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, ArrowRight, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { NewTaskForm } from "./shift-dialog/NewTaskForm";
 
 interface ShiftDialogProps {
   open: boolean;
@@ -45,10 +46,12 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
   preSelectedStaffId,
 }) => {
   const isEditing = !!shift;
-  const { tasks, isLoading: tasksLoading } = useTasksContext();
+  const { tasks, isLoading: tasksLoading, addTask } = useTasksContext();
   const [selectedTaskId, setSelectedTaskId] = useState<string>("no-task");
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
   const [redirectToTasks, setRedirectToTasks] = useState(!isEditing); // Default to true for new shifts
+  const [showNewTaskForm, setShowNewTaskForm] = useState(false);
+  const [newTasksCreated, setNewTasksCreated] = useState<Array<{title: string; id?: string}>>([]);
   const navigate = useNavigate();
   
   // Initialize the form first before using it in useEffect
@@ -74,6 +77,8 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
     if (open) {
       // Reset task selection
       setSelectedTaskId("no-task");
+      setNewTasksCreated([]);
+      setShowNewTaskForm(false);
       
       // Initialize with selected staff or from shift
       const initialStaffId = preSelectedStaffId || (shift ? shift.staffId : "");
@@ -102,7 +107,25 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
     }
   }, [open, shift, preSelectedStaffId, date, form, isEditing]);
 
-  const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {    
+  const handleSubmit = async (values: CreateShiftInput | UpdateShiftInput) => {
+    // Si de nouvelles tâches ont été créées au formulaire mais n'ont pas encore d'ID serveur
+    // (parce qu'elles n'ont pas encore été sauvegardées), on les crée maintenant
+    const unsavedTasks = newTasksCreated.filter(task => !task.id);
+    for (const task of unsavedTasks) {
+      try {
+        await addTask({
+          title: task.title,
+          description: "",
+          assignedTo: values.staffId,
+          dueDate: values.date,
+          priority: "medium",
+          status: "pending"
+        });
+      } catch (error) {
+        console.error("Error creating task:", error);
+      }
+    }
+    
     await onSubmit(
       values, 
       selectedTaskId === "no-task" ? undefined : selectedTaskId, 
@@ -111,6 +134,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
     onOpenChange(false);
     form.reset();
     setSelectedTaskId("no-task");
+    setNewTasksCreated([]);
   };
 
   const handleStaffChange = (staffId: string) => {
@@ -124,6 +148,16 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
     }
   };
 
+  const handleCreateNewTask = (taskData: {
+    title: string;
+    description?: string;
+    priority: 'low' | 'medium' | 'high';
+  }) => {
+    // Ajouter la tâche à la liste des tâches créées localement
+    setNewTasksCreated([...newTasksCreated, { title: taskData.title }]);
+    setShowNewTaskForm(false);
+  };
+
   const availableTasks = tasks.filter(task => 
     task.assignedTo === "" || 
     (selectedStaffId && task.assignedTo === selectedStaffId)
@@ -131,7 +165,7 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Modifier le planning" : "Ajouter un planning"}
@@ -151,14 +185,47 @@ export const ShiftDialog: React.FC<ShiftDialogProps> = ({
               disableStaffSelection={!!preSelectedStaffId && !isEditing}
             />
 
-            <TaskSelector 
-              selectedTaskId={selectedTaskId} 
-              setSelectedTaskId={setSelectedTaskId} 
-              availableTasks={availableTasks}
-              isSubmitting={isSubmitting}
-              isLoading={tasksLoading}
-              showTaskSelector={!!selectedStaffId}
-            />
+            {/* Liste des tâches créées dans ce formulaire */}
+            {newTasksCreated.length > 0 && (
+              <div className="space-y-2">
+                <Label>Nouvelles tâches créées</Label>
+                <div className="space-y-1">
+                  {newTasksCreated.map((task, index) => (
+                    <div key={index} className="text-sm border rounded-md p-2 flex justify-between items-center">
+                      <span>{task.title}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setNewTasksCreated(newTasksCreated.filter((_, i) => i !== index));
+                        }}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {showNewTaskForm ? (
+              <NewTaskForm 
+                onCancel={() => setShowNewTaskForm(false)}
+                onSubmit={handleCreateNewTask}
+                isSubmitting={isSubmitting}
+              />
+            ) : (
+              <TaskSelector 
+                selectedTaskId={selectedTaskId} 
+                setSelectedTaskId={setSelectedTaskId} 
+                availableTasks={availableTasks}
+                isSubmitting={isSubmitting}
+                isLoading={tasksLoading}
+                showTaskSelector={!!selectedStaffId}
+                onCreateNewTask={() => setShowNewTaskForm(true)}
+              />
+            )}
 
             {!isEditing && (
               <div className="flex items-center space-x-2 pt-2">

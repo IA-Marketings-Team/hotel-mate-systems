@@ -54,6 +54,10 @@ export const useTasksCrud = () => {
         .select();
 
       if (error) throw error;
+      
+      // Simuler une notification à l'employé (dans une app réelle, on utiliserait un système de notification)
+      console.log(`Notification: Nouvelle tâche "${taskData.title}" assignée à l'employé ${taskData.assignedTo}`);
+      
       return data;
     },
     onSuccess: () => {
@@ -76,6 +80,10 @@ export const useTasksCrud = () => {
         .select();
 
       if (error) throw error;
+      
+      // Simuler une notification de mise à jour de statut
+      console.log(`Notification: Statut de la tâche mis à jour à "${status}"`);
+      
       return data;
     },
     onSuccess: () => {
@@ -122,6 +130,10 @@ export const useTasksCrud = () => {
         .select();
 
       if (error) throw error;
+      
+      // Simuler une notification de réassignation
+      console.log(`Notification: Tâche réassignée à l'employé ${staffId}`);
+      
       return data;
     },
     onSuccess: () => {
