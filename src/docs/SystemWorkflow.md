@@ -1,265 +1,150 @@
 
-# Système de gestion hôtelière - Workflow détaillé
+# Système de Gestion du Personnel et des Tâches - Workflow
 
-## 1. Gestion des chambres
+Ce document décrit les principaux workflows utilisateur dans le système de gestion du personnel et des tâches.
 
-### Vue d'ensemble des chambres
-```mermaid
-flowchart LR
-    A[Liste des chambres] --> B{Filtrer}
-    B --> C[Par statut]
-    B --> D[Par type]
-    B --> E[Par étage]
-    
-    A --> F{Actions}
-    F --> G[Voir détails]
-    F --> H[Changer statut]
-    F --> I[Réserver]
-    
-    H --> J[Disponible]
-    H --> K[Occupée]
-    H --> L[Maintenance]
-    H --> M[Nettoyage]
-    
-    I --> N[Processus de réservation]
-```
+## 1. Planification du Personnel
 
-### Processus de réservation
+### Vue d'ensemble du processus
 ```mermaid
 flowchart TD
-    A[Sélectionner chambre] --> B[Choisir client]
-    B --> C[Définir dates]
-    C --> D[Ajouter extras]
-    D --> E[Calculer prix]
-    E --> F[Confirmer réservation]
-    F --> G[Créer facture?]
-    G -->|Oui| H[Générer facture]
-    G -->|Non| I[Terminer]
-    H --> I
-```
-
-## 2. Gestion du personnel
-
-### Organisation des équipes
-```mermaid
-flowchart TD
-    A[Vue des équipes] --> B[Créer équipe]
-    A --> C[Modifier équipe]
-    A --> D[Assigner membres]
+    A[Accéder à l'onglet Planification] --> B[Sélectionner période]
+    B --> C[Visualiser planning existant]
+    C --> D{Action souhaitée?}
     
-    D --> E[Sélectionner employés]
-    E --> F[Définir rôles]
-    F --> G[Enregistrer]
-```
-
-### Planification des shifts
-```mermaid
-flowchart TD
-    A[Calendrier] --> B[Vue hebdomadaire]
-    A --> C[Vue par employé]
+    D -->|Ajouter planning| E[Cliquer sur + ou case vide]
+    D -->|Modifier planning| F[Cliquer sur un planning existant]
+    D -->|Supprimer planning| G[Utiliser bouton de suppression]
     
-    B --> D[Ajouter planning]
-    C --> D
+    E --> H[Saisir informations du planning]
+    F --> I[Modifier informations]
+    G --> J[Confirmer suppression]
     
-    D --> E[Sélectionner employé]
-    E --> F[Définir horaires]
-    F --> G[Type de shift]
-    G --> H[Créer tâches]
-    H --> I[Enregistrer]
-```
-
-### Gestion des tâches
-```mermaid
-flowchart TD
-    A[Liste des tâches] --> B{Filtrer par}
-    B --> C[Statut]
-    B --> D[Priorité]
-    B --> E[Employé]
+    H --> K[Optionnel: Créer des tâches]
+    I --> L[Optionnel: Gérer les tâches]
     
-    A --> F[Nouvelle tâche]
-    F --> G[Titre et description]
-    G --> H[Priorité]
-    H --> I[Assigner à]
-    I --> J[Date d'échéance]
-    J --> K[Vérifier planning]
-    K -->|Planning existe| L[Lier au planning]
-    K -->|Pas de planning| M[Créer planning]
-    L --> N[Enregistrer]
-    M --> N
+    K --> M[Enregistrer planning et tâches]
+    L --> N[Enregistrer modifications]
+    J --> O[Planning supprimé]
+    
+    M --> P[Planning créé avec succès]
+    N --> Q[Planning mis à jour]
+    
+    P --> R[Redirection vers tâches si choisi]
+    Q --> S[Planning mis à jour dans la vue]
+    O --> T[Planning retiré de la vue]
 ```
 
-## 3. Processus financiers
+## 2. Gestion des Tâches
 
-### Enregistrement des transactions
+### Processus de création et suivi
 ```mermaid
 flowchart TD
-    A[Sélectionner type] --> B[Entrée/Sortie]
-    B --> C[Choisir catégorie]
-    C --> D[Montant]
-    D --> E[Méthode de paiement]
-    E --> F[Client concerné?]
-    F -->|Oui| G[Sélectionner client]
-    F -->|Non| H[Transaction générale]
-    G --> I[Enregistrer]
-    H --> I
+    A[Accéder à la gestion des tâches] --> B{Créer tâche depuis?}
+    
+    B -->|Liste des tâches| C[Cliquer sur Nouvelle tâche]
+    B -->|Planning existant| D[Ouvrir détails du planning]
+    B -->|Vue directe| E[Page de tâches d'un planning]
+    
+    C --> F[Remplir formulaire tâche]
+    D --> G[Ajouter tâche au planning]
+    E --> H[Ajouter tâche au planning actuel]
+    
+    F --> I[Sélectionner assigné]
+    F --> J[Définir date et priorité]
+    I --> K[Créer planning auto si inexistant]
+    
+    G --> L[Associer à planning existant]
+    H --> M[Directement dans le contexte]
+    
+    K --> N[Tâche créée et planning généré]
+    L --> O[Tâche ajoutée au planning]
+    M --> P[Tâche visible dans le planning]
+    
+    N --> Q[Mise à jour vue tâches]
+    O --> Q
+    P --> Q
+    
+    Q --> R[Suivi progression tâches]
+    R --> S[Mise à jour statut]
+    S --> T[Tâche terminée]
 ```
 
-### Gestion des factures
+## 3. Gestion des Employés
+
+### Processus d'ajout et modification
 ```mermaid
 flowchart TD
-    A[Créer facture] --> B[Sélectionner client]
-    B --> C[Ajouter éléments]
-    C --> D[Appliquer remises?]
-    D -->|Oui| E[Définir remise]
-    D -->|Non| F[Calculer total]
-    E --> F
-    F --> G[Date d'échéance]
-    G --> H[Générer facture]
-    H --> I[Envoyer au client?]
-    I -->|Oui| J[Envoi]
-    I -->|Non| K[Enregistrer]
+    A[Accéder à la gestion du personnel] --> B[Visualiser liste des employés]
+    B --> C{Action souhaitée?}
+    
+    C -->|Ajouter employé| D[Cliquer sur Ajouter]
+    C -->|Modifier employé| E[Sélectionner employé]
+    C -->|Supprimer employé| F[Option supprimer]
+    
+    D --> G[Remplir formulaire employé]
+    E --> H[Modifier informations]
+    F --> I[Confirmer suppression]
+    
+    G --> J[Définir rôle]
+    G --> K[Définir service]
+    G --> L[Définir disponibilité]
+    
+    H --> M[Mettre à jour données]
+    
+    J --> N[Enregistrer nouvel employé]
+    M --> O[Enregistrer modifications]
+    I --> P[Employé supprimé]
+    
+    N --> Q[Employé disponible pour planning]
+    O --> R[Données mises à jour]
+    P --> S[Employé retiré du système]
+```
+
+## 4. Workflow Intégré
+
+### Vision globale
+```mermaid
+flowchart TD
+    A[Création employé] --> B[Planification service]
+    B --> C[Attribution tâches]
+    C --> D[Suivi exécution]
+    D --> E[Mise à jour statuts]
+    E --> F[Analyse performance]
+    
+    G[Événement déclencheur] -->|Réservation| H[Tâches préparation]
+    G -->|Service| I[Tâches service]
+    G -->|Maintenance| J[Tâches techniques]
+    
+    H --> K[Attribution auto tâches]
+    I --> K
     J --> K
+    
+    K --> L[Notification employés]
+    L --> M[Confirmation exécution]
+    M --> N[Vérification qualité]
+    
+    B <--> K
+    C <--> K
 ```
 
-## 4. Interactions entre les modules
+## 5. Intégration avec Autres Modules
 
-### Réservation et facturation
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant R as Réservation
-    participant CH as Chambre
-    participant F as Facture
-    
-    C->>R: Demande réservation
-    R->>CH: Vérifie disponibilité
-    CH-->>R: Confirmation disponibilité
-    R->>C: Collecte informations
-    R->>F: Crée facture
-    F-->>C: Envoie facture
-    C->>F: Effectue paiement
-    F-->>R: Confirme paiement
-    R->>CH: Confirme réservation
-    CH-->>R: Mise à jour statut
-    R-->>C: Confirmation finale
-```
-
-### Tâches et planning du personnel
-```mermaid
-sequenceDiagram
-    participant M as Manager
-    participant T as Tâche
-    participant P as Planning
-    participant E as Employé
-    
-    M->>T: Crée une tâche
-    T->>P: Vérifie planning existant
-    
-    alt Planning existe
-        P-->>T: Confirme disponibilité
-        T->>P: Associe la tâche
-    else Pas de planning
-        T->>P: Crée nouveau planning
-        P-->>T: Confirme création
-    end
-    
-    T->>E: Assigne la tâche
-    E-->>T: Reçoit notification
-    E->>T: Met à jour statut
-    T-->>M: Rapporte progression
-```
-
-## 5. Gestion des clients
-
-### Parcours client
-```mermaid
-flowchart TD
-    A[Nouveau client] --> B[Enregistrement]
-    B --> C[Première réservation]
-    C --> D[Séjour]
-    D --> E[Services supplémentaires]
-    E --> F[Checkout]
-    F --> G[Facturation]
-    G --> H[Paiement]
-    H --> I[Historique client]
-    I --> J[Nouvelle réservation]
-    J --> D
-```
-
-### Actions sur profil client
-```mermaid
-flowchart TD
-    A[Profil client] --> B{Actions}
-    B --> C[Modifier informations]
-    B --> D[Voir historique]
-    B --> E[Créer réservation]
-    B --> F[Ajouter transaction]
-    B --> G[Générer facture]
-    
-    D --> H[Réservations passées]
-    D --> I[Transactions]
-    D --> J[Factures]
-```
-
-## 6. Architecture de l'application
-
-### Flux de données
 ```mermaid
 flowchart LR
-    A[Interface utilisateur] <--> B[Hooks de données]
-    B <--> C[API Supabase]
-    C <--> D[Base de données PostgreSQL]
+    A[Gestion Personnel] <--> B[Réservations]
+    A <--> C[Services]
+    A <--> D[Maintenance]
+    A <--> E[Comptabilité]
     
-    E[Composants UI] --> A
-    F[React Router] --> A
-    G[React Context] --> A
-    H[React Query] --> B
-```
-
-### Structure des composants
-```mermaid
-flowchart TD
-    A[App] --> B[Layout]
-    B --> C[Pages]
+    B -->|Génère| F[Tâches préparation]
+    C -->|Requiert| G[Affectation personnel]
+    D -->|Demande| H[Intervention technique]
     
-    C --> D[Dashboard]
-    C --> E[Rooms]
-    C --> F[Staff]
-    C --> G[Clients]
-    C --> H[Finances]
-    C --> I[Services]
+    F --> A
+    G --> A
+    H --> A
     
-    D --> D1[DashboardCards]
-    D --> D2[Stats]
-    
-    E --> E1[RoomList]
-    E --> E2[RoomDetails]
-    E --> E3[BookingForm]
-    
-    F --> F1[StaffDirectory]
-    F --> F2[StaffScheduler]
-    F --> F3[StaffTasks]
-    
-    G --> G1[ClientList]
-    G --> G2[ClientDetails]
-    G --> G3[ClientActions]
-    
-    H --> H1[Registers]
-    H --> H2[Transactions]
-    H --> H3[Invoices]
-    
-    I --> I1[ServicesList]
-    I --> I2[ServiceBooking]
-```
-
-## 7. Points d'intégration
-
-### Intégration avec systèmes externes
-```mermaid
-flowchart LR
-    A[Système de gestion] --> B[API de paiement]
-    A --> C[Service d'emails]
-    A --> D[Exportation comptable]
-    A --> E[Calendriers externes]
-    A --> F[Systèmes de réservation en ligne]
+    A --> I[KPIs performance]
+    I --> J[Dashboard gestion]
 ```
